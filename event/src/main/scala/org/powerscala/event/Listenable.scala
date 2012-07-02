@@ -3,6 +3,7 @@ package org.powerscala.event
 import actors.DaemonActor
 import org.powerscala.ref.ReferenceType
 import org.powerscala.hierarchy.{Child, Parent}
+import org.powerscala.bus.Bus
 
 /**
  * Listenable can be mixed in to provide the ability for event management on an object.

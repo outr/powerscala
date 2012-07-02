@@ -8,6 +8,7 @@ import org.powerscala.EnumEntry
 import org.bson.types.ObjectId
 
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 import org.powerscala.datastore.{DatastoreCollection, Lazy}
 
 /**
