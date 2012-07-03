@@ -1,7 +1,6 @@
-package org.powerscala.scene
+package org.powerscala.hierarchy
 
 import event.{ChildRemovedEvent, ChildAddedEvent}
-import org.powerscala.hierarchy.Element
 import collection.mutable.ListBuffer
 import annotation.tailrec
 

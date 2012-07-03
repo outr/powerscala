@@ -30,11 +30,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene
+package org.powerscala.hierarchy
 
-import org.powerscala.hierarchy.{Element, Parent}
 import org.powerscala.event.Listenable
-
 
 /**
  * Container maintains a collection of children T.

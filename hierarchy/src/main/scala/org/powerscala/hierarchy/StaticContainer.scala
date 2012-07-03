@@ -30,11 +30,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene
+package org.powerscala.hierarchy
 
 import org.powerscala.{ScalaDelayedInitBug, ExtendedDelayedInit}
 import org.powerscala.reflect._
-import org.powerscala.hierarchy.Element
 
 /**
  * StaticContainer expects all children to be defined within the class itself and uses Reflection to add the children to

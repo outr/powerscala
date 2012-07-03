@@ -31,6 +31,7 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     val c2 = session[Test2]
     val c3 = session[Test3]
     val c4 = session[Test4]
+    val c5 = session[TestBase]
     println("Within the session...")
     val t1 = Test1("test1")
     "have no objects in the database" in {
@@ -126,6 +127,28 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t4Again.name should equal("fourth")
       t4Again.t1.name should equal("lazy one")
     }
+    "insert Test5 in TestBase collection" in {
+      val t5 = Test5("test5", 5)
+      c5.persist(t5)
+    }
+    "insert Test6 in TestBase collection" in {
+      val t6 = Test6("test6", "six")
+      c5.persist(t6)
+    }
+    "query items out of TestBase collection" in {
+      val results = c5.toList
+      results.length should equal(2)
+      val t5 = results.collect {
+        case t: Test5 => t
+      }.head
+      val t6 = results.collect {
+        case t: Test6 => t
+      }.head
+      t5.name should equal("test5")
+      t5.age should equal(5)
+      t6.name should equal("test6")
+      t6.ref should equal("six")
+    }
     "close resources in" in {
       finish
     }
@@ -161,3 +184,11 @@ object Test4 {
   val t1 = Field[Test4, Test1]("t1")
   val id = Field.id[Test4]
 }
+
+trait TestBase extends Persistable {
+  def name: String
+}
+
+case class Test5(name: String, age: Int, id: util.UUID = util.UUID.randomUUID()) extends TestBase
+
+case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID()) extends TestBase

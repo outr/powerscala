@@ -30,14 +30,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene
+package org.powerscala.hierarchy
 
 import event.{ChildRemovedEvent, ChildAddedEvent}
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.WordSpec
-import org.powerscala.hierarchy.Element
-
-//import org.powerscala.Child
 
 /**
  *

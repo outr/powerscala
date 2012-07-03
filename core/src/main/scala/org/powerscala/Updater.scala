@@ -41,11 +41,11 @@ trait Updater extends Updatable {
     }
   }
 
-  protected[powerscala] def add(updatable: Updatable) = synchronized {
+  protected def add(updatable: Updatable) = synchronized {
     updatables = updatable :: updatables
   }
 
-  protected[powerscala] def remove(updatable: Updatable) = synchronized {
+  protected def remove(updatable: Updatable) = synchronized {
     updatables = updatables.filterNot(u => u == updatable)
   }
 }

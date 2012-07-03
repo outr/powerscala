@@ -30,9 +30,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene
+package org.powerscala.hierarchy
 
-import org.powerscala.hierarchy.Element
 import annotation.tailrec
 
 /**

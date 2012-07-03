@@ -30,9 +30,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene.event
+package org.powerscala.hierarchy.event
 
-import org.powerscala.scene.Container
+import org.powerscala.hierarchy.Container
 import org.powerscala.event.Event
 import org.powerscala.hierarchy.Element
 

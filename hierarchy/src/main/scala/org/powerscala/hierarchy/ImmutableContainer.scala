@@ -30,9 +30,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.powerscala.scene
-
-import org.powerscala.hierarchy.Element
+package org.powerscala.hierarchy
 
 /**
  * ImmutableContainer defines a simple collection wrapper for a pre-defined list of children.
