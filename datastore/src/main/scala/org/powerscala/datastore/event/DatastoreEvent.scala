@@ -1,17 +1,17 @@
 package org.powerscala.datastore.event
 
 import org.powerscala.event.Event
-import org.powerscala.datastore.{DatastoreCollection, Persistable}
+import org.powerscala.datastore.{DatastoreCollection, Identifiable}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreEvent[T <: Persistable] extends Event {
+trait DatastoreEvent[T <: Identifiable] extends Event {
   def obj: T
 
   def collection: DatastoreCollection[T]
 }
 
-case class DatastorePersist[T <: Persistable](collection: DatastoreCollection[T], obj: T) extends DatastoreEvent[T]
+case class DatastorePersist[T <: Identifiable](collection: DatastoreCollection[T], obj: T) extends DatastoreEvent[T]
 
-case class DatastoreDelete[T <: Persistable](collection: DatastoreCollection[T], obj: T) extends DatastoreEvent[T]
+case class DatastoreDelete[T <: Identifiable](collection: DatastoreCollection[T], obj: T) extends DatastoreEvent[T]

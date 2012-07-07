@@ -12,18 +12,14 @@ import scala.Some
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class MongoDBDatastoreCollection[T <: Persistable](val session: MongoDBDatastoreSession, val name: String)
-                                                  (implicit val manifest: Manifest[T]) extends DatastoreCollection[T] {
+class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastoreSession, val name: String)
+                                                   extends DatastoreCollection[T] {
   lazy val collection = session.database.getCollection(name)
 
-  protected def persistInternal(ref: T) = {
-    val dbo = DataObjectConverter.toDBObject(ref, this)
-    ref.persistenceState match {
-      case PersistenceState.NotPersisted => collection.insert(dbo)
-      case PersistenceState.Persisted => {
-        collection.findAndModify(new BasicDBObject("_id", ref.id), dbo)
-      }
-    }
+  protected def persistNew(ref: T) = collection.insert(DataObjectConverter.toDBObject(ref, this))
+
+  protected def persistModified(ref: T) = {
+    collection.findAndModify(new BasicDBObject("_id", ref.id), DataObjectConverter.toDBObject(ref, this))
   }
 
   protected def deleteInternal(ref: T) = {

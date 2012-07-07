@@ -1,10 +1,10 @@
 package org.powerscala.datastore.query
 
-import org.powerscala.datastore.Persistable
+import org.powerscala.datastore.Identifiable
 
 import java.util
 
-case class Field[T <: Persistable, F](name: String) {
+case class Field[T <: Identifiable, F](name: String) {
   def <(value: F) = Filter(this, Operator.<, value)
 
   def <=(value: F) = Filter(this, Operator.<=, value)
@@ -23,5 +23,5 @@ case class Field[T <: Persistable, F](name: String) {
 }
 
 object Field {
-  def id[T <: Persistable] = Field[T, util.UUID]("_id")
+  def id[T <: Identifiable] = Field[T, util.UUID]("_id")
 }

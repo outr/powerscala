@@ -63,7 +63,7 @@ object DatastoreScalabilityTest {
   }
 }
 
-case class TestObject(name: String, data: String = TestObject.generateData, id: util.UUID = util.UUID.randomUUID()) extends Persistable
+case class TestObject(name: String, data: String = TestObject.generateData, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object TestObject {
   val name = Field[TestObject, String]("name")

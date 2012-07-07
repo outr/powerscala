@@ -49,14 +49,16 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(core, concurrent, datastore, event, hierarchy, property, reflect)
+    .aggregate(core, concurrent, convert, datastore, event, hierarchy, property, reflect)
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .dependsOn(reflect)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
-    .settings(libraryDependencies += mongodb)
+  lazy val convert = Project("convert", file("convert"), settings = createSettings("powerscala-convert"))
+    .dependsOn(core)
   lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
-    .dependsOn(core, event)
+    .dependsOn(core, event, convert)
+    .settings(libraryDependencies += mongodb)
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
     .dependsOn(core, concurrent)
   lazy val hierarchy = Project("hierarchy", file("hierarchy"), settings = createSettings("powerscala-hierarchy"))
@@ -68,7 +70,7 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val paranamer = "com.thoughtworks.paranamer" % "paranamer" % "2.4"
+  val paranamer = "com.thoughtworks.paranamer" % "paranamer" % "2.5"
   val scalaTest = "org.scalatest" % "scalatest_2.9.1" % "1.7.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.8.0"
 }

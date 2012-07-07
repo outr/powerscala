@@ -62,9 +62,9 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
    *
    * @return Routing defining how this was processed by the nodes.
    */
-  def apply(message: Any) = process(message, nodes, null)
+  def apply(message: Any) = receive(this, message)
 
-  protected[bus] def receive(message: Any) = apply(message)
+  def receive(bus: Bus, message: Any) = process(message, nodes, null)
 
   @tailrec
   private def process(message: Any, nodes: List[Reference[Node]], buffer: ListBuffer[Any]): Routing = {
@@ -72,7 +72,7 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
       val ref = nodes.head
       val node = ref.getOrNull
       if (node != null) {
-        node.receive(message) match {
+        node.receive(this, message) match {
           case Routing.Stop if (buffer == null) => Routing.Stop
           case Routing.Stop => Routing.Results(buffer.toList)
           case response: RoutingResponse => response

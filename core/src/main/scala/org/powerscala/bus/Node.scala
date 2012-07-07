@@ -12,12 +12,12 @@ trait Node {
    * The Priority of this Node. Default sorting on the Bus takes the priority into account when determining which Node
    * receives incoming messages first.
    */
-  protected[bus] def priority: Priority
+  def priority: Priority
 
   /**
    * Called by the Bus when an incoming message occurs.
    */
-  protected[bus] def receive(message: Any): Routing
+  def receive(bus: Bus, message: Any): Routing
 }
 
 object Node {
@@ -38,7 +38,7 @@ object Node {
 trait TypedNode[T] extends Node {
   def manifest: Manifest[T]
 
-  protected[bus] def receive(message: Any) = {
+  def receive(bus: Bus, message: Any) = {
     if (manifest.erasure.isAssignableFrom(message.asInstanceOf[AnyRef].getClass)) {
       process(message.asInstanceOf[T])
     } else {
@@ -46,11 +46,11 @@ trait TypedNode[T] extends Node {
     }
   }
 
-  protected def process(message: T): Routing
+  def process(message: T): Routing
 }
 
 case class FunctionalNode[T](f: (T) => Any, priority: Priority)(implicit val manifest: Manifest[T]) extends TypedNode[T] {
-  protected def process(message: T) = f(message) match {
+  def process(message: T) = f(message) match {
     case Routing.Stop => Routing.Stop
     case response: RoutingResponse => response
     case results: RoutingResults => results

@@ -76,7 +76,12 @@ object DataObjectConverter {
 
   def fromDBValue(obj: Any, collection: DatastoreCollection[_]) = obj match {
     case objectId: ObjectId => objectId
-    case uuid: UUID => uuid
+    case uuid: UUID => {
+      if (collection != null) {
+        DatastoreCollection.assignId(collection, uuid)
+      }
+      uuid
+    }
     case dbList: BasicDBList => fromDBList(dbList, collection)
     case s: String => s
     case b: Boolean => b

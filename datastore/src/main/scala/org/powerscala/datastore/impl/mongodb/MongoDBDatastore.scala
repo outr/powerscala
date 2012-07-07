@@ -9,10 +9,10 @@ class MongoDBDatastore(val host: String = "localhost", val port: Int = 27017, va
   override def session = super.session.asInstanceOf[MongoDBDatastoreSession]
 
   /**
-   * If set to true, all Persistable objects will be be cross-persisted to their own collection when persisted as part
+   * If set to true, all Identifiable objects will be be cross-persisted to their own collection when persisted as part
    * of another collection.
    *
-   * For example, if Person class had a reference to Address and Address is Persistable, then Address will also be
+   * For example, if Person class had a reference to Address and Address is Identifiable, then Address will also be
    * persisted to the Address collection if globalize is set to true.
    */
   // TODO: support

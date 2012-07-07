@@ -1,7 +1,7 @@
 package org.powerscala.datastore.converter
 
 import com.mongodb.{BasicDBObject, DBObject}
-import org.powerscala.datastore.{Persistable, Lazy, DatastoreCollection}
+import org.powerscala.datastore.{Identifiable, Lazy, DatastoreCollection}
 import java.util
 
 /**
@@ -12,16 +12,16 @@ object LazyDataObjectConverter extends DataObjectConverter {
     val id = db.get("_id").asInstanceOf[util.UUID]
     val clazz = Class.forName(db.get("lazyClass").toString)
     if (db.containsField("lazy")) {
-      val instance = DataObjectConverter.fromDBValue(db.get("lazy"), collection).asInstanceOf[Persistable]
+      val instance = DataObjectConverter.fromDBValue(db.get("lazy"), collection).asInstanceOf[Identifiable]
       Lazy(instance)
     } else {
-      val lazyCollection = collection.session.collection()(Manifest.classType[Persistable](clazz))
+      val lazyCollection = collection.session.collection()(Manifest.classType[Identifiable](clazz))
       Lazy(id, lazyCollection)
     }
   }
 
   def toDBObject(obj: AnyRef, collection: DatastoreCollection[_]) = {
-    val l = obj.asInstanceOf[Lazy[Persistable]]
+    val l = obj.asInstanceOf[Lazy[Identifiable]]
     val instance = l()
     val clazz = instance.getClass
     val dbo = new BasicDBObject()
@@ -29,7 +29,7 @@ object LazyDataObjectConverter extends DataObjectConverter {
     dbo.put("class", classOf[Lazy[_]].getName)
     dbo.put("lazyClass", clazz.getName)
     if (collection != null) {
-      val lazyCollection = collection.session.collection()(Manifest.classType[Persistable](instance.getClass))
+      val lazyCollection = collection.session.collection()(Manifest.classType[Identifiable](instance.getClass))
       lazyCollection.persist(l())
     } else {
       dbo.put("lazy", DataObjectConverter.toDBValue(instance, collection))

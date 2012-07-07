@@ -123,6 +123,12 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
         nameValue.isTransient should equal(false)
         ageValue.isTransient should equal(true)
       }
+      "read case values from case class with Array" in {
+        val clazz: EnhancedClass = classOf[TestCaseClass5]
+        val values = clazz.caseValues
+        println(values.length)
+        values.foreach(println)
+      }
     }
   }
 }
@@ -144,3 +150,14 @@ case class TestCaseClass2(name: String, age: Int = 5)
 case class TestCaseClass3()
 
 case class TestCaseClass4(name: String, @transient age: Int)
+
+case class TestCaseClass5(name: String, bytes: Array[Byte])
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val clazz: EnhancedClass = classOf[TestCaseClass5]
+    val copyMethod = clazz.copyMethod.get
+    println("Args: " + copyMethod.args.length)
+    println(copyMethod.javaMethod)
+  }
+}

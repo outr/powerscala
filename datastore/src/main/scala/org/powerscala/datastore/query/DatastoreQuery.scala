@@ -5,12 +5,11 @@ import org.powerscala.datastore._
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-case class DatastoreQuery[T <: Persistable](collection: DatastoreCollection[T],
+case class DatastoreQuery[T <: Identifiable](collection: DatastoreCollection[T],
                                             _skip: Int = 0,
                                             _limit: Int = Int.MaxValue,
                                             _filters: List[Filter[T, _]] = List.empty[Filter[T, _]],
-                                            _sort: List[Sort[T, _]] = List.empty[Sort[T, _]])
-                                           (implicit manifest: Manifest[T]) extends Iterable[T] {
+                                            _sort: List[Sort[T, _]] = List.empty[Sort[T, _]]) extends Iterable[T] {
   def skip(s: Int) = copy(_skip = s)
 
   def limit(l: Int) = copy(_limit = l)

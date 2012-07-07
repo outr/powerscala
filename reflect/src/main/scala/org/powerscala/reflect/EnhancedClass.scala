@@ -13,7 +13,12 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * The name of the class.
    */
-  def name = EnhancedClass.convertClass(javaClass)
+  lazy val name = EnhancedClass.convertClass(javaClass)
+
+  lazy val simpleName = name.contains(".") match {
+    case true => name.substring(name.lastIndexOf('.') + 1)
+    case false => name
+  }
 
   /**
    * All constructors on this class.

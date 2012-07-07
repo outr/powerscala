@@ -1,9 +1,11 @@
 package org.powerscala.datastore
 
+import org.powerscala.event.Listenable
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Datastore {
+trait Datastore extends Listenable {
   private val sessions = new ThreadLocal[DatastoreSession]
 
   /**
@@ -25,6 +27,15 @@ trait Datastore {
     } finally {
       if (created) {
         disconnect()
+      }
+    }
+  }
+
+  def collection[T <: Identifiable, R](f: DatastoreCollection[T] => R)(implicit manifest: Manifest[T]): R = {
+    apply {
+      case session => {
+        val c = session.collection[T](null)(manifest)
+        f(c)
       }
     }
   }

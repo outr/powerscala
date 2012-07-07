@@ -5,19 +5,30 @@ import java.util
 import org.powerscala.event.Listenable
 import org.powerscala.reflect.EnhancedClass
 import query.{Field, DatastoreQuery}
+import org.powerscala.hierarchy.Child
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreCollection[T <: Persistable] extends Iterable[T] with Listenable {
+trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable with Child {
   def name: String
   def session: DatastoreSession
-  def manifest: Manifest[T]
+  def parent = session
+
+  private var ids = Set.empty[util.UUID]
+
+  def isPersisted(id: util.UUID): Boolean = ids.contains(id)
+
+  def isPersisted(ref: T): Boolean = isPersisted(ref.id)
 
   final def persist(refs: T*): Unit = {
     refs.foreach {
       case ref => {
-        persistInternal(ref)
+        isPersisted(ref.id) match {
+          case true => persistModified(ref)
+          case false => persistNew(ref)
+        }
+        ids += ref.id
         fire(DatastorePersist(this, ref))
       }
     }
@@ -27,6 +38,7 @@ trait DatastoreCollection[T <: Persistable] extends Iterable[T] with Listenable 
     refs.foreach {
       case ref => {
         deleteInternal(ref)
+        ids -= ref.id
         fire(DatastoreDelete(this, ref))
       }
     }
@@ -55,13 +67,19 @@ trait DatastoreCollection[T <: Persistable] extends Iterable[T] with Listenable 
     q
   }
 
-  def query = DatastoreQuery(collection = this)(manifest)
+  def query = DatastoreQuery(collection = this)
 
   protected[datastore] def executeQuery(query: DatastoreQuery[T]): Iterator[T]
 
-  protected def persistInternal(ref: T): Unit
+  protected def persistNew(ref: T): Unit
+
+  protected def persistModified(ref: T): Unit
 
   protected def deleteInternal(ref: T): Unit
 
   override def toString() = "%s[%s](%s)".format(getClass.getSimpleName, manifest.erasure.getSimpleName, name)
+}
+
+object DatastoreCollection {
+  def assignId(collection: DatastoreCollection[_], id: util.UUID) = collection.ids += id
 }

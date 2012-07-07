@@ -8,6 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.Field
 
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
@@ -32,6 +33,7 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     val c3 = session[Test3]
     val c4 = session[Test4]
     val c5 = session[TestBase]
+    val c7 = session[Test7]
     println("Within the session...")
     val t1 = Test1("test1")
     "have no objects in the database" in {
@@ -149,27 +151,52 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t6.name should equal("test6")
       t6.ref should equal("six")
     }
+    "validate persistence states" in {
+      val t = Test1("persistanceStateTest")
+      c1.isPersisted(t) should equal(false)
+      c1.persist(t)
+      c1.isPersisted(t) should equal(true)
+      val t1 = c1.query.filter(Test1.name equal "persistanceStateTest").head
+      c1.isPersisted(t1) should equal(true)
+      val t2 = t1.copy("persistanceStateTest2")
+      c1.isPersisted(t2) should equal(true)
+      c1.delete(t2)
+      c1.isPersisted(t) should equal(false)
+    }
+    "validate persisting and querying Identifiables within Identifiables" in {
+      val t8 = Test8(Array(1.toByte, 2.toByte, 3.toByte))
+      val t7 = Test7("t7", t8)
+      classOf[Test8].caseValues.foreach(println)
+      c7.persist(t7)
+      val queried = c7.head
+      queried should equal(t7)
+    }
+    // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
       finish
     }
   }
 }
 
-case class Test1(name: String, id: util.UUID = util.UUID.randomUUID()) extends Persistable
+trait Test {
+  def name: String
+}
+
+case class Test1(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable with Test
 
 object Test1 {
   val name = Field[Test1, String]("name")
   val id = Field.id[Test1]
 }
 
-case class Test2(name: String, id: util.UUID = util.UUID.randomUUID()) extends Persistable
+case class Test2(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test2 {
   val name = Field[Test2, String]("name")
   val id = Field.id[Test2]
 }
 
-case class Test3(name: String, precision: Precision, id: util.UUID = util.UUID.randomUUID()) extends Persistable
+case class Test3(name: String, precision: Precision, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test3 {
   val name = Field[Test3, String]("name")
@@ -177,7 +204,7 @@ object Test3 {
   val id = Field.id[Test3]
 }
 
-case class Test4(name: String, t1: Lazy[Test1], id: util.UUID = util.UUID.randomUUID()) extends Persistable
+case class Test4(name: String, t1: Lazy[Test1], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test4 {
   val name = Field[Test4, String]("name")
@@ -185,10 +212,14 @@ object Test4 {
   val id = Field.id[Test4]
 }
 
-trait TestBase extends Persistable {
+trait TestBase extends Identifiable {
   def name: String
 }
 
 case class Test5(name: String, age: Int, id: util.UUID = util.UUID.randomUUID()) extends TestBase
 
 case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID()) extends TestBase
+
+case class Test7(name: String, test: Test8, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+
+case class Test8(bytes: Array[Byte], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
