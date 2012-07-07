@@ -35,7 +35,20 @@ class ReflectiveDataObjectConverter(erasure: EnhancedClass) extends DataObjectCo
         case s => s
       }
       val value = db.get(name)
-      cv.name -> DataObjectConverter.fromDBValue(value, collection)
+      cv.name -> (DataObjectConverter.fromDBValue(value, collection) match {
+        case v if (cv.valueType.javaClass.isArray) => cv.valueType.javaClass.getComponentType.getName match {
+          case "byte" => v.asInstanceOf[Seq[Int]].map(i => i.toByte).toArray
+          case s => throw new RuntimeException("Unhandled value type for array: %s".format(s))
+//          val seq = v.asInstanceOf[Seq[Any]]
+//          val array = java.lang.reflect.Array.newInstance(cv.valueType.javaClass.getComponentType, seq.length)
+//          seq.zipWithIndex.foreach {
+//            case (entry, index) => java.lang.reflect.Array.set(array, index, entry)
+//          }
+//          array
+            // TODO: add other type support
+        }
+        case v => v
+      })
     }).toMap
     try {
       clazz.create[AnyRef](values)

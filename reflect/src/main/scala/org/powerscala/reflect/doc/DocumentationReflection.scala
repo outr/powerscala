@@ -94,7 +94,8 @@ object DocumentationReflection {
     case null => {
       val index = s.lastIndexOf('.')
       if (index == -1) {
-        ParanamerDocReflection // If nothing else registered, we use ParanamerReflection
+//        ParanamerDocReflection // If nothing else registered, we use ParanamerReflection
+        ASMDocReflection
       } else {
         findMatch(s.substring(0, index))
       }

@@ -3,6 +3,7 @@ package org.powerscala.reflect
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.WordSpec
 
+
 /**
  *
  *
@@ -126,8 +127,9 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
       "read case values from case class with Array" in {
         val clazz: EnhancedClass = classOf[TestCaseClass5]
         val values = clazz.caseValues
-        println(values.length)
-        values.foreach(println)
+        values.length should equal(2)
+        values.head.name should equal("name")
+        values.tail.head.name should equal("bytes")
       }
     }
   }
@@ -152,12 +154,3 @@ case class TestCaseClass3()
 case class TestCaseClass4(name: String, @transient age: Int)
 
 case class TestCaseClass5(name: String, bytes: Array[Byte])
-
-object Test {
-  def main(args: Array[String]): Unit = {
-    val clazz: EnhancedClass = classOf[TestCaseClass5]
-    val copyMethod = clazz.copyMethod.get
-    println("Args: " + copyMethod.args.length)
-    println(copyMethod.javaMethod)
-  }
-}

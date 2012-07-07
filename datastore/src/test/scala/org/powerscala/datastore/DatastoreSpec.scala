@@ -8,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.Field
 
-
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
@@ -166,10 +165,10 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     "validate persisting and querying Identifiables within Identifiables" in {
       val t8 = Test8(Array(1.toByte, 2.toByte, 3.toByte))
       val t7 = Test7("t7", t8)
-      classOf[Test8].caseValues.foreach(println)
       c7.persist(t7)
       val queried = c7.head
-      queried should equal(t7)
+      queried.test.bytes should equal(t7.test.bytes)
+      queried.test.id should equal(t7.test.id)
     }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {

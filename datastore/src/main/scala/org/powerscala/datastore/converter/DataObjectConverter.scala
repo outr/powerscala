@@ -7,7 +7,6 @@ import com.mongodb.{BasicDBList, DBObject}
 import org.powerscala.EnumEntry
 import org.bson.types.ObjectId
 
-import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import org.powerscala.datastore.{DatastoreCollection, Lazy}
 
@@ -62,6 +61,7 @@ object DataObjectConverter {
     case objectId: ObjectId => objectId
     case uuid: UUID => uuid
     case seq: Seq[_] => toDBList(seq, collection)
+    case array: Array[_] => toDBList(array, collection)
     case s: String => s
     case b: Boolean => b
     case b: Byte => b
@@ -96,10 +96,16 @@ object DataObjectConverter {
   }
 
   private def toDBList(seq: Seq[_], collection: DatastoreCollection[_]): java.util.List[_] = {
-    seq.map(v => toDBValue(v, collection)).asJava
+    val dbList = new BasicDBList()
+//    dbList.put("class", seq.getClass.getName)
+    seq.foreach {
+      case v => dbList.add(toDBValue(v, collection).asInstanceOf[AnyRef])
+    }
+    dbList
   }
 
   private def fromDBList(dbList: BasicDBList, collection: DatastoreCollection[_]): List[Any] = {
+//    println("DBList Type: %s".format(dbList.get("class")))
     val buffer = new ListBuffer[Any]
     for (v <- dbList) {
       buffer += fromDBValue(v, collection)
