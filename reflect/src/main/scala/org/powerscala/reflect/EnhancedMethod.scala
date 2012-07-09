@@ -102,9 +102,13 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
     this.args.foreach(arg => if (arg.hasDefault) map += arg.name -> arg.default[AnyRef](instance).get) // Assign defaults
     map ++= args
 
-    val arguments = new Array[Any](map.size)
-    map.foreach(arg => arguments(argIndex(arg._1)) = arg._2)
-    invoke[R](instance, arguments: _*)
+    try {
+      val arguments = new Array[Any](map.size)
+      map.foreach(arg => arguments(argIndex(arg._1)) = arg._2)
+      invoke[R](instance, arguments: _*)
+    } catch {
+      case exc => throw new RuntimeException("Unable to invoke %s with args %s".format(this, args), exc)
+    }
   }
 
   private[reflect] def argsMatch(args: Seq[EnhancedClass]) = {

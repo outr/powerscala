@@ -4,10 +4,8 @@ import org.powerscala.datastore._
 import org.powerscala.datastore.converter.DataObjectConverter
 import com.mongodb.BasicDBObject
 
-import query.{SortDirection, Operator, DatastoreQuery}
+import query.{Filter, SortDirection, Operator, DatastoreQuery}
 import scala.collection.JavaConversions._
-import java.util
-import scala.Some
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -26,26 +24,27 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     collection.findAndRemove(new BasicDBObject("_id", ref.id))
   }
 
-  def byId(id: util.UUID) = DataObjectConverter.fromDBValue(collection.findOne(new BasicDBObject("_id", id)), this) match {
-    case null => None
-    case value => Some(value.asInstanceOf[T])
+  private def filter2Name(filter: Filter[_]): String = filter.operator match {
+    case Operator.subfilter => "%s.%s".format(filter.field.name, filter2Name(filter.value.asInstanceOf[Filter[_]]))
+    case _ => filter.field.name
+  }
+
+  private def filter2DBValue(filter: Filter[_]): Any = filter.operator match {
+      case Operator.< => new BasicDBObject("$lt", DataObjectConverter.toDBValue(filter.value, this))
+      case Operator.<= => new BasicDBObject("$lte", DataObjectConverter.toDBValue(filter.value, this))
+      case Operator.> => new BasicDBObject("$gt", DataObjectConverter.toDBValue(filter.value, this))
+      case Operator.>= => new BasicDBObject("$gte", DataObjectConverter.toDBValue(filter.value, this))
+      case Operator.equal => DataObjectConverter.toDBValue(filter.value, this)
+      case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(filter.value, this))
+      case Operator.regex => new BasicDBObject("$regex", filter.value)
+      case Operator.subfilter => filter2DBValue(filter.value.asInstanceOf[Filter[_]])
   }
 
   def executeQuery(query: DatastoreQuery[T]) = {
     val dbo = new BasicDBObject()
     val filters = query._filters.reverse
     filters.foreach {
-      case filter => {
-        val value = filter.operator match {
-          case Operator.< => new BasicDBObject("$lt", DataObjectConverter.toDBValue(filter.value, this))
-          case Operator.<= => new BasicDBObject("$lte", DataObjectConverter.toDBValue(filter.value, this))
-          case Operator.> => new BasicDBObject("$gt", DataObjectConverter.toDBValue(filter.value, this))
-          case Operator.>= => new BasicDBObject("$gte", DataObjectConverter.toDBValue(filter.value, this))
-          case Operator.equal => DataObjectConverter.toDBValue(filter.value, this)
-          case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(filter.value, this))
-        }
-        dbo.put(filter.field.name, value)
-      }
+      case filter => dbo.put(filter2Name(filter), filter2DBValue(filter))
     }
     var cursor = collection.find(dbo)
     if (query._skip > 0) {
@@ -68,7 +67,14 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
       }
       cursor = cursor.sort(sdbo)
     }
-    asScalaIterator(cursor).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
+    asScalaIterator(cursor).map(entry => {
+      val v = DataObjectConverter.fromDBValue(entry, this)
+      v match {
+        case identifiable: Identifiable => ids += identifiable.id
+        case _ =>
+      }
+      v
+    }).asInstanceOf[Iterator[T]]
   }
 
   def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]

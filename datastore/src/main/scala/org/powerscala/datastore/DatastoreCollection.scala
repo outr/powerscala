@@ -15,9 +15,18 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
   def session: DatastoreSession
   def parent = session
 
-  private var ids = Set.empty[util.UUID]
+  protected var ids = Set.empty[util.UUID]
 
-  def isPersisted(id: util.UUID): Boolean = ids.contains(id)
+  def isPersisted(id: util.UUID): Boolean = ids.contains(id) match {
+    case true => true
+    case false => byId(id) match {
+      case Some(v) => {
+        ids += id
+        true
+      }
+      case None => false
+    }
+  }
 
   def isPersisted(ref: T): Boolean = isPersisted(ref.id)
 
@@ -44,7 +53,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     }
   }
 
-  def byId(id: util.UUID): Option[T]
+  final def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
 
   def byExample(example: T) = {
     val ec = EnhancedClass(example.getClass)
@@ -61,7 +70,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     var q = this.query
     ec.caseValues.foreach(cv => if (cv.name != "id" && defaults(cv.name) != cv[Any](example)) {
       val value = cv[Any](example)
-      val field = Field[T, Any](cv.name)
+      val field = Field.basic[T, Any](cv.name)
       q = q.filter(field equal value)
     })
     q
@@ -78,8 +87,4 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
   protected def deleteInternal(ref: T): Unit
 
   override def toString() = "%s[%s](%s)".format(getClass.getSimpleName, manifest.erasure.getSimpleName, name)
-}
-
-object DatastoreCollection {
-  def assignId(collection: DatastoreCollection[_], id: util.UUID) = collection.ids += id
 }

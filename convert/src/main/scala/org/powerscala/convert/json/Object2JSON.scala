@@ -1,8 +1,7 @@
 package org.powerscala.convert.json
 
 import org.powerscala.convert.{CaseClassValue, CaseClass, ConversionBus}
-import org.powerscala.bus.{Routing, Bus, Node}
-import org.powerscala.{EnumEntry, Priority}
+import org.powerscala.EnumEntry
 import annotation.tailrec
 
 /**
@@ -53,16 +52,18 @@ class CaseClass2JSON(caseClass: CaseClass) {
         case l: Long => write(l.toString)
         case f: Float => write(f.toString)
         case d: Double => write(d.toString)
-        case s: String => write("\"%s\"".format(s))
+        case s: String => write(quotedString(s))
         case value => {
           println("Writing to string for: %s / %s".format(value.asInstanceOf[AnyRef].getClass.getName, value))
-          write("\"%s\"".format(value.toString))
+          write(quotedString(value.toString))
         }
       }
       writeLine(",")
       writeAttributes(values.tail)
     }
   }
+
+  private def quotedString(s: String) = "\"%s\"".format(s.replace("\"", "\\\""))
 
   private def tabs() = {
     for (i <- 0 until depth) {

@@ -66,8 +66,8 @@ object DatastoreScalabilityTest {
 case class TestObject(name: String, data: String = TestObject.generateData, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object TestObject {
-  val name = Field[TestObject, String]("name")
-  val data = Field[TestObject, String]("data")
+  val name = Field.string[TestObject]("name")
+  val data = Field.string[TestObject]("data")
   val id = Field.id[TestObject]
 
   def generateData = "".padTo(1024 * 512, random.toString).mkString("-")

@@ -163,12 +163,17 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       c1.isPersisted(t) should equal(false)
     }
     "validate persisting and querying Identifiables within Identifiables" in {
-      val t8 = Test8(Array(1.toByte, 2.toByte, 3.toByte))
+      val t8 = Test8("test8", Array(1.toByte, 2.toByte, 3.toByte))
       val t7 = Test7("t7", t8)
       c7.persist(t7)
       val queried = c7.head
       queried.test.bytes should equal(t7.test.bytes)
       queried.test.id should equal(t7.test.id)
+    }
+    "properly sub-query" in {
+      val results = c7.query.filter(Test7.test(Test8.name equal("test8"))).toList
+      results.length should equal(1)
+//      val results = c7.query.filter(Test7.test.name equal("test8"))
     }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
@@ -184,30 +189,30 @@ trait Test {
 case class Test1(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable with Test
 
 object Test1 {
-  val name = Field[Test1, String]("name")
+  val name = Field.string[Test1]("name")
   val id = Field.id[Test1]
 }
 
 case class Test2(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test2 {
-  val name = Field[Test2, String]("name")
+  val name = Field.string[Test2]("name")
   val id = Field.id[Test2]
 }
 
 case class Test3(name: String, precision: Precision, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test3 {
-  val name = Field[Test3, String]("name")
-  val precision = Field[Test3, Precision]("precision")
+  val name = Field.string[Test3]("name")
+  val precision = Field.basic[Test3, Precision]("precision")
   val id = Field.id[Test3]
 }
 
 case class Test4(name: String, t1: Lazy[Test1], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
 object Test4 {
-  val name = Field[Test4, String]("name")
-  val t1 = Field[Test4, Test1]("t1")
+  val name = Field.string[Test4]("name")
+  val t1 = Field.embedded[Test4, Test1]("t1")
   val id = Field.id[Test4]
 }
 
@@ -221,4 +226,16 @@ case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID
 
 case class Test7(name: String, test: Test8, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-case class Test8(bytes: Array[Byte], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+object Test7 {
+  val name = Field.string[Test7]("name")
+  val test = Field.embedded[Test7, Test8]("test")
+  val id = Field.id[Test7]
+}
+
+case class Test8(name: String, bytes: Array[Byte], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+
+object Test8 {
+  val name = Field.string[Test8]("name")
+//  val bytes = Field[Test8, Array[Byte]]("bytes")
+  val id = Field.id[Test8]
+}
