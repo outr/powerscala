@@ -105,12 +105,24 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       c1.size should equal(5)
       c2.size should equal(5)
     }
-    "property differentiate between class types via query" in {
+    "properly differentiate between class types via query" in {
       val results1 = c1.query.filter(Test1.name equal "Three").toList
       val results2 = c2.query.filter(Test2.name equal "Three").toList
       results1.size should equal(1)
       results2.size should equal(1)
     }
+    "properly utilize 'in' to query two items" in {
+      val results = c2.query.filter(Test2.name.in("Two", "Three")).sort(Test2.name.ascending).toList
+      results.size should equal(2)
+      results.head.name should equal("Three")
+      results.tail.head.name should equal("Two")
+    }
+//    "properly utilize 'or' to query two items" in {
+//      val results = c2.query.filter(Test2.or(Test2.name equal("One"), Test2.name equal("Five"))).sort(Test2.name.ascending).toList
+//      results.size should equal(2)
+//      results.head.name should equal("Three")
+//      results.tail.head.name should equal("Two")
+//    }
     "persist a Test3 with an EnumEntry" in {
       c3.persist(Test3("first", Precision.Milliseconds))
     }

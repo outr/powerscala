@@ -2,7 +2,7 @@ package org.powerscala.datastore.impl.mongodb
 
 import org.powerscala.datastore._
 import org.powerscala.datastore.converter.DataObjectConverter
-import com.mongodb.BasicDBObject
+import com.mongodb.{BasicDBList, BasicDBObject}
 
 import query.{Filter, SortDirection, Operator, DatastoreQuery}
 import scala.collection.JavaConversions._
@@ -37,6 +37,13 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
       case Operator.equal => DataObjectConverter.toDBValue(filter.value, this)
       case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(filter.value, this))
       case Operator.regex => new BasicDBObject("$regex", filter.value)
+      case Operator.in => {
+        val list = new BasicDBList()
+        filter.value.asInstanceOf[Seq[_]].foreach {
+          case v => list.add(DataObjectConverter.toDBValue(v, this).asInstanceOf[AnyRef])
+        }
+        new BasicDBObject("$in", list)
+      }
       case Operator.subfilter => filter2DBValue(filter.value.asInstanceOf[Filter[_]])
   }
 

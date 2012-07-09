@@ -2,13 +2,14 @@ package org.powerscala.datastore.converter
 
 import collection.mutable.ListBuffer
 
-import java.util.{Calendar, UUID}
+import java.util.Calendar
 import com.mongodb.{BasicDBList, DBObject}
 import org.powerscala.EnumEntry
 import org.bson.types.ObjectId
 
 import scala.collection.JavaConversions._
 import org.powerscala.datastore.{DatastoreCollection, Lazy}
+import java.util
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -59,7 +60,7 @@ object DataObjectConverter {
 
   def toDBValue(obj: Any, collection: DatastoreCollection[_]): Any = obj match {
     case objectId: ObjectId => objectId
-    case uuid: UUID => uuid
+    case uuid: util.UUID => uuid
     case seq: Seq[_] => toDBList(seq, collection)
     case array: Array[_] => toDBList(array, collection)
     case s: String => s
@@ -76,7 +77,7 @@ object DataObjectConverter {
 
   def fromDBValue(obj: Any, collection: DatastoreCollection[_]) = obj match {
     case objectId: ObjectId => objectId
-    case uuid: UUID => uuid
+    case uuid: util.UUID => uuid
     case dbList: BasicDBList => fromDBList(dbList, collection)
     case s: String => s
     case b: Boolean => b

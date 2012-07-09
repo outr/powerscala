@@ -35,6 +35,8 @@ class BaseField[T <: Identifiable, F](val name: String) extends Field[T, F] {
 
   def nequal(value: F) = Filter(this, Operator.nequal, value)
 
+  def in(values: F*) = Filter(this, Operator.in, values)
+
   def ascending = Sort(this, SortDirection.Ascending)
 
   def descending = Sort(this, SortDirection.Descending)
