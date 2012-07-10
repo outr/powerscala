@@ -6,6 +6,7 @@ import org.powerscala.event.Listenable
 import org.powerscala.reflect.EnhancedClass
 import query.{Field, DatastoreQuery}
 import org.powerscala.hierarchy.Child
+import util.UUID
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -78,7 +79,9 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def query = DatastoreQuery(collection = this)
 
-  protected[datastore] def executeQuery(query: DatastoreQuery[T]): Iterator[T]
+  def executeQuery(query: DatastoreQuery[T]): Iterator[T]
+
+  def executeQueryIds(query: DatastoreQuery[T]): Iterator[UUID]
 
   protected def persistNew(ref: T): Unit
 

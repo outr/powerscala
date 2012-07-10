@@ -60,6 +60,10 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       val o5 = Test1("Five")
       c1.persist(o1, o2, o3, o4, o5)
     }
+    "query just the ids back out" in {
+      val results = c1.query.ids.toList
+      results.size should equal(5)
+    }
     "query 'Three' back out" in {
       val query = c1.query.filter(Test1.name equal "Three")
       val results = query.toList

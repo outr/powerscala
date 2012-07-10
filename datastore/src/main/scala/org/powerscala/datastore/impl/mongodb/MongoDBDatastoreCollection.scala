@@ -8,6 +8,7 @@ import query._
 import query.DatastoreQuery
 import scala.collection.JavaConversions._
 import java.util.regex.Pattern
+import java.util.UUID
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -66,7 +67,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     case _ => throw new RuntimeException("Unknown filter type: %s".format(filter.getClass.getName))
   }
 
-  def executeQuery(query: DatastoreQuery[T]) = {
+  private def queryCursor(query: DatastoreQuery[T]) = {
     val qb = new QueryBuilder
 
     // Add filters
@@ -95,6 +96,11 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
       }
       cursor = cursor.sort(sdbo)
     }
+    cursor
+  }
+
+  def executeQuery(query: DatastoreQuery[T]) = {
+    val cursor = queryCursor(query)
     asScalaIterator(cursor).map(entry => {
       val v = DataObjectConverter.fromDBValue(entry, this)
       v match {
@@ -103,6 +109,11 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
       }
       v
     }).asInstanceOf[Iterator[T]]
+  }
+
+  def executeQueryIds(query: DatastoreQuery[T]) = {
+    val cursor = queryCursor(query)
+    asScalaIterator(cursor).map(entry => entry.get("_id").asInstanceOf[UUID])
   }
 
   def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
