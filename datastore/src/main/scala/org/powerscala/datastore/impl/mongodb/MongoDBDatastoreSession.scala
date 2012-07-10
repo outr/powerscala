@@ -14,7 +14,7 @@ class MongoDBDatastoreSession(val datastore: MongoDBDatastore) extends Datastore
     new MongoDBDatastoreCollection[T](this, name)
   }
 
-  def dropDatabase() = database.dropDatabase()
+  def delete() = database.dropDatabase()
 
   def disconnect() = {
     connection.close()

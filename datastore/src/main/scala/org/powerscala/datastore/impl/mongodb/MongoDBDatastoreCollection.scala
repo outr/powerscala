@@ -25,6 +25,8 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     collection.findAndRemove(new BasicDBObject("_id", ref.id))
   }
 
+  override def size = collection.count().toInt
+
   private def filter2Name(filter: Filter[_]): String = filter match {
     case ff: FieldFilter[_] => ff.operator match {
       case Operator.subfilter => "%s.%s".format(ff.field.name, filter2Name(ff.value.asInstanceOf[Filter[_]]))
