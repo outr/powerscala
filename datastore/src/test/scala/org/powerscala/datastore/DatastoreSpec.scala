@@ -17,10 +17,10 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
   "Datastore" when {
     "using mongodb" should {
       val (session, created) = datastore.createOrGet()
-      datastore.session.dropDatabase()
+      datastore.session.delete()
       test(session) {
         if (created) {
-          datastore.session.dropDatabase()
+          datastore.session.delete()
           datastore.disconnect()
         }
       }
@@ -32,7 +32,8 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     val c2 = session[Test2]
     val c3 = session[Test3]
     val c4 = session[Test4]
-    val c5 = session[TestBase]
+    val cb = session[TestBase]
+    val c5 = session[Test5]
     val c7 = session[Test7]
     val t1 = Test1("test1")
     "have no objects in the database" in {
@@ -140,12 +141,12 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       results.head.name should equal("Three")
       results.tail.head.name should equal("Two")
     }
-//    "properly utilize 'or' to query two items" in {
-//      val results = c2.query.filter(Test2.or(Test2.name equal("One"), Test2.name equal("Five"))).sort(Test2.name.ascending).toList
-//      results.size should equal(2)
-//      results.head.name should equal("Three")
-//      results.tail.head.name should equal("Two")
-//    }
+    "properly utilize 'or' to query two items" in {
+      val results = c2.query.filter(Test2.or(Test2.name equal("One"), Test2.name equal("Five"))).sort(Test2.name.ascending).toList
+      results.size should equal(2)
+      results.head.name should equal("Five")
+      results.tail.head.name should equal("One")
+    }
     "persist a Test3 with an EnumEntry" in {
       c3.persist(Test3("first", Precision.Milliseconds))
     }
@@ -163,16 +164,39 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t4Again.name should equal("fourth")
       t4Again.t1.name should equal("lazy one")
     }
+    "insert a few Test5 entries for 'and' query" in {
+      c5.persist(Test5("One", 1), Test5("Two", 2), Test5("Three", 3), Test5("Two", 3))
+    }
+    "properly utilize 'and' to query one item" in {
+      val results = c5.query.filter(Test5.and(Test5.name equal("Two"), Test5.age equal(2))).toList
+      results.size should equal(1)
+      val t = results.head
+      t.name should equal("Two")
+      t.age should equal(2)
+    }
+    "properly query with regular expression" in {
+      val results = c5.query.filter(Test5.name regex("T.*")).sort(Test5.name.ascending).sort(Test5.age.ascending).toList
+      results.size should equal(3)
+      val r1 = results.head
+      val r2 = results.tail.head
+      val r3 = results.tail.tail.head
+      r1.name should equal("Three")
+      r1.age should equal(3)
+      r2.name should equal("Two")
+      r2.age should equal(2)
+      r3.name should equal("Two")
+      r3.age should equal(3)
+    }
     "insert Test5 in TestBase collection" in {
       val t5 = Test5("test5", 5)
-      c5.persist(t5)
+      cb.persist(t5)
     }
     "insert Test6 in TestBase collection" in {
       val t6 = Test6("test6", "six")
-      c5.persist(t6)
+      cb.persist(t6)
     }
     "query items out of TestBase collection" in {
-      val results = c5.toList
+      val results = cb.toList
       results.length should equal(2)
       val t5 = results.collect {
         case t: Test5 => t
@@ -208,7 +232,6 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     "properly sub-query" in {
       val results = c7.query.filter(Test7.test(Test8.name equal("test8"))).toList
       results.length should equal(1)
-//      val results = c7.query.filter(Test7.test.name equal("test8"))
     }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
@@ -256,6 +279,12 @@ trait TestBase extends Identifiable {
 }
 
 case class Test5(name: String, age: Int, id: util.UUID = util.UUID.randomUUID()) extends TestBase
+
+object Test5 extends Queryable[Test5] {
+  val name = Field.string[Test5]("name")
+  val age = Field.int[Test5]("age")
+  val id = Field.id[Test5]
+}
 
 case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID()) extends TestBase
 

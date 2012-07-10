@@ -2,11 +2,12 @@ package org.powerscala.datastore.impl.mongodb
 
 import org.powerscala.datastore._
 import org.powerscala.datastore.converter.DataObjectConverter
-import com.mongodb.{BasicDBList, BasicDBObject}
+import com.mongodb.{QueryBuilder, BasicDBList, BasicDBObject}
 
 import query._
 import query.DatastoreQuery
 import scala.collection.JavaConversions._
+import java.util.regex.Pattern
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -27,52 +28,52 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
 
   override def size = collection.count().toInt
 
-  private def filter2Name(filter: Filter[_]): String = filter match {
-    case ff: FieldFilter[_] => ff.operator match {
-      case Operator.subfilter => "%s.%s".format(ff.field.name, filter2Name(ff.value.asInstanceOf[Filter[_]]))
-      case _ => ff.field.name
-    }
-    case of: OrFilter[_] => "$or"   // TODO: fix 'or' and 'and' support
-    case af: AndFilter[_] => "$and"
-    case _ => throw new RuntimeException("Unknown filter type: %s".format(filter.getClass.getName))
-  }
-
-  private def filter2DBValue(filter: Filter[_]): Any = filter match {
+  private def addFilter(qb: QueryBuilder, filter: Filter[_], prepend: String = ""): Unit = filter match {
     case ff: FieldFilter[_] => {
+      val name = prepend + ff.field.name
+      lazy val value = DataObjectConverter.toDBValue(ff.value, this)
       ff.operator match {
-        case Operator.< => new BasicDBObject("$lt", DataObjectConverter.toDBValue(ff.value, this))
-        case Operator.<= => new BasicDBObject("$lte", DataObjectConverter.toDBValue(ff.value, this))
-        case Operator.> => new BasicDBObject("$gt", DataObjectConverter.toDBValue(ff.value, this))
-        case Operator.>= => new BasicDBObject("$gte", DataObjectConverter.toDBValue(ff.value, this))
-        case Operator.equal => DataObjectConverter.toDBValue(ff.value, this)
-        case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(ff.value, this))
-        case Operator.regex => new BasicDBObject("$regex", ff.value)
+        case Operator.equal => qb.put(name).is(value)
+        case Operator.nequal => qb.put(name).notEquals(value)
+        case Operator.< => qb.put(name).lessThan(value)
+        case Operator.> => qb.put(name).greaterThan(value)
+        case Operator.<= => qb.put(name).lessThanEquals(value)
+        case Operator.>= => qb.put(name).greaterThanEquals(value)
+        case Operator.regex => qb.put(name).regex(Pattern.compile(value.toString))
+        case Operator.subfilter => addFilter(qb, ff.value.asInstanceOf[Filter[_]], "%s.".format(name))
         case Operator.in => {
           val list = new BasicDBList()
           ff.value.asInstanceOf[Seq[_]].foreach {
             case v => list.add(DataObjectConverter.toDBValue(v, this).asInstanceOf[AnyRef])
           }
-          new BasicDBObject("$in", list)
+          qb.put(name).in(list)
         }
-        case Operator.subfilter => filter2DBValue(ff.value.asInstanceOf[Filter[_]])
+        case _ => throw new RuntimeException("Unsupported operator: %s for FieldFilter!".format(ff.operator))
       }
     }
     case sf: SubFilter[_] => {
-      val list = new BasicDBList()
-      sf.filters.foreach {
-        case subFilter => list.add(filter2DBValue(subFilter).asInstanceOf[AnyRef])
+      val filters = sf.filters.map(subfilter => {
+        val sqb = new QueryBuilder
+        addFilter(sqb, subfilter)
+        sqb.get()
+      })
+      sf.operator match {
+        case Operator.or => qb.or(filters: _*)
+        case Operator.and => qb.and(filters: _*)
+        case _ => throw new RuntimeException("Unsupported operator: %s for SubFilter!".format(sf.operator))
       }
-      list
     }
     case _ => throw new RuntimeException("Unknown filter type: %s".format(filter.getClass.getName))
   }
 
   def executeQuery(query: DatastoreQuery[T]) = {
-    val dbo = new BasicDBObject()
+    val qb = new QueryBuilder
+
+    // Add filters
     val filters = query._filters.reverse
-    filters.foreach {
-      case filter => dbo.put(filter2Name(filter), filter2DBValue(filter))
-    }
+    filters.foreach(f => addFilter(qb, f))
+
+    val dbo = qb.get()
     var cursor = collection.find(dbo)
     if (query._skip > 0) {
       cursor = cursor.skip(query._skip)
