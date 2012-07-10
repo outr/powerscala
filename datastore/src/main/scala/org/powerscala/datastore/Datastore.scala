@@ -1,12 +1,15 @@
 package org.powerscala.datastore
 
 import org.powerscala.event.Listenable
+import org.powerscala.hierarchy.Child
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Datastore extends Listenable {
+trait Datastore extends Listenable with Child {
   private val sessions = new ThreadLocal[DatastoreSession]
+
+  def parent = null
 
   /**
    * @return the existing session for this thread or null if one does not exist.

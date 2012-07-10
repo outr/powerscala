@@ -6,15 +6,16 @@ import java.util
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
-import query.Field
+import query.{Queryable, Field}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class DatastoreSpec extends WordSpec with ShouldMatchers {
+  lazy val datastore = new MongoDBDatastore("localhost", 27017, "DatastoreSpec")
+
   "Datastore" when {
     "using mongodb" should {
-      val datastore = new MongoDBDatastore("localhost", 27017, "DatastoreSpec")
       val (session, created) = datastore.createOrGet()
       datastore.session.dropDatabase()
       test(session) {
@@ -33,7 +34,6 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     val c4 = session[Test4]
     val c5 = session[TestBase]
     val c7 = session[Test7]
-    println("Within the session...")
     val t1 = Test1("test1")
     "have no objects in the database" in {
       println("Checking db size...")
@@ -104,6 +104,29 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     "properly differentiate between class types via all" in {
       c1.size should equal(5)
       c2.size should equal(5)
+    }
+    "validate events occurring at the Datastore level" in {
+      c1.parent should equal(session)
+      session.parent should equal(datastore)
+      var collectionEvents = 0
+      var sessionEvents = 0
+      var datastoreEvents = 0
+      val collectionListener = c1.listeners.synchronous {
+        case event => collectionEvents += 1
+      }
+      val sessionListener = session.listeners.filter.child.synchronous {
+        case event => sessionEvents += 1
+      }
+      val datastoreListener = datastore.listeners.filter.descendant().synchronous {
+        case event => datastoreEvents += 1
+      }
+      c1.persist(Test1("Testing listener"))
+      collectionEvents should equal(1)
+      sessionEvents should equal(1)
+      datastoreEvents should equal(1)
+      c1.listeners -= collectionListener
+      session.listeners -= sessionListener
+      datastore.listeners -= datastoreListener
     }
     "properly differentiate between class types via query" in {
       val results1 = c1.query.filter(Test1.name equal "Three").toList
@@ -200,21 +223,21 @@ trait Test {
 
 case class Test1(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable with Test
 
-object Test1 {
+object Test1 extends Queryable[Test1] {
   val name = Field.string[Test1]("name")
   val id = Field.id[Test1]
 }
 
 case class Test2(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-object Test2 {
+object Test2 extends Queryable[Test2] {
   val name = Field.string[Test2]("name")
   val id = Field.id[Test2]
 }
 
 case class Test3(name: String, precision: Precision, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-object Test3 {
+object Test3 extends Queryable[Test3] {
   val name = Field.string[Test3]("name")
   val precision = Field.basic[Test3, Precision]("precision")
   val id = Field.id[Test3]
@@ -222,7 +245,7 @@ object Test3 {
 
 case class Test4(name: String, t1: Lazy[Test1], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-object Test4 {
+object Test4 extends Queryable[Test3] {
   val name = Field.string[Test4]("name")
   val t1 = Field.embedded[Test4, Test1]("t1")
   val id = Field.id[Test4]
@@ -238,7 +261,7 @@ case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID
 
 case class Test7(name: String, test: Test8, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-object Test7 {
+object Test7 extends Queryable[Test7] {
   val name = Field.string[Test7]("name")
   val test = Field.embedded[Test7, Test8]("test")
   val id = Field.id[Test7]
@@ -246,7 +269,7 @@ object Test7 {
 
 case class Test8(name: String, bytes: Array[Byte], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
 
-object Test8 {
+object Test8 extends Queryable[Test8] {
   val name = Field.string[Test8]("name")
 //  val bytes = Field[Test8, Array[Byte]]("bytes")
   val id = Field.id[Test8]

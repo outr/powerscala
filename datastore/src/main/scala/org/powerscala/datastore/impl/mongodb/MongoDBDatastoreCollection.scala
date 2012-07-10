@@ -4,7 +4,8 @@ import org.powerscala.datastore._
 import org.powerscala.datastore.converter.DataObjectConverter
 import com.mongodb.{BasicDBList, BasicDBObject}
 
-import query.{Filter, SortDirection, Operator, DatastoreQuery}
+import query._
+import query.DatastoreQuery
 import scala.collection.JavaConversions._
 
 /**
@@ -24,27 +25,44 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     collection.findAndRemove(new BasicDBObject("_id", ref.id))
   }
 
-  private def filter2Name(filter: Filter[_]): String = filter.operator match {
-    case Operator.subfilter => "%s.%s".format(filter.field.name, filter2Name(filter.value.asInstanceOf[Filter[_]]))
-    case _ => filter.field.name
+  private def filter2Name(filter: Filter[_]): String = filter match {
+    case ff: FieldFilter[_] => ff.operator match {
+      case Operator.subfilter => "%s.%s".format(ff.field.name, filter2Name(ff.value.asInstanceOf[Filter[_]]))
+      case _ => ff.field.name
+    }
+    case of: OrFilter[_] => "$or"   // TODO: fix 'or' and 'and' support
+    case af: AndFilter[_] => "$and"
+    case _ => throw new RuntimeException("Unknown filter type: %s".format(filter.getClass.getName))
   }
 
-  private def filter2DBValue(filter: Filter[_]): Any = filter.operator match {
-      case Operator.< => new BasicDBObject("$lt", DataObjectConverter.toDBValue(filter.value, this))
-      case Operator.<= => new BasicDBObject("$lte", DataObjectConverter.toDBValue(filter.value, this))
-      case Operator.> => new BasicDBObject("$gt", DataObjectConverter.toDBValue(filter.value, this))
-      case Operator.>= => new BasicDBObject("$gte", DataObjectConverter.toDBValue(filter.value, this))
-      case Operator.equal => DataObjectConverter.toDBValue(filter.value, this)
-      case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(filter.value, this))
-      case Operator.regex => new BasicDBObject("$regex", filter.value)
-      case Operator.in => {
-        val list = new BasicDBList()
-        filter.value.asInstanceOf[Seq[_]].foreach {
-          case v => list.add(DataObjectConverter.toDBValue(v, this).asInstanceOf[AnyRef])
+  private def filter2DBValue(filter: Filter[_]): Any = filter match {
+    case ff: FieldFilter[_] => {
+      ff.operator match {
+        case Operator.< => new BasicDBObject("$lt", DataObjectConverter.toDBValue(ff.value, this))
+        case Operator.<= => new BasicDBObject("$lte", DataObjectConverter.toDBValue(ff.value, this))
+        case Operator.> => new BasicDBObject("$gt", DataObjectConverter.toDBValue(ff.value, this))
+        case Operator.>= => new BasicDBObject("$gte", DataObjectConverter.toDBValue(ff.value, this))
+        case Operator.equal => DataObjectConverter.toDBValue(ff.value, this)
+        case Operator.nequal => new BasicDBObject("$ne", DataObjectConverter.toDBValue(ff.value, this))
+        case Operator.regex => new BasicDBObject("$regex", ff.value)
+        case Operator.in => {
+          val list = new BasicDBList()
+          ff.value.asInstanceOf[Seq[_]].foreach {
+            case v => list.add(DataObjectConverter.toDBValue(v, this).asInstanceOf[AnyRef])
+          }
+          new BasicDBObject("$in", list)
         }
-        new BasicDBObject("$in", list)
+        case Operator.subfilter => filter2DBValue(ff.value.asInstanceOf[Filter[_]])
       }
-      case Operator.subfilter => filter2DBValue(filter.value.asInstanceOf[Filter[_]])
+    }
+    case sf: SubFilter[_] => {
+      val list = new BasicDBList()
+      sf.filters.foreach {
+        case subFilter => list.add(filter2DBValue(subFilter).asInstanceOf[AnyRef])
+      }
+      list
+    }
+    case _ => throw new RuntimeException("Unknown filter type: %s".format(filter.getClass.getName))
   }
 
   def executeQuery(query: DatastoreQuery[T]) = {

@@ -12,7 +12,6 @@ object Operator extends Enumerated[Operator] {
   val regex = new Operator
   val subfilter = new Operator
   val in = new Operator
-  val or = new Operator
   val equal = new Operator
   val nequal = new Operator
 }
