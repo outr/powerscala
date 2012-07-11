@@ -50,7 +50,7 @@ class ASMDocReflection(clazz: Class[_]) extends DocumentationReflection {
       documentation += m -> md
       md
     } catch {
-      case t => throw new RuntimeException("Unable to generate documentation for %s".format(m), t)
+      case t: Throwable => throw new RuntimeException("Unable to generate documentation for %s".format(m), t)
     }
   }
 }
