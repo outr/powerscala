@@ -107,7 +107,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
       map.foreach(arg => arguments(argIndex(arg._1)) = arg._2)
       invoke[R](instance, arguments: _*)
     } catch {
-      case exc => throw new RuntimeException("Unable to invoke %s with args %s".format(this, args), exc)
+      case t: Throwable => throw new IllegalArgumentException("Unable to invoke %s with args %s".format(this, args), t)
     }
   }
 
