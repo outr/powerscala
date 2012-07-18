@@ -13,6 +13,8 @@ object Field {
 
   def id[T <: Identifiable] = new BaseField[T, util.UUID]("_id")
 
+  def uuid[T <: Identifiable](name: String) = new BaseField[T, util.UUID](name)
+
   def boolean[T <: Identifiable](name: String) = new BaseField[T, Boolean](name)
 
   def byte[T <: Identifiable](name: String) = new NumericField[T, Byte](name)

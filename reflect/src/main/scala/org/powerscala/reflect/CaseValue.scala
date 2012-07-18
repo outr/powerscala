@@ -17,7 +17,7 @@ case class CaseValue(name: String, valueType: EnhancedClass, clazz: EnhancedClas
 
   def isTransient = Modifier.isTransient(field.getModifiers)
 
-  def apply[T](instance: AnyRef) = getter.get.invoke[T](instance)
+  def apply[T](instance: AnyRef) = getter.getOrElse(throw new RuntimeException("Unable to getter for %s.%s".format(clazz, name))).invoke[T](instance)
 
   def update(instance: AnyRef, value: Any) = setter.get.invoke[Any](instance, value)
 }

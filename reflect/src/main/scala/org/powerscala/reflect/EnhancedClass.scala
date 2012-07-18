@@ -175,6 +175,20 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   }
 
   /**
+   * Returns true if <code>v</code> is castable to this class type.
+   */
+  def isCastable(v: Any) = v match {
+    case null => !javaClass.isPrimitive
+    case b: Boolean => javaClass == classOf[Boolean]
+    case b: Byte => javaClass == classOf[Byte]
+    case i: Int => javaClass == classOf[Int]
+    case l: Long => javaClass == classOf[Long]
+    case f: Float => javaClass == classOf[Float]
+    case d: Double => javaClass == classOf[Double]
+    case _ => javaClass.isAssignableFrom(v.asInstanceOf[AnyRef].getClass)
+  }
+
+  /**
    * Returns the default value by type. For primitives this will return zero or false and for references this will
    * return null.
    */

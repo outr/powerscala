@@ -14,7 +14,7 @@ object CaseClassConverter extends Node {
   def receive(bus: Bus, message: Any) = {
     val conversion = bus.asInstanceOf[ConversionBus]
     message match {
-      case ref: AnyRef if (ref.getClass.isCase) => {
+      case ref: AnyRef if (ref.getClass.isCase && !ref.isInstanceOf[Seq[_]]) => {
         val caseClass = CaseClassDisassembler.disassemble(ref)
         val updated = new CaseClass(caseClass.clazz, caseClass.values.map(ccv => new CaseClassValue(ccv.caseValue, conversion.convert(ccv.value))))
         Routing.Response(updated)

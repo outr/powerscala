@@ -42,6 +42,22 @@ trait Element extends Child {
       case p => p.hierarchy.after(Element.this)
     }
 
+    def iterator[E <: Element](implicit manifest: Manifest[E]) = {
+      new Iterator[E] {
+        private var _next = forward[E]()(manifest)
+
+        def hasNext = _next != null
+
+        def next() = _next match {
+          case null => null.asInstanceOf[E]
+          case n => {
+            _next = n.hierarchy.forward[E]()(manifest)
+            n
+          }
+        }
+      }
+    }
+
     /**
      * Moves backward until it finds an Element matching the condition or null if it reaches the beginning.
      */

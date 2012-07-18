@@ -64,6 +64,9 @@ object ASMDocReflection extends DocMapper {
     val url = declaringType.getInternalName + ".class"
     val classNode = new ClassNode()
     val input = classLoader.getResourceAsStream(url)
+    if (input == null) {
+      throw new NullPointerException("Unable to look up class %s by url %s".format(declaringType.getClassName, url))
+    }
     try {
       val classReader = new ClassReader(input)
       classReader.accept(classNode, 0)

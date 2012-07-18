@@ -87,7 +87,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
     try {
       javaMethod.invoke(instance, args.map(a => a.asInstanceOf[AnyRef]): _*).asInstanceOf[R]
     } catch {
-      case exc => throw new RuntimeException("Error(%s) attempting to invoke %s on %s with arguments: %s".format(exc.getClass.getSimpleName, this, instance, args), exc)
+      case t: Throwable => throw new RuntimeException("Error(%s) attempting to invoke %s on %s with arguments: %s".format(t.getClass.getSimpleName, this, instance, args), t)
     }
   }
 
@@ -102,9 +102,23 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
     this.args.foreach(arg => if (arg.hasDefault) map += arg.name -> arg.default[AnyRef](instance).get) // Assign defaults
     map ++= args
 
+    val arguments = new Array[Any](map.size)
+    this.args.foreach {
+      case arg => {
+        val value = map.getOrElse(arg.name, throw new NullPointerException("No argument specified for %s".format(arg.name))).asInstanceOf[AnyRef]
+        if (!arg.`type`.isCastable(value)) {
+          throw new RuntimeException("Invalid class type %s (expected: %s) for %s.%s(%s) - %s".format(value.getClass, arg.`type`.javaClass, parent.simpleName, EnhancedMethod.this.name, arg.name, value))
+        }
+      }
+    }
+    map.foreach(arg => {
+      val index = argIndex(arg._1)
+      if (index == -1) {
+        throw new RuntimeException("Unable to find %s for method %s".format(arg._1, EnhancedMethod.this))
+      }
+      arguments(index) = arg._2
+    })
     try {
-      val arguments = new Array[Any](map.size)
-      map.foreach(arg => arguments(argIndex(arg._1)) = arg._2)
       invoke[R](instance, arguments: _*)
     } catch {
       case t: Throwable => throw new IllegalArgumentException("Unable to invoke %s with args %s".format(this, args), t)

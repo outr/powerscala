@@ -8,8 +8,10 @@ import annotation.tailrec
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 object Object2JSON extends ConversionBus {
-  def toJSON(ref: Any) = {
-    convert(ref) match {
+  def toJSON(ref: Any): String = ref match {
+    case s: String => s
+    case s: Seq[_] => s.map(v => toJSON(v)).mkString("[", ", ", "]")
+    case _ => convert(ref) match {
       case caseClass: CaseClass => cc2json(caseClass)
       case result => result.toString
     }
@@ -41,25 +43,45 @@ class CaseClass2JSON(caseClass: CaseClass) {
       val ccv = values.head
       tabs()
       write("\"%s\": ".format(ccv.caseValue.name))
-      ccv.value match {
-        case null => write("null")
-        case caseClass: CaseClass => writeCaseClass(caseClass)
-        case e: EnumEntry[_] => write("\"%s\"".format(e.name))
-        case b: Boolean => write(b.toString)
-        case b: Byte => write(b.toString)
-        case s: Short => write(s.toString)
-        case i: Int => write(i.toString)
-        case l: Long => write(l.toString)
-        case f: Float => write(f.toString)
-        case d: Double => write(d.toString)
-        case s: String => write(quotedString(s))
-        case value => {
-          println("Writing to string for: %s / %s".format(value.asInstanceOf[AnyRef].getClass.getName, value))
-          write(quotedString(value.toString))
-        }
-      }
+      writeValue(ccv.value)
       writeLine(",")
       writeAttributes(values.tail)
+    }
+  }
+
+  private def writeValue(v: Any): Unit = v match {
+    case null => write("null")
+    case s: Seq[_] => {
+      writeLine("[")
+      var first = true
+      s.foreach {
+        case sv => {
+          if (first) {
+            first = false
+          } else {
+            writeLine(",")
+          }
+          sv match {
+            case s: String => write(quotedString(s))
+            case _ => write(Object2JSON.toJSON(sv))
+          }
+        }
+      }
+      writeLine("]")
+    }
+    case e: EnumEntry[_] => write("\"%s\"".format(e.name))
+    case b: Boolean => write(b.toString)
+    case b: Byte => write(b.toString)
+    case s: Short => write(s.toString)
+    case i: Int => write(i.toString)
+    case l: Long => write(l.toString)
+    case f: Float => write(f.toString)
+    case d: Double => write(d.toString)
+    case s: String => write(quotedString(s))
+    case caseClass: CaseClass => writeCaseClass(caseClass)
+    case value => {
+      //          println("Writing to string for: %s / %s".format(value.asInstanceOf[AnyRef].getClass.getName, value))
+      write(quotedString(value.toString))
     }
   }
 

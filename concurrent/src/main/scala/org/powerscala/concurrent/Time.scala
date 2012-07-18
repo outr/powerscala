@@ -76,6 +76,9 @@ object Time extends Enumerated[Time] {
   val Month = new Time(30.0 * Day.value, "MM yyyy")
   val Year = new Time(12.0 * Month.value, "yyyy")
 
+  implicit def double2TimeAmount(time: Double) = TimeAmount(time)
+  implicit def timeAmount2Double(timeAmount: TimeAmount) = timeAmount.time
+
   /**
    * Invokes the wrapped function and returns the time in seconds it took to complete as a Double.
    */
@@ -229,4 +232,21 @@ object Time extends Enumerated[Time] {
       true
     }
   }
+
+  def futureCalendar(timeFromNow: Double) = {
+    val c = Calendar.getInstance()
+    c.setTimeInMillis(System.currentTimeMillis() + millis(timeFromNow))
+    c
+  }
+}
+
+case class TimeAmount(time: Double) {
+  def years = TimeAmount(time * Time.Year.value)
+  def months = TimeAmount(time * Time.Month.value)
+  def weeks = TimeAmount(time * Time.Week.value)
+  def days = TimeAmount(time * Time.Day.value)
+  def hours = TimeAmount(time * Time.Hour.value)
+  def minutes = TimeAmount(time * Time.Minute.value)
+  def seconds = TimeAmount(time * Time.Second.value)
+  def and(timeAmount: TimeAmount) = TimeAmount(time + timeAmount.time)
 }

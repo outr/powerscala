@@ -3,7 +3,9 @@ package org.powerscala
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Currency(description: String) extends EnumEntry[Currency]
+sealed class Currency(description: String) extends EnumEntry[Currency] {
+  override def toString = "%s (%s)".format(description, name)
+}
 
 object Currency extends Enumerated[Currency] {
   val USD = new Currency("United States dollar")

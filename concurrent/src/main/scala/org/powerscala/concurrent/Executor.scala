@@ -48,7 +48,7 @@ object Executor {
     }
   }
   private lazy val executor = Executors.newCachedThreadPool(threadFactory)
-  private lazy val scheduler = Executors.newScheduledThreadPool(2, threadFactory)
+  private lazy val scheduler = Executors.newScheduledThreadPool(8, threadFactory)
 
   /**
    * Invokes the function on the ExecutorService asynchronously returning a Future[T] with the return value.
@@ -80,8 +80,9 @@ object Executor {
   // TODO: the following methods need to fire off to future and execute to free up "scheduler" and a new Future needs to
   // be created to support it.
 
-  def schedule[T](delay: Double)(f: => T) = scheduler
-      .schedule(new C[T](() => f), Time.millis(delay), TimeUnit.MILLISECONDS)
+  def schedule[T](delay: Double)(f: => T) = {
+    scheduler.schedule(new C[T](() => f), Time.millis(delay), TimeUnit.MILLISECONDS)
+  }
 
   def scheduleAtFixedRate[T](initialDelay: Double, period: Double)(f: => T) = {
     scheduler.scheduleAtFixedRate(new R[T](() => f), Time.millis(initialDelay), Time.millis(period),
@@ -101,5 +102,4 @@ object Executor {
   class R[T](f: () => T) extends Runnable {
     def run = f()
   }
-
 }
