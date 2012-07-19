@@ -3,6 +3,7 @@ package org.powerscala.convert.json
 import org.powerscala.convert.{CaseClassValue, CaseClass, ConversionBus}
 import org.powerscala.EnumEntry
 import annotation.tailrec
+import util.parsing.json.JSONFormat
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -85,7 +86,7 @@ class CaseClass2JSON(caseClass: CaseClass) {
     }
   }
 
-  private def quotedString(s: String) = "\"%s\"".format(s.replace("\"", "\\\""))
+  private def quotedString(s: String) = "\"" + JSONFormat.quoteString(s) + "\"" //"\"%s\"".format(s.replace("\"", "\\\""))
 
   private def tabs() = {
     for (i <- 0 until depth) {
