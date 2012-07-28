@@ -23,13 +23,12 @@ object LazyDataObjectConverter extends DataObjectConverter {
   def toDBObject(obj: AnyRef, collection: DatastoreCollection[_]) = {
     val l = obj.asInstanceOf[Lazy[Identifiable]]
     val instance = l()
-    val clazz = instance.getClass
     val dbo = new BasicDBObject()
     dbo.put("_id", l.id)
     dbo.put("class", classOf[Lazy[_]].getName)
-    dbo.put("lazyClass", clazz.getName)
-    if (collection != null) {
-      val lazyCollection = collection.session.collection()(Manifest.classType[Identifiable](instance.getClass))
+    dbo.put("lazyClass", l.manifest.erasure.getName)
+    if (collection != null && instance != null) {
+      val lazyCollection = collection.session.collection()(l.manifest)
       lazyCollection.persist(l())
     } else {
       dbo.put("lazy", DataObjectConverter.toDBValue(instance, collection))

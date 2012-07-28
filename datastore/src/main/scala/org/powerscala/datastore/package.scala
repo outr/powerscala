@@ -4,7 +4,7 @@ import com.mongodb.util.JSON
 import org.powerscala.datastore.converter.DataObjectConverter
 
 package object datastore {
-  implicit def v2lazy[T <: Identifiable](v: T) = Lazy(v)
+  implicit def v2lazy[T <: Identifiable](v: T)(implicit manifest: Manifest[T]) = Lazy(v)
 
   implicit def lazy2v[T <: Identifiable](l: Lazy[T]) = l()
 

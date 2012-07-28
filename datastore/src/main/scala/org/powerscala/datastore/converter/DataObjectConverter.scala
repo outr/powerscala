@@ -75,7 +75,7 @@ object DataObjectConverter {
     case obj: AnyRef => toDBObject(obj, collection)
   }
 
-  def fromDBValue(obj: Any, collection: DatastoreCollection[_]) = obj match {
+  def fromDBValue(obj: Any, collection: DatastoreCollection[_]): Any = obj match {
     case objectId: ObjectId => objectId
     case uuid: util.UUID => uuid
     case dbList: BasicDBList => fromDBList(dbList, collection)
@@ -88,6 +88,7 @@ object DataObjectConverter {
     case f: Float => f
     case d: Double => d
     case null => null
+    case obj: DBObject if (obj.get("class") == "scala.Tuple2$mcII$sp") => Tuple2[Any, Any](fromDBValue(obj.get("_1"), collection), fromDBValue(obj.get("_2"), collection))
     case obj: DBObject => fromDBObject(obj, collection)
   }
 

@@ -10,7 +10,9 @@ import util.parsing.json.JSONFormat
  */
 object Object2JSON extends ConversionBus {
   def toJSON(ref: Any): String = ref match {
+    case null => null
     case s: String => s
+    case e: EnumEntry[_] => quotedString(e.name)
     case s: Seq[_] => s.map(v => toJSON(v)).mkString("[", ", ", "]")
     case _ => convert(ref) match {
       case caseClass: CaseClass => cc2json(caseClass)
@@ -19,11 +21,15 @@ object Object2JSON extends ConversionBus {
   }
 
   private def cc2json(caseClass: CaseClass) = new CaseClass2JSON(caseClass).json
+
+  def quotedString(s: String) = "\"" + JSONFormat.quoteString(s) + "\"" //"\"%s\"".format(s.replace("\"", "\\\""))
 }
 
 class CaseClass2JSON(caseClass: CaseClass) {
   private var depth = 0
   private val b = new StringBuilder
+
+  import Object2JSON._
 
   writeCaseClass(caseClass)
 
@@ -85,8 +91,6 @@ class CaseClass2JSON(caseClass: CaseClass) {
       write(quotedString(value.toString))
     }
   }
-
-  private def quotedString(s: String) = "\"" + JSONFormat.quoteString(s) + "\"" //"\"%s\"".format(s.replace("\"", "\\\""))
 
   private def tabs() = {
     for (i <- 0 until depth) {

@@ -19,7 +19,21 @@ class StandardProperty[T](val name: String, val default: T, backing: Backing[T] 
                                     with ChangeInterceptor[T]
                                     with Bindable[T]
                                     with Default[T] {
+  private var _modified = false
   backing.setValue(default)
+
+  /**
+   * Modified represents whether the value has been updated since the default value was assigned or revert was called.
+   */
+  def modified = _modified
+
+  /**
+   * Reverts back to the default value and resets the status of "modified".
+   */
+  def revert() = {
+    apply(default)
+    _modified = false
+  }
 
   def apply(v: T) = {
     val oldValue = backing.getValue
@@ -28,6 +42,7 @@ class StandardProperty[T](val name: String, val default: T, backing: Backing[T] 
       backing.setValue(newValue)
       fire(PropertyChangeEvent(this, oldValue, newValue))
     }
+    _modified = true
   }
 
   def apply() = backing.getValue

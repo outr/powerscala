@@ -226,7 +226,7 @@ object Time extends Enumerated[Time] {
       } else {
         Thread.sleep(p)
 
-        waitFor(time, precision, start)(condition)
+        waitFor(time, precision, start, errorOnTimeout)(condition)
       }
     } else {
       true
