@@ -12,13 +12,14 @@ import org.powerscala.event.{ChangeEvent, Listenable}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class StandardProperty[T](val name: String, val default: T, backing: Backing[T] = new VariableBacking[T])
+class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = new VariableBacking[T])
                          (implicit override val parent: PropertyParent)
                                     extends MutableProperty[T]
                                     with Listenable
                                     with ChangeInterceptor[T]
                                     with Bindable[T]
                                     with Default[T] {
+  val name = () => _name
   private var _modified = false
   backing.setValue(default)
 
@@ -52,6 +53,11 @@ class StandardProperty[T](val name: String, val default: T, backing: Backing[T] 
   }
 
   def readOnly: Property[T] = this
+
+  /**
+   * Convenience method for notifying that a change has occured.
+   */
+  def fireChanged() = fire(new PropertyChangeEvent(this, value, value))
 
   override def toString() = "Property[%s](%s)".format(name, value)
 }

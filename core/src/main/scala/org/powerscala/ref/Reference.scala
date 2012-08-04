@@ -18,7 +18,7 @@ trait Reference[T <: AnyRef] extends Function0[T] {
 
   def isEnqueued: Boolean
 
-  def isCleared = apply() == null
+  def isCleared = get == None
 
   /**
    * Referential equality occurs on both the Reference and the wrapped object.

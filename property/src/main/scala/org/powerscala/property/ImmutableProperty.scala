@@ -5,6 +5,6 @@ package org.powerscala.property
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-case class ImmutableProperty[T](v: T, name: String = null) extends Property[T] {
+case class ImmutableProperty[T](v: T, name: () => String = () => null) extends Property[T] {
   def apply() = v
 }

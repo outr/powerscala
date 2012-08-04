@@ -85,5 +85,13 @@ trait MutableContainer[T <: Element] extends AbstractMutableContainer[T] {
         addAll(children.tail: _*)
       }
     }
+
+    /**
+     * Removes all existing children and adds the supplied ones.
+     */
+    def replaceWith(children: T*) = {
+      clear()
+      addAll(children: _*)
+    }
   }
 }

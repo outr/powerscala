@@ -24,7 +24,7 @@ trait Listenable {
     }
   }.start()
 
-  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Hard) = synchronized {
+  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Weak) = synchronized {
     listenersList = (listener :: listenersList.reverse).reverse
     Bus.add(listener, referenceType)
     listener

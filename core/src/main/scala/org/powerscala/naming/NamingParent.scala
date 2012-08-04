@@ -11,11 +11,11 @@ import org.powerscala.hierarchy.Named
  */
 trait NamingParent {
   implicit val namingParentInstance = this
-  protected[naming] val fields = new ArrayBuffer[Named]()
+  protected[naming] val namedFields = new ArrayBuffer[Named]()
 
   protected[powerscala] def add(child: Named) = synchronized {
-    if (!fields.contains(child)) {
-      fields += child
+    if (!namedFields.contains(child)) {
+      namedFields += child
     }
   }
 

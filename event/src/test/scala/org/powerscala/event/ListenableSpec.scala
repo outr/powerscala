@@ -5,6 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.concurrent.{Executor, AtomicInt, Time}
 import org.powerscala.bus.{RoutingResults, Routing, Bus}
 import org.powerscala.hierarchy.{Parent, Element}
+import org.powerscala.ref.WeakReference
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -346,7 +347,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         routing = TestListenable.fire(Event())
       }
       "message should be a Routing.Results of List(1, 2, 3)" in {
-        routing.name should equal("Results")
+        routing.name() should equal("Results")
         routing.asInstanceOf[RoutingResults].results should equal(List(1, 2, 3))
       }
       "remove the listeners" in {
@@ -356,6 +357,51 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       }
       "have no nodes on the Bus" in {
         Bus.isEmpty should equal(true)
+      }
+    }
+    "listener weakly added" should {
+      var increment = 0
+      val otherListenable = new Listenable {}
+      var refListenable: WeakReference[Listenable] = null
+      var refListener: WeakReference[Listener] = null
+      "set the listenable and listener" in {
+        val listenable = new Listenable {}
+        refListenable = WeakReference[Listenable](listenable)
+        refListener = WeakReference(listenable.listeners.filter((evt: Event) => true).synchronous {
+          case evt: ActionEvent => increment += 1
+        })
+      }
+      "have a valid reference" in {
+        refListenable.isCleared should equal(false)
+        refListener.isCleared should equal(false)
+      }
+      "have not incremented" in {
+        increment should equal(0)
+      }
+      "fire an ActionEvent" in {
+        otherListenable.fire(ActionEvent("test"))
+      }
+      "have incremented by one" in {
+        increment should equal(1)
+      }
+      "garbage collect the weak references" in {
+        System.gc()
+      }
+      "have no reference to the Listenable" in {
+        refListenable.isCleared should equal(true)
+      }
+      "have no reference to the Listener" in {
+        refListener.isCleared should equal(true)
+      }
+      "fire another ActionEvent" in {
+        otherListenable.fire(ActionEvent("test"))
+      }
+      "have not incremented any further" in {
+        increment should equal(1)
+      }
+      "have no retained reference" in {
+        refListenable.isCleared should equal(true)
+        refListener.isCleared should equal(true)
       }
     }
   }

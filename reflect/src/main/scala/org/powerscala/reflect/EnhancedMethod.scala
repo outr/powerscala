@@ -105,7 +105,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
     val arguments = new Array[Any](map.size)
     this.args.foreach {
       case arg => {
-        val value = map.getOrElse(arg.name, throw new NullPointerException("No argument specified for %s".format(arg.name))).asInstanceOf[AnyRef]
+        val value = map.getOrElse(arg.name, arg.`type`.defaultForType).asInstanceOf[AnyRef]   // Get the argument or assign the default for the type
         if (!arg.`type`.isCastable(value)) {
           throw new RuntimeException("Invalid class type %s (expected: %s) for %s.%s(%s) - %s".format(value.getClass, arg.`type`.javaClass, parent.simpleName, EnhancedMethod.this.name, arg.name, value))
         }

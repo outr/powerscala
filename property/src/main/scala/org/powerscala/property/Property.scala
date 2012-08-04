@@ -33,7 +33,7 @@ object Property {
    * Creates a new Property with a value tied to the function supplied.
    */
   def function[T](_name: String, f: => T) = new Property[T] {
-    def name = _name
+    val name = () => _name
 
     def apply() = f
   }

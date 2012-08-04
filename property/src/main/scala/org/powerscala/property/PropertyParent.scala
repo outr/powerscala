@@ -11,8 +11,6 @@ import org.powerscala.hierarchy.{Named, Child}
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 trait PropertyParent extends NamingParent with Child with Named {
-  def parent: PropertyParent
-
   parent match {
     case p: NamingParent => p.add(this)
     case _ => // Missed
@@ -36,7 +34,7 @@ trait PropertyParent extends NamingParent with Child with Named {
   }
 }
 
-class ExplicitPropertyParent(val name: String, val parent: PropertyParent = null) extends PropertyParent
+class ExplicitPropertyParent(val name: () => String, val parent: PropertyParent = null) extends PropertyParent
 
 object PropertyParent {
   val hierarchicalProperties: PartialFunction[Named, List[Property[_]]] = {

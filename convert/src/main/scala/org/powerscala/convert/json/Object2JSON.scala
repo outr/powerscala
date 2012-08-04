@@ -12,7 +12,7 @@ object Object2JSON extends ConversionBus {
   def toJSON(ref: Any): String = ref match {
     case null => null
     case s: String => s
-    case e: EnumEntry[_] => quotedString(e.name)
+    case e: EnumEntry[_] => quotedString(e.name())
     case s: Seq[_] => s.map(v => toJSON(v)).mkString("[", ", ", "]")
     case _ => convert(ref) match {
       case caseClass: CaseClass => cc2json(caseClass)

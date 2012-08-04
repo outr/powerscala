@@ -30,7 +30,7 @@ object NumericProperty {
    * Creates a new Property with a value tied to the function supplied.
    */
   def function(_name: String, f: => Double) = new Property[Double] {
-    def name = _name
+    val name = () => _name
 
     def apply() = f
   }

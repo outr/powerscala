@@ -8,9 +8,9 @@ package org.powerscala.property.backing
 class VariableBacking[T] extends Backing[T] {
   private var v: T = _
 
-  protected[property] final def getValue = v
+  final def getValue = v
 
-  protected[property] final def setValue(value: T) {
+  final def setValue(value: T) {
     this.v = value
   }
 }

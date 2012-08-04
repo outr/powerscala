@@ -4,7 +4,7 @@ package org.powerscala
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 sealed class Language extends EnumEntry[Language] {
-  override def toString = name
+  override def toString = name()
 }
 
 object Language extends Enumerated[Language] {

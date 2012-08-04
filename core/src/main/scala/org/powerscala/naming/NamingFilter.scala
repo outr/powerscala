@@ -20,19 +20,19 @@ class NamingFilter[T <: Named](protected val parent: NamingParent, filter: Parti
   }
   protected lazy val fields = filter match {
     case null => {
-      parent.fields.collect {
+      parent.namedFields.collect {
         case v if (classType.isAssignableFrom(v.getClass)) => v.asInstanceOf[T]
       }.toList
     }
-    case f => parent.fields.flatMap(filter).toList
+    case f => parent.namedFields.flatMap(filter).toList
   }
 
   /**
    * Finds the field by the provided name or throws a RuntimeException if not found.
    */
-  def apply(name: String) = fields.find(m => m.name == name).getOrElse(parent.notFound(name))
+  def apply(name: String) = fields.find(m => m.name() == name).getOrElse(parent.notFound(name))
 
-  def get(name: String) = fields.find(m => m.name == name)
+  def get(name: String) = fields.find(m => m.name() == name)
 
   /**
    * The number of fields on this filter.

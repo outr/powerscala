@@ -14,13 +14,13 @@ class EnumEntrySpec extends WordSpec with ShouldMatchers {
       TestEnum.values.length should be(3)
     }
     "have 'One' as the first entry" in {
-      TestEnum.values(0).name should be("One")
+      TestEnum.values(0).name() should be("One")
     }
     "have 'Two' as the second entry" in {
-      TestEnum.values(1).name should be("Two")
+      TestEnum.values(1).name() should be("Two")
     }
     "have 'Three' as the third entry" in {
-      TestEnum.values(2).name should be("Three")
+      TestEnum.values(2).name() should be("Three")
     }
     "have 0 as the ordinal of One" in {
       TestEnum.One.ordinal should be(0)

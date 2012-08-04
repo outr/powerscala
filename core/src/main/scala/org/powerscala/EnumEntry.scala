@@ -17,6 +17,6 @@ abstract class EnumEntry[E <: EnumEntry[E]](implicit val parent: Enumerated[E]) 
   override def toString = if (parent != null) {
     "%s.%s".format(parent.name, name)
   } else {
-    name
+    name()
   }
 }

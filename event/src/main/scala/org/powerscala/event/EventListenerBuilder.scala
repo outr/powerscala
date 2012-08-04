@@ -11,7 +11,7 @@ case class EventListenerBuilder(private val listenable: Listenable,
                                 private val _filter: Event => Boolean = null,
                                 private val processingMode: ProcessingMode = ProcessingMode.Asynchronous,
                                 private val maxInvocation: Int = Int.MaxValue,
-                                private val referenceType: ReferenceType = ReferenceType.Hard,
+                                private val referenceType: ReferenceType = ReferenceType.Weak,
                                 private val priority: Priority = Priority.Normal) {
   def synchronous = copy(processingMode = ProcessingMode.Synchronous)
   def asynchronous = copy(processingMode = ProcessingMode.Asynchronous)

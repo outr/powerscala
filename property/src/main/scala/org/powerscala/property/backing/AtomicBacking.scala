@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicReference
 class AtomicBacking[T] extends Backing[T] {
   private val v = new AtomicReference[T]()
 
-  protected[property] final def getValue = v.get()
+  final def getValue = v.get()
 
-  protected[property] final def setValue(value: T) {
+  final def setValue(value: T) {
     v.set(value)
   }
 }

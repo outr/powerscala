@@ -119,6 +119,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    * Note that an empty arguments list may be supplied to create a clone.
    */
   def copy[T](instance: T, args: Map[String, Any]) = {
+    // TODO: support copy to call the constructor if instance is null
     if (copyMethod == None && args.isEmpty) {
       companion match {
         case Some(clazz) => clazz.method("apply") match {

@@ -20,7 +20,7 @@ trait NamedChild extends Named {
    * The name of this object.
    */
   lazy val name = parent match {
-    case null => getClass.getSimpleName.replaceAll("\\$", "")
-    case p => p.name(this)
+    case null => () => getClass.getSimpleName.replaceAll("\\$", "")
+    case p => () => p.name(this)
   }
 }

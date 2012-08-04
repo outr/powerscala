@@ -20,4 +20,9 @@ case class CaseValue(name: String, valueType: EnhancedClass, clazz: EnhancedClas
   def apply[T](instance: AnyRef) = getter.getOrElse(throw new RuntimeException("Unable to getter for %s.%s".format(clazz, name))).invoke[T](instance)
 
   def update(instance: AnyRef, value: Any) = setter.get.invoke[Any](instance, value)
+
+  /**
+   * Copies <code>instance</code> setting the new value supplied for this CaseValue
+   */
+  def copy[T](instance: T, value: Any) = clazz.copy[T](instance, Map(name -> value))
 }

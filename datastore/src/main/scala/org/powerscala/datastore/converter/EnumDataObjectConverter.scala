@@ -20,7 +20,7 @@ object EnumDataObjectConverter extends DataObjectConverter {
   def toDBObject(obj: AnyRef, collection: DatastoreCollection[_]) = {
     val dbo = new BasicDBObject()
     dbo.put("class", obj.getClass.getName)
-    dbo.put("name", obj.asInstanceOf[EnumEntry[_]].name)
+    dbo.put("name", obj.asInstanceOf[EnumEntry[_]].name())
     dbo
   }
 }

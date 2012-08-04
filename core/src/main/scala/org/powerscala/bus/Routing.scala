@@ -33,11 +33,11 @@ object Routing extends Enumerated[Routing] {
 }
 
 class RoutingResponse private[bus](val response: Any) extends Routing(false) {
-  override lazy val name = "Response"
+  override lazy val name = () => "Response"
 }
 
 class RoutingResults private[bus](val results: List[Any]) extends Routing(true) {
-  override lazy val name = "Results"
+  override lazy val name = () => "Results"
 
   override def equals(obj: Any) = obj match {
     case other: RoutingResults => results == other.results
