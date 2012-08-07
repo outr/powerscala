@@ -3,7 +3,7 @@ package org.powerscala.reflect.doc
 import com.thoughtworks.paranamer.{ParameterNamesNotFoundException, BytecodeReadingParanamer, Paranamer}
 import java.lang.RuntimeException
 import scala.Some
-import java.lang.reflect.Method
+import java.lang.reflect.{Constructor, Method}
 
 import org.powerscala.reflect._
 
@@ -29,6 +29,8 @@ class ParanamerDocReflection(paranamer: Paranamer) extends DocumentationReflecti
       }
     }
   }
+
+  def constructor(c: Constructor[_]) = throw new UnsupportedOperationException("ParanamerDocReflection does not support constructors")
 
   private def lookupParameterNames(m: Method) = {
     try {

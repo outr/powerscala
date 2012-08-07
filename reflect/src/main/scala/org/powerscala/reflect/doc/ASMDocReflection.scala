@@ -1,6 +1,6 @@
 package org.powerscala.reflect.doc
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Constructor, Method}
 import org.objectweb.asm.{ClassReader, Type}
 import org.objectweb.asm.tree.{LocalVariableNode, MethodNode, ClassNode}
 
@@ -13,10 +13,16 @@ class ASMDocReflection(clazz: Class[_]) extends DocumentationReflection {
   lazy val classNode = ASMDocReflection.classNode(clazz)
   lazy val methods = classNode.methods.toList.asInstanceOf[List[MethodNode]]
   private var documentation = Map.empty[Method, MethodDocumentation]
+  private var constructorDocumentation = Map.empty[Constructor[_], MethodDocumentation]
 
   def method(m: Method) = documentation.get(m) match {
     case Some(doc) => doc
     case None => generateDocumentation(m)
+  }
+
+  def constructor(c: Constructor[_]) = constructorDocumentation.get(c) match {
+    case Some(doc) => doc
+    case None => generateDocumentation(c)
   }
 
   private def generateDocumentation(m: Method) = synchronized {
@@ -51,6 +57,40 @@ class ASMDocReflection(clazz: Class[_]) extends DocumentationReflection {
       md
     } catch {
       case t: Throwable => throw new RuntimeException("Unable to generate documentation for %s".format(m), t)
+    }
+  }
+
+  private def generateDocumentation(c: Constructor[_]) = synchronized {
+    try {
+      val returnClass = DocumentedClass(null, clazz, None)
+      val md = if (c.getParameterTypes.length > 0) {
+        val desc = Type.getConstructorDescriptor(c)
+        val results = methods.collect {
+          case methodNode if (methodNode.name == "<init>" && methodNode.desc == desc) => methodNode
+        }
+        if (results.length != 1) {
+          throw new RuntimeException("%s methodNodes with the supplied signature: %s".format(results.length, c))
+        }
+        val mn = results.head
+        val variables = mn.localVariables
+        val args = if (variables.length == 0) {
+          c.getParameterTypes.zipWithIndex.map {
+            case (cl, index) => DocumentedClass("arg%s".format(index), cl, None)
+          }.toList
+        } else {
+          val argNames = variables.tail.map(lvn => lvn.asInstanceOf[LocalVariableNode].name).toList
+          argNames.zip(c.getParameterTypes).map {
+            case (n, cl) => DocumentedClass(n, cl, None)
+          }
+        }
+        MethodDocumentation(args, returnClass, null, None)
+      } else {
+        MethodDocumentation(Nil, returnClass, null, None)
+      }
+      constructorDocumentation += c -> md
+      md
+    } catch {
+      case t: Throwable => throw new RuntimeException("Unable to generate documentation for %s".format(c), t)
     }
   }
 }

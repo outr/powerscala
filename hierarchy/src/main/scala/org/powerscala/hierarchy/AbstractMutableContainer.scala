@@ -23,6 +23,19 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
     fire(new ChildAddedEvent(this, child))
   }
 
+  protected def insertChildren(index: Int, children: T*) = synchronized {
+    buffer.insert(index, children: _*)
+    children.foreach {
+      case child => {
+        child match {
+          case element: Element => Element.assignParent(element, this)
+          case _ =>
+        }
+        fire(new ChildAddedEvent(this, child))
+      }
+    }
+  }
+
   protected def removeChild(child: T) = synchronized {
     buffer -= child
 

@@ -65,6 +65,12 @@ trait MutableContainer[T <: Element] extends AbstractMutableContainer[T] {
     def +=(child: T) = addChild(child)
 
     /**
+     * Inserts the supplied children into this container beginning at the index provided and assigns this container as
+     * the parent if the child is of type Element.
+     */
+    def insert(index: Int, children: T*) = insertChildren(index, children: _*)
+
+    /**
      * Removes the supplied child from this container and nullifies parent if the child is of type
      * Element.
      */

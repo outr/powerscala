@@ -131,6 +131,26 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
         values.head.name should equal("name")
         values.tail.head.name should equal("bytes")
       }
+      "be able to instantiate a new instance via copy with null instance and default args" in {
+        val clazz: EnhancedClass = classOf[TestCaseClass]
+        val test = clazz.copy[TestCaseClass](null)
+        test.firstName should equal("John")
+        test.lastName should equal("Doe")
+        test.age should equal(21)
+      }
+      "be able to instantiate a new instance via copy with null instance and overridden arg" in {
+        val clazz: EnhancedClass = classOf[TestCaseClass]
+        val test = clazz.copy[TestCaseClass](null, Map("firstName" -> "Jane", "age" -> 23))
+        test.firstName should equal("Jane")
+        test.lastName should equal("Doe")
+        test.age should equal(23)
+      }
+      "be able to instantiate a new instance via copy with null instance without default args" in {
+        val clazz: EnhancedClass = classOf[TestCaseClass4]
+        val test = clazz.copy[TestCaseClass4](null)
+        test.name should equal(null)
+        test.age should equal(0)
+      }
     }
   }
 }
@@ -143,7 +163,7 @@ object TestClass {
   def testCompanion() = "companion class: " + getClass.getName
 }
 
-case class TestCaseClass(firstName: String, lastName: String, var age: Int) {
+case class TestCaseClass(firstName: String = "John", lastName: String = "Doe", var age: Int = 21) {
   lazy val name = "%s %s".format(firstName, lastName)
 }
 

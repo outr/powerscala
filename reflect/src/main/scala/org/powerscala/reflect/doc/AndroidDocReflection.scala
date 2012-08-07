@@ -1,6 +1,6 @@
 package org.powerscala.reflect.doc
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Constructor, Method}
 import annotation.tailrec
 
 
@@ -30,6 +30,9 @@ class AndroidDocReflection(className: String) extends DocumentationReflection {
       case exc: IndexOutOfBoundsException => throw new RuntimeException("Method: " + m.getDeclaringClass.getName + "." + m.getName + " - " + argsString, exc)
     }
   }
+
+
+  def constructor(c: Constructor[_]) = throw new UnsupportedOperationException("AndroidDocReflection does not support constructors")
 
   @tailrec
   private def splitArgs(paramTypes: List[Class[_]], s: String, args: List[DocumentedClass] = Nil): List[DocumentedClass] = {

@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 import annotation.tailrec
 import io.Source
 import java.net.URL
-import java.lang.reflect.Method
+import java.lang.reflect.{Constructor, Method}
 
 /**
  * Implementations of DocumentationReflection provide functionality to introspect the JavaDoc /
@@ -17,6 +17,11 @@ trait DocumentationReflection {
    * Looks up MethodDocumentation for the supplied method.
    */
   def method(m: Method): MethodDocumentation
+
+  /**
+   * Looks up MethodDocumentation for the supplied constructor.
+   */
+  def constructor(c: Constructor[_]): MethodDocumentation
 
   protected def between(string: String, offset: Int, pre: String, post: String) = {
     val start = string.indexOf(pre, offset)

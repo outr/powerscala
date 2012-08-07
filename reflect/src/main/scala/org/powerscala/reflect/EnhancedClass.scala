@@ -109,6 +109,17 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   lazy val copyMethod = methodByName("copy")
 
   /**
+   * Retrieves the constructor that matches the copy method.
+   */
+  lazy val copyConstructor = copyMethod match {
+    case Some(m) => {
+      val cmArgs = m.javaMethod.getParameterTypes.map(c => c.getSimpleName).mkString(", ")
+      constructors.find(c => c.javaConstructor.getParameterTypes.map(c => c.getSimpleName).mkString(", ") == cmArgs)
+    }
+    case None => None
+  }
+
+  /**
    * Retrieve a CaseValue by name if this is a case class.
    */
   def caseValue(name: String) = caseValues.find(cv => cv.name == name)
@@ -118,9 +129,9 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    *
    * Note that an empty arguments list may be supplied to create a clone.
    */
-  def copy[T](instance: T, args: Map[String, Any]) = {
+  def copy[T](instance: T, args: Map[String, Any] = Map.empty) = {
     // TODO: support copy to call the constructor if instance is null
-    if (copyMethod == None && args.isEmpty) {
+    if (copyMethod == None && args.isEmpty) {   // Instantiation via empty apply method on companion in no copy
       companion match {
         case Some(clazz) => clazz.method("apply") match {
           case Some(method) => method[T](clazz.instance.get)
@@ -129,8 +140,13 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
         case None => throw new NullPointerException("No copy method for this class (%s) and unable to find companion.".format(name))
       }
     } else {
-      val cm = copyMethod.getOrElse(throw new NullPointerException("No copy method for this class (%s)".format(name)))
-      cm[T](instance.asInstanceOf[AnyRef], args)
+      if (instance == null) {
+        val cc = copyConstructor.getOrElse(throw new NullPointerException("No copy constructor for this class (%s)".format(name)))
+        cc[T](args)
+      } else {
+        val cm = copyMethod.getOrElse(throw new NullPointerException("No copy method for this class (%s)".format(name)))
+        cm[T](instance.asInstanceOf[AnyRef], args)
+      }
     }
   }
 

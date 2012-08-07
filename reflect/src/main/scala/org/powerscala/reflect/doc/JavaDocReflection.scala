@@ -2,7 +2,7 @@ package org.powerscala.reflect.doc
 
 import java.net.URL
 import io.Source
-import java.lang.reflect.Method
+import java.lang.reflect.{Constructor, Method}
 
 import org.powerscala.reflect._
 
@@ -64,6 +64,8 @@ class JavaDocReflection(className: String) extends DocumentationReflection {
       MethodDocumentation(args, ret, link, doc)
     }
   }
+
+  def constructor(c: Constructor[_]) = throw new UnsupportedOperationException("JavaDocReflection does not support constructors")
 
   private val parseArg = (content: String, index: Int, clazz: Class[_]) => {
     val name = between(content, 0, "<CODE>", "</CODE>").getOrElse("")

@@ -22,5 +22,9 @@ class MethodArgument(val index: Int,
    */
   def hasDefault = defaultMethod != None
 
-  override def toString = name + ": " + `type`
+  override def toString = if (hasDefault && defaultMethod.get.isStatic) {
+    "%s: %s = %s".format(name, `type`, default[Any](null).get)
+  } else {
+    "%s: %s".format(name, `type`)
+  }
 }
