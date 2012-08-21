@@ -1,6 +1,5 @@
 package org.powerscala.event
 
-import actors.DaemonActor
 import org.powerscala.ref.ReferenceType
 import org.powerscala.hierarchy.{Child, Parent}
 import org.powerscala.bus.Bus
@@ -12,28 +11,37 @@ import org.powerscala.bus.Bus
  * Date: 12/2/11
  */
 trait Listenable {
+  def bus = Bus()
+
   protected[event] var listenersList: List[Listener] = Nil
 
-  protected[event] val asynchronousActor = new DaemonActor {
-    def act() {
-      loop {
-        react {
-          case f: Function0[_] => f()
-        }
-      }
-    }
-  }.start()
+//  protected[event] val asynchronousActor = new DaemonActor {
+//    def act() {
+//      loop {
+//        react {
+//          case f: Function0[_] => f()
+//        }
+//      }
+//    }
+//  }.start()
 
-  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Weak) = synchronized {
+  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft) = synchronized {
     listenersList = (listener :: listenersList.reverse).reverse
-    Bus.add(listener, referenceType)
+    bus.add(listener, referenceType)
     listener
   }
 
   protected[event] def removeListener(listener: Listener) = synchronized {
     listenersList = listenersList.filterNot(l => l == listener)
-    Bus.remove(listener)
+    bus.remove(listener)
     listener
+  }
+
+  def clearListeners() = synchronized {
+    listenersList.foreach {
+      case listener => removeListener(listener)
+    }
+    listenersList = Nil
   }
 
   lazy val listeners = EventListenerBuilder(this)

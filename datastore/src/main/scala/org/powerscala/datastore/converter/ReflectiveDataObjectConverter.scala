@@ -36,6 +36,7 @@ class ReflectiveDataObjectConverter(erasure: EnhancedClass) extends DataObjectCo
       }
       val value = db.get(name)
       cv.name -> (DataObjectConverter.fromDBValue(value, collection) match {
+        case null if (cv.valueType.javaClass.isPrimitive) => cv.valueType.defaultForType
         case v if (cv.valueType.javaClass.isArray) => cv.valueType.javaClass.getComponentType.getName match {
           case "byte" => v.asInstanceOf[Seq[Int]].map(i => i.toByte).toArray
           case s => throw new RuntimeException("Unhandled value type for array: %s".format(s))
@@ -53,7 +54,7 @@ class ReflectiveDataObjectConverter(erasure: EnhancedClass) extends DataObjectCo
     try {
       clazz.create[AnyRef](values)
     } catch {
-      case exc => throw new RuntimeException("Unable to instantiate %s with values %s".format(clazz, values), exc)
+      case t: Throwable => throw new RuntimeException("Unable to instantiate %s with values %s".format(clazz, values), t)
     }
   }
 }

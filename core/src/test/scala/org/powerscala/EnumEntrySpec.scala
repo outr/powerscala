@@ -50,6 +50,15 @@ class EnumEntrySpec extends WordSpec with ShouldMatchers {
       TestEnum.Three should not be TestEnum.One
     }
   }
+  "Currency" should {
+    "iterate over very fast" in {
+      val time = System.nanoTime()
+      val values = Currency.values.toList
+      values.length should equal(Currency.values.length)
+      val elapsed = System.nanoTime() - time
+      elapsed should be < 10000000L
+    }
+  }
 }
 
 sealed class TestEnum extends EnumEntry[TestEnum]

@@ -9,12 +9,12 @@ import org.powerscala.concurrent.{Time, Executor}
  */
 case class EventListenerBuilder(private val listenable: Listenable,
                                 private val _filter: Event => Boolean = null,
-                                private val processingMode: ProcessingMode = ProcessingMode.Asynchronous,
+                                private val processingMode: ProcessingMode = ProcessingMode.Synchronous,
                                 private val maxInvocation: Int = Int.MaxValue,
-                                private val referenceType: ReferenceType = ReferenceType.Weak,
+                                private val referenceType: ReferenceType = ReferenceType.Soft,
                                 private val priority: Priority = Priority.Normal) {
   def synchronous = copy(processingMode = ProcessingMode.Synchronous)
-  def asynchronous = copy(processingMode = ProcessingMode.Asynchronous)
+//  def asynchronous = copy(processingMode = ProcessingMode.Asynchronous)
   def concurrent = copy(processingMode = ProcessingMode.Concurrent)
   def once = copy(maxInvocation = 1)
   def maximum(max: Int) = copy(maxInvocation = max)
@@ -124,11 +124,10 @@ case class EventListener(listenable: Listenable,
     count += 1
     val result = processingMode match {
       case ProcessingMode.Synchronous => function(event)
-      case ProcessingMode.Asynchronous if (!event.singleThreaded) => listenable.asynchronousActor ! (() => function(event))
+//      case ProcessingMode.Asynchronous if (!event.singleThreaded) => listenable.asynchronousActor ! (() => function(event))
       case ProcessingMode.Concurrent if (!event.singleThreaded) => Executor.invoke {
         function(event)
       }
-      case _ => // Ignore fall-through
     }
     if (count >= maxInvocation) {
       listenable.removeListener(this)

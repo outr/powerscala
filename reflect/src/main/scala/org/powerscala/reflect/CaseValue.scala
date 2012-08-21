@@ -25,4 +25,29 @@ case class CaseValue(name: String, valueType: EnhancedClass, clazz: EnhancedClas
    * Copies <code>instance</code> setting the new value supplied for this CaseValue
    */
   def copy[T](instance: T, value: Any) = clazz.copy[T](instance, Map(name -> value))
+
+  /**
+   * Generates a human readable label for this CaseValue's name
+   */
+  def label = CaseValue.generateLabel(name)
+}
+
+object CaseValue {
+  /**
+   * Generates a human readable label for this name.
+   */
+  def generateLabel(name: String) = {
+    val b = new StringBuilder
+    var p = ' '
+    name.foreach {
+      case c => {
+        if ((c.isUpper || c.isDigit) && (!p.isUpper && !p.isDigit)) {
+          b.append(' ')
+        }
+        b.append(c)
+        p = c
+      }
+    }
+    b.toString().capitalize
+  }
 }

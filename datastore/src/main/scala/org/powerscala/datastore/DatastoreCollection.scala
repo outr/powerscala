@@ -16,6 +16,8 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
   def session: DatastoreSession
   def parent = session
 
+  override def bus = session.bus
+
   protected var ids = Set.empty[util.UUID]
 
   def isPersisted(id: util.UUID): Boolean = ids.contains(id) match {

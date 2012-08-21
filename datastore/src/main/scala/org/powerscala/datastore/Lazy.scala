@@ -14,8 +14,8 @@ trait Lazy[T <: Identifiable] extends Function0[T] with Identifiable {
 object Lazy {
   def apply[T <: Identifiable](value: T)(implicit manifest: Manifest[T]) = StaticLazy(value)
 
-  def apply[T <: Identifiable](id: util.UUID, collection: DatastoreCollection[T])(implicit manifest: Manifest[T]) = {
-    LazyValue(id, collection)
+  def apply[T <: Identifiable](id: util.UUID, datastore: Datastore, collectionName: String)(implicit manifest: Manifest[T]) = {
+    LazyValue(id, datastore, collectionName)
   }
 }
 
@@ -25,8 +25,13 @@ case class StaticLazy[T <: Identifiable](value: T)(implicit val manifest: Manife
   def apply() = value
 }
 
-case class LazyValue[T <: Identifiable](id: util.UUID, collection: DatastoreCollection[T])(implicit val manifest: Manifest[T]) extends Lazy[T] {
-  private lazy val value = collection.byId(id).getOrElse(null.asInstanceOf[T])    // TODO: remove the asInstanceOf[T]
+case class LazyValue[T <: Identifiable](id: util.UUID, datastore: Datastore, collectionName: String)(implicit val manifest: Manifest[T]) extends Lazy[T] {
+//  private lazy val value = collection.byId(id).getOrElse(null.asInstanceOf[T])    // TODO: remove the asInstanceOf[T]
+  private lazy val value = datastore {
+    case session => {
+      session.collection[T](collectionName)(manifest).byId(id).getOrElse(null.asInstanceOf[T])
+    }
+  }
 
   def apply() = value
 }

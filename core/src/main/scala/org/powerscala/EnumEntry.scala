@@ -15,7 +15,7 @@ abstract class EnumEntry[E <: EnumEntry[E]](implicit val parent: Enumerated[E]) 
   lazy val ordinal = parent.values.indexOf(this)
 
   override def toString = if (parent != null) {
-    "%s.%s".format(parent.name, name)
+    "%s.%s".format(parent.name, name())
   } else {
     name()
   }

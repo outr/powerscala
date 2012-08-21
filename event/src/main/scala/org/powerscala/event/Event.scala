@@ -1,6 +1,5 @@
 package org.powerscala.event
 
-import org.powerscala.bus.Bus
 
 /**
  * Event is the core object sent to listeners.
@@ -37,7 +36,7 @@ object Event {
     event._cause = current
     event._target = target
     _current.set(event)
-    val routing = Bus(event)
+    val routing = target.bus(event)
     _current.set(event.cause)
     routing
   }

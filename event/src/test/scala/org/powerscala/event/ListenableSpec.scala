@@ -45,7 +45,8 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         Bus.isEmpty should equal(true)
       }
     }
-    "one asynchronous listener is added" should {
+    // TODO: add back asynchronous support
+    /*"one asynchronous listener is added" should {
       var received = false
       var listener: Listener = null
       "add a listener" in {
@@ -79,7 +80,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       "have no nodes on the Bus" in {
         Bus.isEmpty should equal(true)
       }
-    }
+    }*/
     "one concurrent listener is added" should {
       var received = false
       var listener: Listener = null
@@ -402,6 +403,51 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       "have no retained reference" in {
         refListenable.isCleared should equal(true)
         refListener.isCleared should equal(true)
+      }
+    }
+    "listener weakly added to hard reference" should {
+      var increment = 0
+      val otherListenable = new Listenable {}
+      val listenable = new Listenable {}
+      var refListenable: WeakReference[Listenable] = null
+      var refListener: WeakReference[Listener] = null
+      "set the listenable and listener" in {
+        refListenable = WeakReference[Listenable](listenable)
+        refListener = WeakReference(listenable.listeners.filter((evt: Event) => true).synchronous {
+          case evt: ActionEvent => increment += 1
+        })
+      }
+      "have a valid reference" in {
+        refListenable.isCleared should equal(false)
+        refListener.isCleared should equal(false)
+      }
+      "have not incremented" in {
+        increment should equal(0)
+      }
+      "fire an ActionEvent" in {
+        otherListenable.fire(ActionEvent("test"))
+      }
+      "have incremented by one" in {
+        increment should equal(1)
+      }
+      "garbage collect the weak references" in {
+        System.gc()
+      }
+      "have reference to the Listenable" in {
+        refListenable.isCleared should equal(false)
+      }
+      "have reference to the Listener" in {
+        refListener.isCleared should equal(false)
+      }
+      "fire another ActionEvent" in {
+        otherListenable.fire(ActionEvent("test"))
+      }
+      "have incremented to 2" in {
+        increment should equal(2)
+      }
+      "have retained references" in {
+        refListenable.isCleared should equal(false)
+        refListener.isCleared should equal(false)
       }
     }
   }

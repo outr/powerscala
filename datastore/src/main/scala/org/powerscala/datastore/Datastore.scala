@@ -2,11 +2,14 @@ package org.powerscala.datastore
 
 import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.Child
+import org.powerscala.bus.Bus
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 trait Datastore extends Listenable with Child {
+  override def bus = Bus()
+
   private val sessions = new ThreadLocal[DatastoreSession]
 
   def parent = null
@@ -24,9 +27,9 @@ trait Datastore extends Listenable with Child {
    * @return the result from the function
    */
   def apply[T](f: DatastoreSession => T): T = {
-    val (currentSession, created) = createOrGet()
+    val created = createSessionForThread()
     try {
-      f(currentSession)
+      f(session)
     } finally {
       if (created) {
         disconnect()
@@ -43,14 +46,14 @@ trait Datastore extends Listenable with Child {
     }
   }
 
-  def createOrGet() = {
+  def createSessionForThread() = {
     session match {
       case null => {
         val s = createSession()
         sessions.set(s)
-        s -> true
+        true
       }
-      case s => s -> false
+      case s => false
     }
   }
 

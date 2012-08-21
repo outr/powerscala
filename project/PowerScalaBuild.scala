@@ -66,7 +66,7 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, paranamer))
+    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections, slf4j))
 }
 
 object Dependencies {
@@ -74,4 +74,6 @@ object Dependencies {
   val paranamer = "com.thoughtworks.paranamer" % "paranamer" % "2.5"
   val scalaTest = "org.scalatest" % "scalatest_2.9.1" % "1.7.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.8.0"
+  val reflections = "org.reflections" % "reflections" % "0.9.8"
+  val slf4j = "org.slf4j" % "slf4j-api" % "1.6.6"
 }

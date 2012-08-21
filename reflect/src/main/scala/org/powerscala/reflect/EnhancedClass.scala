@@ -3,6 +3,9 @@ package org.powerscala.reflect
 import doc.DocumentationReflection
 import ref.SoftReference
 import java.lang.reflect.{Modifier, Method}
+import org.reflections.Reflections
+
+import scala.collection.JavaConversions._
 
 /**
  * Wraps a Class to provide more powerful functionality.
@@ -32,6 +35,11 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     val javaMethods = javaClass.getMethods.toSet ++ javaClass.getDeclaredMethods.toSet
     javaMethods.toList.map(m => new EnhancedMethod(this, EnhancedClass(m.getDeclaringClass), m))
   }
+
+  /**
+   * All classes that are subtypes of this class in the runtime. Not an inexpensive operation.
+   */
+  lazy val subTypes = new Reflections("").getSubTypesOf(javaClass).toList.map(c => EnhancedClass(c))
 
   /**
    * Finds a method by the absoluteSignature.

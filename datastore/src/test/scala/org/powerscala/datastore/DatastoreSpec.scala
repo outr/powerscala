@@ -16,9 +16,9 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
 
   "Datastore" when {
     "using mongodb" should {
-      val (session, created) = datastore.createOrGet()
+      val created = datastore.createSessionForThread()
       datastore.session.delete()
-      test(session) {
+      test(datastore.session) {
         if (created) {
           datastore.session.delete()
           datastore.disconnect()

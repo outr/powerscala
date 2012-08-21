@@ -11,6 +11,8 @@ trait DatastoreSession extends Listenable with Child {
   def datastore: Datastore
   def parent = datastore
 
+  override def bus = datastore.bus
+
   private var collections = Map.empty[String, DatastoreCollection[_]]
 
   def apply[T <: Identifiable](implicit manifest: Manifest[T]) = collection[T](null)(manifest)

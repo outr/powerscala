@@ -4,7 +4,7 @@ package org.powerscala
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 sealed class Currency(val description: String) extends EnumEntry[Currency] {
-  override def toString = "%s (%s)".format(description, name)
+  override def toString = "%s (%s)".format(description, name())
 }
 
 object Currency extends Enumerated[Currency] {

@@ -118,6 +118,11 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
    */
   def length = nodes.length
 
+  /**
+   * Remove all nodes attached to this Bus.
+   */
+  def clear() = nodes = Nil
+
   private val referenceSort = (r1: Reference[Node], r2: Reference[Node]) => {
     val n1 = r1.getOrNull
     val n2 = r2.getOrNull
@@ -136,4 +141,16 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
 /**
  * Default Bus and primary pipeline through which most messages pass.
  */
-object Bus extends Bus(Priority.Normal)
+object Bus {
+  private val threadLocal = new ThreadLocal[Bus]()
+  val default = new Bus(Priority.Normal)
+
+  def apply() = threadLocal.get() match {
+    case null => default
+    case bus => bus
+  }
+
+  def current = apply()
+
+  def current_=(bus: Bus) = threadLocal.set(bus)
+}
