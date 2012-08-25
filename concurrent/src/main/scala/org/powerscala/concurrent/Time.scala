@@ -37,6 +37,7 @@ import scala.math._
 import org.powerscala.{Enumerated, EnumEntry, Precision}
 import java.util.Calendar
 import java.text.SimpleDateFormat
+import collection.mutable.ListBuffer
 
 /**
  * Time represents convenience values and utilities
@@ -78,6 +79,29 @@ object Time extends Enumerated[Time] {
 
   implicit def double2TimeAmount(time: Double) = TimeAmount(time)
   implicit def timeAmount2Double(timeAmount: TimeAmount) = timeAmount.time
+
+  private val reports = new ThreadLocal[Report]
+
+  /**
+   * Generates a report for timing of segments of code defined by block names.
+   *
+   * Use the block(name) method to define segments of application context during the invocation of the function.
+   */
+  def report(f: => Any): Report = {
+    val report = new Report(System.nanoTime())
+    reports.set(report)
+    try {
+      f
+    } finally {
+      reports.set(null)
+    }
+    report
+  }
+
+  /**
+   * @see report
+   */
+  def block(name: String) = reports.get()(name)
 
   /**
    * Invokes the wrapped function and returns the time in seconds it took to complete as a Double.
@@ -249,4 +273,45 @@ case class TimeAmount(time: Double) {
   def minutes = TimeAmount(time * Time.Minute.value)
   def seconds = TimeAmount(time * Time.Second.value)
   def and(timeAmount: TimeAmount) = TimeAmount(time + timeAmount.time)
+}
+
+class Report(_start: Long) {
+  protected var _last = _start
+  protected var _finished = 0L
+  protected var blocks = ListBuffer.empty[(String, Long)]
+  protected var absolute = ListBuffer.empty[(String, Long)]
+
+  protected[concurrent] def apply(name: String) = {
+    val current = System.nanoTime()
+    blocks
+    blocks += name -> (current - _last)
+    absolute += name -> current
+    _last = current
+  }
+
+  /**
+   * The amount of time the named block took to the beginning of the next block
+   */
+  def block(name: String) = blocks.find(t => t._1 == name).get._2 / Precision.Nanoseconds.conversion
+
+  /**
+   * The amount of time the named block took from the beginning of the report
+   */
+  def elapsed(name: String) = (when(name) - _start) / Precision.Nanoseconds.conversion
+
+  /**
+   * The actual time in nanoseconds when the block started
+   */
+  def when(name: String) = absolute.find(t => t._1 == name).get._2
+
+  override def toString = {
+    val b = new StringBuilder
+    blocks.foreach {
+      case (name, length) => {
+        b.append("%s - Block: %ss, Elapsed: %ss\r\n".format(name, block(name), elapsed(name)))
+      }
+    }
+    b.append()
+    b.toString()
+  }
 }

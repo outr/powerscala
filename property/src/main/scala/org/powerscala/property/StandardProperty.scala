@@ -1,10 +1,11 @@
 package org.powerscala.property
 
 import backing.{VariableBacking, Backing}
-import event.PropertyChangeEvent
+import event.{PropertyValueEvent, PropertyChangeEvent}
 import org.powerscala.ChangeInterceptor
 import org.powerscala.bind.Bindable
-import org.powerscala.event.{ChangeEvent, Listenable}
+import org.powerscala.event.{Event, ChangeEvent, Listenable}
+import org.powerscala.hierarchy.Child
 
 /**
  * StandardProperty is the default implementation of mutable properties with change listening and
@@ -34,6 +35,18 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
   def revert() = {
     apply(default)
     _modified = false
+  }
+
+  // Listen to all events on value and wrap in PropertyValueEvent
+  private val recursiveFilter: Event => Boolean = {
+    case event => event.target match {
+      case child: Child if (Child.hasAncestor[Any](child, value.asInstanceOf[Any], Int.MaxValue)) => true
+      case t if (t == value) => true
+      case _ => false
+    }
+  }
+  listeners.synchronous.filter(recursiveFilter) {
+    case evt => fire(PropertyValueEvent(this, evt))
   }
 
   def apply(v: T) = {
