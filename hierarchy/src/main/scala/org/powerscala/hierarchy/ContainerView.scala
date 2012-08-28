@@ -2,6 +2,7 @@ package org.powerscala.hierarchy
 
 import event.{ChildRemovedEvent, ChildAddedEvent}
 import annotation.tailrec
+import org.powerscala.event.Listenable
 
 /**
  * ContainerView represents a flat view of the hierarchical elements of a container. The view should represent the
@@ -16,11 +17,11 @@ import annotation.tailrec
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class ContainerView[T](val container: Container[_],
+class ContainerView[T](val container: Container[_ <: Element],
                           query: T => Boolean = null,
                           sort: (T, T) => Int = null,
                           filterIn: T => Boolean = null,
-                          dynamic: Boolean = true)(implicit manifest: Manifest[T]) extends Iterable[T] {
+                          dynamic: Boolean = true)(implicit manifest: Manifest[T]) extends Iterable[T] with Listenable {
   private lazy val ordering = new Ordering[T] {
     def compare(x: T, y: T) = if (sort != null) sort(x, y) else 0
   }
@@ -113,6 +114,7 @@ class ContainerView[T](val container: Container[_],
       val c = child.asInstanceOf[T]
       if (filterIn == null || filterIn(c)) {
         queue = (c :: queue.reverse).reverse
+        fire(ChildAddedEvent(container, c))
       } else {
         filtered = c :: filtered
       }
@@ -129,8 +131,12 @@ class ContainerView[T](val container: Container[_],
    */
   private def invalidateChild(child: AnyRef) = {
     val f = (c: T) => c == child
-    queue = queue.filterNot(f)
-    filtered = filtered.filterNot(f)
+    if (queue.contains(child)) {
+      queue = queue.filterNot(f)
+      fire(ChildRemovedEvent(container, child))
+    } else {
+      filtered = filtered.filterNot(f)
+    }
 
     child match {   // If the child is a container, we need to remove its children as well
       case container: Container[_] => invalidateRecursive(container.contents)
@@ -157,6 +163,7 @@ class ContainerView[T](val container: Container[_],
       if (filterIn(item)) {     // Include it back into the queue
         queue = item :: queue
         filtered = filtered.filterNot(f => f == item)
+        fire(ChildAddedEvent(container, item))
       }
       validateExcluded(excluded.tail)
     }
@@ -172,6 +179,7 @@ class ContainerView[T](val container: Container[_],
       if (!filterIn(item)) {      // Exclude it from the queue
         queue = queue.filterNot(i => i == item)
         filtered = item :: filtered
+        fire(ChildRemovedEvent(container, item))
       }
       validateIncluded(included.tail)
     }

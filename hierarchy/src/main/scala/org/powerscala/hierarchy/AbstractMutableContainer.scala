@@ -37,14 +37,14 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
   }
 
   protected def removeChild(child: T) = synchronized {
+    fire(new ChildRemovedEvent(this, child))    // Fire before so index and hierarchy remains during the event
+
     buffer -= child
 
     child match {
       case element: Element => Element.assignParent(element, null)
       case _ =>
     }
-
-    fire(new ChildRemovedEvent(this, child))
   }
 
   protected def removeFirst() = synchronized {
