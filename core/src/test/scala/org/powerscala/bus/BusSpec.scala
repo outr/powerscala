@@ -15,27 +15,27 @@ class BusSpec extends WordSpec with ShouldMatchers {
         case message if (message == "Test1") => received = true
       }
       "start with an empty Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
       "successfully add the listener" in {
-        Bus.add(node)
+        Bus().add(node)
       }
       "have one listener on the Bus" in {
-        Bus.length should equal(1)
+        Bus().length should equal(1)
       }
       "not update 'received' if the value is not 'Test1'" in {
-        Bus("TestBad")
+        Bus()("TestBad")
         received should equal(false)
       }
       "update 'received' if the value is 'Test1'" in {
-        Bus("Test1")
+        Bus()("Test1")
         received should equal(true)
       }
       "remove the node" in {
-        Bus.remove(node)
+        Bus().remove(node)
       }
       "have no nodes" in {
-        Bus.length should equal(0)
+        Bus().length should equal(0)
       }
     }
     "two listeners are added" should {
@@ -48,14 +48,14 @@ class BusSpec extends WordSpec with ShouldMatchers {
         case message => secondReceived = true
       }
       "start with an empty Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
       "successfully add the listeners" in {
-        Bus.add(first)
-        Bus.add(second)
+        Bus().add(first)
+        Bus().add(second)
       }
       "fire a message" in {
-        Bus("Test2")
+        Bus()("Test2")
       }
       "receive the message on first properly" in {
         firstReceived should equal(true)
@@ -64,9 +64,9 @@ class BusSpec extends WordSpec with ShouldMatchers {
         secondReceived should equal(true)
       }
       "remove both nodes" in {
-        Bus.remove(first)
-        Bus.remove(second)
-        Bus.isEmpty should equal(true)
+        Bus().remove(first)
+        Bus().remove(second)
+        Bus().isEmpty should equal(true)
       }
     }
     "two listeners are added with the first stopping" should {
@@ -82,14 +82,14 @@ class BusSpec extends WordSpec with ShouldMatchers {
         case message => secondReceived = true
       }
       "start with an empty Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
       "successfully add the listeners" in {
-        Bus.add(first)
-        Bus.add(second)
+        Bus().add(first)
+        Bus().add(second)
       }
       "fire a message" in {
-        Bus("Test3")
+        Bus()("Test3")
       }
       "receive the message on first properly" in {
         firstReceived should equal(true)
@@ -98,9 +98,9 @@ class BusSpec extends WordSpec with ShouldMatchers {
         secondReceived should equal(false)
       }
       "remove both nodes" in {
-        Bus.remove(first)
-        Bus.remove(second)
-        Bus.isEmpty should equal(true)
+        Bus().remove(first)
+        Bus().remove(second)
+        Bus().isEmpty should equal(true)
       }
     }
     "a node with a response" should {
@@ -113,14 +113,14 @@ class BusSpec extends WordSpec with ShouldMatchers {
         case message => secondReceived = true
       }
       "start with an empty Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
       "successfully add the nodes" in {
-        Bus.add(second)
-        Bus.add(first)
+        Bus().add(second)
+        Bus().add(first)
       }
       "fire a message" in {
-        response = Bus("test response")
+        response = Bus()("test response")
       }
       "have a Routing.Response" in {
         response.getClass should equal(classOf[RoutingResponse])
@@ -132,9 +132,9 @@ class BusSpec extends WordSpec with ShouldMatchers {
         secondReceived should equal(false)
       }
       "remove both nodes" in {
-        Bus.remove(first)
-        Bus.remove(second)
-        Bus.isEmpty should equal(true)
+        Bus().remove(first)
+        Bus().remove(second)
+        Bus().isEmpty should equal(true)
       }
     }
     "nodes with results" should {
@@ -149,15 +149,15 @@ class BusSpec extends WordSpec with ShouldMatchers {
         case message => Routing.Results(List(7, 8, 9))
       }
       "start with an empty Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
       "successfully add the nodes" in {
-        Bus.add(third)
-        Bus.add(first)
-        Bus.add(second)
+        Bus().add(third)
+        Bus().add(first)
+        Bus().add(second)
       }
       "fire a message" in {
-        response = Bus("test results")
+        response = Bus()("test results")
       }
       "have a Routing.Results" in {
         response.getClass should equal(classOf[RoutingResults])
@@ -166,9 +166,9 @@ class BusSpec extends WordSpec with ShouldMatchers {
         response.asInstanceOf[RoutingResults].results should equal(List(1, 2, 3, 4, 5, 6, 7, 8, 9))
       }
       "remove all three nodes" in {
-        Bus.remove(first)
-        Bus.remove(second)
-        Bus.remove(third)
+        Bus().remove(first)
+        Bus().remove(second)
+        Bus().remove(third)
       }
     }
   }

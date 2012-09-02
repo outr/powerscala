@@ -47,6 +47,19 @@ class ContainerView[T](val container: Container[_ <: Element],
   }
 
   /**
+   * Applies all items in the view to the supplied function and continues to apply against the function as new items are
+   * added in the future.
+   */
+  def live(f: T => Unit) = {
+    // Apply to everything now
+    foreach(f)
+    // Apply to everything going forward
+    listeners.synchronous {
+      case evt: ChildAddedEvent => f(evt.child.asInstanceOf[T])
+    }
+  }
+
+  /**
    * Refreshes the ContainerView. This is much less efficient than allowing events to update the view automatically when
    * dynamic is set to true.
    */

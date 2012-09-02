@@ -27,6 +27,28 @@ trait Element extends Child {
 
   protected class ElementHierarchy {
     /**
+     * Invokes the supplied function where type is compatible down the hierarchical structure of this Element including
+     * this element if applicable.
+     */
+    def process[T](f: T => Unit)(implicit manifest: Manifest[T]) = {
+      if (manifest.erasure.isAssignableFrom(Element.this.getClass)) {
+        f(Element.this.asInstanceOf[T])
+      }
+      Element.this match {
+        case parent: Parent => applyChildren[T](f, parent.contents)(manifest)
+        case _ =>
+      }
+    }
+
+    private def applyChildren[T](f: T => Unit, children: Seq[Element])(implicit manifest: Manifest[T]): Unit = {
+      if (children.nonEmpty) {
+        val child = children.head
+        child.hierarchy.process[T](f)(manifest)
+        applyChildren[T](f, children.tail)(manifest)
+      }
+    }
+
+    /**
      * The element before this one or null.
      */
     def previous = parent match {

@@ -18,7 +18,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       var listener: Listener = null
       "wait for an empty Bus" in {
         Time.waitFor(5.0) {
-          Bus.isEmpty
+          Bus().isEmpty
         } should equal(true)
       }
       "add a listener" in {
@@ -42,7 +42,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     // TODO: add back asynchronous support
@@ -78,7 +78,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }*/
     "one concurrent listener is added" should {
@@ -113,7 +113,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "utilizing the 'once' convenience method" should {
@@ -145,7 +145,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "utilizing the 'waitFor' convenience method" should {
@@ -176,7 +176,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listening for an event on an ancestor" should {
@@ -203,7 +203,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestChildListenable.listeners.synchronous -= listener
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listening for an event on an parent" should {
@@ -230,7 +230,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestChildListenable.listeners.synchronous -= listener
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listening for an event on a descendant" should {
@@ -257,7 +257,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestChildListenable.listeners -= listener
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listening for an event on a child" should {
@@ -284,7 +284,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestChildListenable.listeners.synchronous -= listener
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listener stopping processing via Routing.Stop" should {
@@ -321,7 +321,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.synchronous -= listener2
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listener propagating Routing.Results" should {
@@ -357,7 +357,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.synchronous -= listener3
       }
       "have no nodes on the Bus" in {
-        Bus.isEmpty should equal(true)
+        Bus().isEmpty should equal(true)
       }
     }
     "listener weakly added" should {
