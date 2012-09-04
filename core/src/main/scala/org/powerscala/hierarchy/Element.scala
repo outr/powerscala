@@ -1,5 +1,7 @@
 package org.powerscala.hierarchy
 
+import collection.mutable.ListBuffer
+
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -38,6 +40,24 @@ trait Element extends Child {
         case parent: Parent => applyChildren[T](f, parent.contents)(manifest)
         case _ =>
       }
+    }
+
+    def findFirst[T](condition: T => Boolean)(implicit manifest: Manifest[T]) = {
+      var found: Option[T] = None
+      process[T] {
+        case t if (found == None && condition(t)) => found = Some(t)
+        case _ => // Ignore everything else
+      }(manifest)
+      found
+    }
+
+    def findAll[T](condition: T => Boolean)(implicit manifest: Manifest[T]) = {
+      var results = ListBuffer.empty[T]
+      process[T] {
+        case t if (condition(t)) => results += t
+        case _ => // Ignore, not a match
+      }
+      results.toList
     }
 
     private def applyChildren[T](f: T => Unit, children: Seq[Element])(implicit manifest: Manifest[T]): Unit = {
