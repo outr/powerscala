@@ -26,7 +26,10 @@ class DataCache[T <: Identifiable](datastore: Datastore, name: String = null, li
     collection.iterator.toList
   }
 
-  def iterator = cache.iterator
+  def iterator = {
+    waitForBuild()
+    cache.iterator
+  }
 
   def waitForBuild() = {
     while (!built) {
