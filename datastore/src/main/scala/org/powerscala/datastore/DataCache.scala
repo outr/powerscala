@@ -5,8 +5,7 @@ import org.powerscala.concurrent.Executor
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class DataCache[T <: Identifiable](datastore: Datastore, name: String = null, lifetime: Double)
-                                  (implicit manifest: Manifest[T]) extends Iterable[T] {
+abstract class DataCache[T](lifetime: Double)(implicit manifest: Manifest[T]) extends Iterable[T] {
   @volatile
   private var cache: List[T] = Nil
   private var built = false
@@ -16,15 +15,11 @@ class DataCache[T <: Identifiable](datastore: Datastore, name: String = null, li
   }
 
   def rebuildCache() = synchronized {
-    datastore {
-      case session => cache = query(session.collection[T](name)(manifest))
-    }
+    cache = query()
     built = true
   }
 
-  def query(collection: DatastoreCollection[T]): List[T] = {
-    collection.iterator.toList
-  }
+  def query(): List[T]
 
   def iterator = {
     waitForBuild()
