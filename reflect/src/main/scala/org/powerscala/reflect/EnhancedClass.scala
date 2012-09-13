@@ -213,11 +213,10 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     case _ => javaClass.isAssignableFrom(v.asInstanceOf[AnyRef].getClass)
   }
 
-  def hasType(c: Class[_]) = if (c.isAssignableFrom(javaClass)) {
-    true
-  } else {
-    false
-  }
+  /**
+   * Returns true if <code>c</code> is extended or mixed in to this EnhancedClass.
+   */
+  def hasType(c: Class[_]) = c.isAssignableFrom(javaClass)
 
   /**
    * Returns the default value by type. For primitives this will return zero or false and for references this will

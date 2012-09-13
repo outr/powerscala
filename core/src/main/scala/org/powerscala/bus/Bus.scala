@@ -62,7 +62,15 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
    *
    * @return Routing defining how this was processed by the nodes.
    */
-  def apply(message: Any) = receive(this, message)
+  def apply(message: Any) = {
+    val previous = Bus.current
+    Bus.current = this
+    try {
+      receive(this, message)
+    } finally {
+      Bus.current = previous
+    }
+  }
 
   def receive(bus: Bus, message: Any) = process(message, nodes, null)
 
