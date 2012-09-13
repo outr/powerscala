@@ -152,6 +152,12 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
         test.age should equal(0)
       }
     }
+    "working with hasType" should {
+      val testClassType: EnhancedClass = classOf[TestClassType]
+      "have type when referencing a class it extends" in {
+        testClassType.hasType(classOf[TestClassExtends]) should equal(true)
+      }
+    }
   }
 }
 
@@ -174,3 +180,11 @@ case class TestCaseClass3()
 case class TestCaseClass4(name: String, @transient age: Int)
 
 case class TestCaseClass5(name: String, bytes: Array[Byte])
+
+class TestClassType extends TestClassExtends with TestClassTrait1
+
+class TestClassExtends extends TestClassTrait2
+
+trait TestClassTrait1
+
+trait TestClassTrait2
