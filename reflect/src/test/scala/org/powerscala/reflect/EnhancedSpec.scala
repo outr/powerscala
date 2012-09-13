@@ -157,6 +157,12 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
       "have type when referencing a class it extends" in {
         testClassType.hasType(classOf[TestClassExtends]) should equal(true)
       }
+      "have type when referencing a mixin" in {
+        testClassType.hasType(classOf[TestClassTrait1]) should equal(true)
+      }
+      "have type when referencing a mixin in a subclass" in {
+        testClassType.hasType(classOf[TestClassTrait2]) should equal(true)
+      }
     }
   }
 }
