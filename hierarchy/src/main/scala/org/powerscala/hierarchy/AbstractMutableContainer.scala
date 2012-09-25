@@ -13,6 +13,10 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
   def contents: Seq[T] = buffer
 
   protected def addChild(child: T) = synchronized {
+    if (child == null) {
+      throw new NullPointerException("Adding a null child is not allowed")
+    }
+
     buffer += child
 
     child match {
@@ -27,6 +31,9 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
     buffer.insert(index, children: _*)
     children.foreach {
       case child => {
+        if (child == null) {
+          throw new NullPointerException("Adding a null child is not allowed")
+        }
         child match {
           case element: Element => Element.assignParent(element, this)
           case _ =>
