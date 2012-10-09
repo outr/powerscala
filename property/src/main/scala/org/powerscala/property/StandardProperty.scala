@@ -48,7 +48,7 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
 
   def apply() = backing.getValue
 
-  def onChange(f: => Unit) = listeners.synchronous {
+  def onChange(f: => Any) = listeners.synchronous {
     case evt: ChangeEvent => f
   }
 

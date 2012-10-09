@@ -11,6 +11,16 @@ trait Lazy[T <: Identifiable] extends Function0[T] with Identifiable {
 
   def loaded: Boolean
 
+  def get() = apply() match {
+    case null => None
+    case r => Some(r)
+  }
+
+  def getOrElse(f: => T) = apply() match {
+    case null => f
+    case r => r
+  }
+
   override def toString() = "Lazy(%s)".format(apply())
 }
 

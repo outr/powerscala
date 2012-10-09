@@ -52,7 +52,7 @@ trait Listenable {
    *
    * Convenience method for Listenable.onChange.
    */
-  def onChange(listenables: Listenable*)(f: => Unit) = Listenable.onChange(listenables: _*)(f)
+  def onChange(listenables: Listenable*)(f: => Any) = Listenable.onChange(listenables: _*)(f)
 
   /**
    * Allows single instantiation of a listener listening to multiple Listenables simultaneously.

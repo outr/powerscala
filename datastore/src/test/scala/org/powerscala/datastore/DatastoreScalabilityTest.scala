@@ -6,11 +6,12 @@ import query.Field
 
 import scala.math._
 import org.powerscala.concurrent.Time
+import org.powerscala.Logging
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-object DatastoreScalabilityTest {
+object DatastoreScalabilityTest extends Logging {
   lazy val datastore = new MongoDBDatastore()
   val items = 1000
 
@@ -21,7 +22,7 @@ object DatastoreScalabilityTest {
       iterateItems()
 //      itemsAsList()
     }
-    println("Completed successfully in %s seconds".format(took))
+    info("Completed successfully in %s seconds".format(took))
   }
 
   def persistItems() = {
@@ -30,7 +31,7 @@ object DatastoreScalabilityTest {
         val collection = session[TestObject]
         (0 until items).foreach {
           case i => {
-            println("Persisting: %s".format(i))
+            info("Persisting: %s".format(i))
             collection.persist(TestObject("item%s".format(i)))
           }
         }
@@ -46,7 +47,7 @@ object DatastoreScalabilityTest {
         collection.foreach {
           case item => count += 1
         }
-        println("Found %s items".format(count))
+        info("Found %s items".format(count))
       }
     }
   }
@@ -55,7 +56,7 @@ object DatastoreScalabilityTest {
     val items = datastore {
       case session => session[TestObject].toList
     }
-    println("Items: %s".format(items.size))
+    info("Items: %s".format(items.size))
   }
 
   def verifyOutOfMemory() = {

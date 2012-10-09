@@ -1,12 +1,12 @@
 package org.powerscala.datastore
 
 import impl.mongodb.MongoDBDatastore
-import java.util
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.{Queryable, Field}
+import util.UUID
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -35,6 +35,7 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     val cb = session[TestBase]
     val c5 = session[Test5]
     val c7 = session[Test7]
+    val c9 = session[Test9]
     val t1 = Test1("test1")
     "have no objects in the database" in {
       println("Checking db size...")
@@ -237,6 +238,19 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       val results = c7.query.filter(Test7.test(Test8.name equal("test8"))).toList
       results.length should equal(1)
     }
+    "properly persist a LazyList" in {
+      val t9 = Test9("TestLazyList", LazyList(Test1("One"), Test1("Two"), Test1("Three")))
+      c9.persist(t9)
+    }
+    "properly load a LazyList" in {
+      val t9 = c9.head
+      t9.name should equal("TestLazyList")
+      t9.list.loaded should equal(false)
+      t9.list().length should equal(3)
+      t9.list()(0).name should equal("One")
+      t9.list()(1).name should equal("Two")
+      t9.list()(2).name should equal("Three")
+    }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
       finish
@@ -248,21 +262,21 @@ trait Test {
   def name: String
 }
 
-case class Test1(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable with Test
+case class Test1(name: String, id: UUID = UUID.randomUUID()) extends Identifiable with Test
 
 object Test1 extends Queryable[Test1] {
   val name = Field.string[Test1]("name")
   val id = Field.id[Test1]
 }
 
-case class Test2(name: String, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+case class Test2(name: String, id: UUID = UUID.randomUUID()) extends Identifiable
 
 object Test2 extends Queryable[Test2] {
   val name = Field.string[Test2]("name")
   val id = Field.id[Test2]
 }
 
-case class Test3(name: String, precision: Precision, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+case class Test3(name: String, precision: Precision, id: UUID = UUID.randomUUID()) extends Identifiable
 
 object Test3 extends Queryable[Test3] {
   val name = Field.string[Test3]("name")
@@ -270,7 +284,7 @@ object Test3 extends Queryable[Test3] {
   val id = Field.id[Test3]
 }
 
-case class Test4(name: String, t1: Lazy[Test1], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+case class Test4(name: String, t1: Lazy[Test1], id: UUID = UUID.randomUUID()) extends Identifiable
 
 object Test4 extends Queryable[Test3] {
   val name = Field.string[Test4]("name")
@@ -282,7 +296,7 @@ trait TestBase extends Identifiable {
   def name: String
 }
 
-case class Test5(name: String, age: Int, id: util.UUID = util.UUID.randomUUID()) extends TestBase
+case class Test5(name: String, age: Int, id: UUID = UUID.randomUUID()) extends TestBase
 
 object Test5 extends Queryable[Test5] {
   val name = Field.string[Test5]("name")
@@ -290,9 +304,9 @@ object Test5 extends Queryable[Test5] {
   val id = Field.id[Test5]
 }
 
-case class Test6(name: String, ref: String, id: util.UUID = util.UUID.randomUUID()) extends TestBase
+case class Test6(name: String, ref: String, id: UUID = UUID.randomUUID()) extends TestBase
 
-case class Test7(name: String, test: Test8, id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+case class Test7(name: String, test: Test8, id: UUID = UUID.randomUUID()) extends Identifiable
 
 object Test7 extends Queryable[Test7] {
   val name = Field.string[Test7]("name")
@@ -300,10 +314,12 @@ object Test7 extends Queryable[Test7] {
   val id = Field.id[Test7]
 }
 
-case class Test8(name: String, bytes: Array[Byte], id: util.UUID = util.UUID.randomUUID()) extends Identifiable
+case class Test8(name: String, bytes: Array[Byte], id: UUID = UUID.randomUUID()) extends Identifiable
 
 object Test8 extends Queryable[Test8] {
   val name = Field.string[Test8]("name")
 //  val bytes = Field[Test8, Array[Byte]]("bytes")
   val id = Field.id[Test8]
 }
+
+case class Test9(name: String, list: LazyList[Test1], id: UUID = UUID.randomUUID()) extends Identifiable

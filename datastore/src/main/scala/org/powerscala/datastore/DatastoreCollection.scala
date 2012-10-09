@@ -3,10 +3,14 @@ package org.powerscala.datastore
 import event.{DatastoreDelete, DatastorePersist}
 import java.util
 import org.powerscala.event.Listenable
-import org.powerscala.reflect.EnhancedClass
-import query.{Field, DatastoreQuery}
+import org.powerscala.reflect._
+import query._
 import org.powerscala.hierarchy.Child
+import query.DatastoreQuery
+import query.FieldFilter
 import util.UUID
+import scala.Some
+import collection.mutable.ListBuffer
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -15,6 +19,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
   def name: String
   def session: DatastoreSession
   def parent = session
+  def manifest: Manifest[T]
 
   override def bus = session.bus
 
@@ -33,16 +38,38 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def isPersisted(ref: T): Boolean = isPersisted(ref.id)
 
+  /**
+   * Make sure we don't run into infinite recursion
+   */
+  private val alreadyPersisted = new ThreadLocal[ListBuffer[T]]
+
   final def persist(refs: T*): Unit = {
-    refs.foreach {
-      case ref => {
-        isPersisted(ref.id) match {
-          case true => persistModified(ref)
-          case false => persistNew(ref)
-        }
-        ids += ref.id
-        fire(DatastorePersist(this, ref))
+    val wrapped = alreadyPersisted.get() != null
+    if (!wrapped) {
+      alreadyPersisted.set(ListBuffer.empty)
+    }
+    try {
+      refs.foreach {
+        case ref => persistInternal(ref)
       }
+    } finally {
+      if (!wrapped) {
+        alreadyPersisted.set(null)
+      }
+    }
+  }
+
+  private def persistInternal(ref: T) = {
+    if (alreadyPersisted.get().contains(ref)) {
+      // Ignore already persisted
+    } else {
+      alreadyPersisted.get() += ref
+      isPersisted(ref.id) match {
+        case true => persistModified(ref)
+        case false => persistNew(ref)
+      }
+      ids += ref.id
+      fire(DatastorePersist(this, ref))
     }
   }
 
@@ -56,7 +83,11 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     }
   }
 
+  def drop(): Unit
+
   final def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
+
+  final def byIds(ids: util.UUID*) = ids.map(id => byId(id)).flatten.toList
 
   def byExample(example: T) = {
     val ec = EnhancedClass(example.getClass)
@@ -79,7 +110,16 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     q
   }
 
-  def query = DatastoreQuery(collection = this)
+  lazy val classField = new StringField[T]("class")
+
+  def query = {
+    val q = DatastoreQuery(collection = this)
+    if (manifest.erasure.isCase) {    // Auto-filter to case class
+      q.filter(FieldFilter[T](classField, Operator.equal, manifest.erasure.getName))
+    } else {                          // Generalization, can't auto-filter
+      q
+    }
+  }
 
   def executeQuery(query: DatastoreQuery[T]): Iterator[T]
 

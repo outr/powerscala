@@ -37,6 +37,16 @@ trait Datastore extends Listenable with Child {
     }
   }
 
+  /**
+   * Allows overriding the collection name being utilized for the datastore.
+   *
+   * Defaults to return the same value passed in or the simple class name if name is null.
+   */
+  def aliasName(name: String, clazz: Class[_]) = name match {
+    case null => clazz.getSimpleName
+    case _ => name
+  }
+
   def collection[T <: Identifiable, R](f: DatastoreCollection[T] => R)(implicit manifest: Manifest[T]): R = {
     apply {
       case session => {

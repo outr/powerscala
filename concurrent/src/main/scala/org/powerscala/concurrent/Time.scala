@@ -208,7 +208,7 @@ object Time extends Enumerated[Time] {
   /**
    * Converts time in seconds to milliseconds.
    */
-  def millis(time: Double) = round((time * 1000.0).toFloat)
+  def millis(time: Double) = round(time * 1000.0)
 
   /**
    * Converts time in nanoseconds to seconds.
@@ -273,6 +273,8 @@ case class TimeAmount(time: Double) {
   def minutes = TimeAmount(time * Time.Minute.value)
   def seconds = TimeAmount(time * Time.Second.value)
   def and(timeAmount: TimeAmount) = TimeAmount(time + timeAmount.time)
+
+  def toMilliseconds = Time.millis(time)
 }
 
 class Report(_start: Long) {

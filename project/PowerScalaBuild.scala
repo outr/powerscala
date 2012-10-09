@@ -9,6 +9,9 @@ object PowerScalaBuild extends Build {
     organization := "org.powerscala",
     scalaVersion := "2.9.2",
     libraryDependencies ++= Seq(
+      logbackCore,
+      logbackClassic,
+      slf4j,
       scalaTest
     ),
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
@@ -58,7 +61,7 @@ object PowerScalaBuild extends Build {
     .dependsOn(core)
   lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
     .dependsOn(core, event, convert)
-    .settings(libraryDependencies += mongodb)
+    .settings(libraryDependencies ++= Seq(mongodb))
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
     .dependsOn(core, concurrent)
   lazy val hierarchy = Project("hierarchy", file("hierarchy"), settings = createSettings("powerscala-hierarchy"))
@@ -66,7 +69,7 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections, slf4j))
+    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections))
 }
 
 object Dependencies {
@@ -75,5 +78,7 @@ object Dependencies {
   val scalaTest = "org.scalatest" % "scalatest_2.9.1" % "1.7.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.8.0"
   val reflections = "org.reflections" % "reflections" % "0.9.8"
-  val slf4j = "org.slf4j" % "slf4j-api" % "1.6.6"
+  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
+  val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
+  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
 }

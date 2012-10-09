@@ -14,6 +14,7 @@ import java.util.UUID
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastoreSession, val name: String)
+                                                   (implicit val manifest: Manifest[T])
                                                    extends DatastoreCollection[T] {
   lazy val collection = session.database.getCollection(name)
 
@@ -116,5 +117,8 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     asScalaIterator(cursor).map(entry => entry.get("_id").asInstanceOf[UUID])
   }
 
-  def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
+  def iterator = query.iterator
+//  def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
+
+  def drop() = collection.drop()
 }

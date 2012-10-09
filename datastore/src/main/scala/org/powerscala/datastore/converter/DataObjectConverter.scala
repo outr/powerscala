@@ -8,7 +8,7 @@ import org.powerscala.EnumEntry
 import org.bson.types.ObjectId
 
 import scala.collection.JavaConversions._
-import org.powerscala.datastore.{DatastoreCollection, Lazy}
+import org.powerscala.datastore.{LazyList, DatastoreCollection, Lazy}
 import java.util
 
 /**
@@ -48,6 +48,8 @@ object DataObjectConverter {
             MapDataObjectConverter
           } else if (classOf[Lazy[_]].isAssignableFrom(clazz)) {
             LazyDataObjectConverter
+          } else if (classOf[LazyList[_]].isAssignableFrom(clazz)) {
+            LazyListDataObjectConverter
           } else {
             new ReflectiveDataObjectConverter(clazz)
           }
