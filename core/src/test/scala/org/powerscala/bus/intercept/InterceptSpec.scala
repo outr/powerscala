@@ -2,30 +2,32 @@ package org.powerscala.bus.intercept
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
+import org.powerscala.bus.{Bus, Routing}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class InterceptSpec extends WordSpec with ShouldMatchers {
-  val one = Interceptable[String]("one")
-  val two = Interceptable[String]("two")
-  val three = Interceptable[String]("three")
-  val four = Interceptable[String]("four")
+  val bus = new Bus()
+  val one = Interceptable[String]("one", bus)
+  val two = Interceptable[String]("two", bus)
+  val three = Interceptable[String]("three", bus)
+  val four = Interceptable[String]("four", bus)
 
   "Interceptable" should {
     "configure replace intercepts" in {
-      one.intercept(new Intercept[String] {
-        def intercept(t: String) = replace(t.reverse)
-      })
-      two.intercept(new Intercept[String] {
-        def intercept(t: String) = replace(t.toUpperCase)
-      })
-      three.intercept(new Intercept[String] {
-        def intercept(t: String) = reject()
-      })
-      four.intercept(new Intercept[String] {
-        def intercept(t: String) = continue()
-      })
+      one.intercept {
+        case s => Routing.Response(s.reverse)
+      }
+      two.intercept {
+        case s => Routing.Response(s.toUpperCase)
+      }
+      three.intercept {
+        case s => Routing.Stop
+      }
+      four.intercept {
+        case s => Routing.Continue
+      }
     }
     "send an intercept to 'one' and have it replaced" in {
       val responseOption = one("Testing")

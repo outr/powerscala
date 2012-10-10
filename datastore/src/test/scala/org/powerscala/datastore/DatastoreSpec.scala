@@ -6,7 +6,7 @@ import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.{Queryable, Field}
-import util.UUID
+import java.util.UUID
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
