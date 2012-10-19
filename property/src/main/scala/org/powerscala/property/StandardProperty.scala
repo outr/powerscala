@@ -20,7 +20,7 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
                                     with Bindable[T]
                                     with Default[T] {
   val name = () => _name
-  private var _modified = false
+  @volatile private var _modified = false
   backing.setValue(default)
 
   /**
@@ -39,11 +39,11 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
   def apply(v: T) = {
     val oldValue = backing.getValue
     val newValue = change(oldValue, v)
+    _modified = true
     if (oldValue != newValue) {
       backing.setValue(newValue)
       fire(PropertyChangeEvent(this, oldValue, newValue))
     }
-    _modified = true
   }
 
   def apply() = backing.getValue
