@@ -2,17 +2,16 @@ package org.powerscala.bus.intercept
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.powerscala.bus.{Bus, Routing}
+import org.powerscala.bus.Routing
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class InterceptSpec extends WordSpec with ShouldMatchers {
-  val bus = new Bus()
-  val one = Interceptable[String]("one", bus)
-  val two = Interceptable[String]("two", bus)
-  val three = Interceptable[String]("three", bus)
-  val four = Interceptable[String]("four", bus)
+  val one = Interceptable[String]("one")
+  val two = Interceptable[String]("two")
+  val three = Interceptable[String]("three")
+  val four = Interceptable[String]("four")
 
   "Interceptable" should {
     "configure replace intercepts" in {

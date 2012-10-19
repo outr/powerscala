@@ -1,7 +1,7 @@
 package org.powerscala
 
 import org.slf4j.{Logger, LoggerFactory}
-import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.{Level, LoggerContext}
 import ch.qos.logback.classic.joran.JoranConfigurator
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -23,15 +23,17 @@ trait Logging {
 }
 
 object Logging {
+  val context = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+
   val Standard = "%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-  val Detailed = "%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method.%line%n\t%msg%n"
+  val Detailed = "%d{yyyy.MM.dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method.%line%n\t%msg%n"   // TODO: fix so it isn't showing Logging.info instead of the actual method
 
   reconfigure()
 
-  def apply(instance: Logging) = LoggerFactory.getLogger(instance.getClass)
+//  def apply(instance: Logging) = LoggerFactory.getLogger(instance.getClass)
+  def apply(instance: Logging) = context.getLogger(instance.getClass)
 
-  def reconfigure(pattern: String = Standard) = {
-    val context = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+  def reconfigure(pattern: String = Standard, level: Level = Level.INFO) = {
     val configurator = new JoranConfigurator
     configurator.setContext(context)
     context.reset()
@@ -45,6 +47,7 @@ object Logging {
     appender.setEncoder(encoder)
     appender.start()
     val rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME)
+    rootLogger.setLevel(level)
     rootLogger.addAppender(appender)
   }
 }

@@ -11,11 +11,12 @@ import query.FieldFilter
 import util.UUID
 import scala.Some
 import collection.mutable.ListBuffer
+import org.powerscala.Logging
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable with Child {
+trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable with Child with Logging {
   def name: String
   def session: DatastoreSession
   def parent = session

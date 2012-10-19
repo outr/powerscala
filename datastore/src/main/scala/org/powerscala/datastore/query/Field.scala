@@ -2,6 +2,7 @@ package org.powerscala.datastore.query
 
 
 import java.util
+import org.powerscala.datastore.{Identifiable, LazyList, Lazy}
 
 trait Field[T, F] {
   def name: String
@@ -29,6 +30,10 @@ object Field {
   def string[T](name: String) = new StringField[T](name)
 
   def embedded[T, F](name: String) = new EmbeddedField[T, F](name)
+
+  def lzy[T, F <: Identifiable](name: String) = new EmbeddedField[T, Lazy[F]](name)
+
+  def lazyList[T, F <: Identifiable](name: String) = new EmbeddedField[T, LazyList[F]](name)
 }
 
 class BaseField[T, F](val name: String) extends Field[T, F] {

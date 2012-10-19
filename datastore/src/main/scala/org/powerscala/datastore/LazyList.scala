@@ -17,7 +17,7 @@ trait LazyList[T <: Identifiable] extends Function0[List[T]] {
 }
 
 object LazyList {
-  def id[T <: Identifiable] = Field.id[LazyList[T]]
+  def id[T <: Identifiable] = Field.basic[LazyList[T], UUID]("listIds")
 
   def empty[T <: Identifiable](implicit manifest: Manifest[T]) = StaticLazyList(Nil)
 

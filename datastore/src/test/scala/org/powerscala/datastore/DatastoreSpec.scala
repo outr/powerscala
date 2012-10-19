@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.{Queryable, Field}
 import java.util.UUID
+import ch.qos.logback.classic.Level
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -160,14 +161,20 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t.name should equal("first")
       t.precision should equal(Precision.Milliseconds)
     }
+    val t1UUID = UUID.randomUUID()
     "insert Test4 with lazy value" in {
-      val t1 = Test1("lazy one")
+      val t1 = Test1("lazy one", t1UUID)
       val t4 = Test4("fourth", t1)
       c4.persist(t4)
       c1.query.filter(Test1.name equal "lazy one").size should equal(1)
       val t4Again = c4.head
       t4Again.name should equal("fourth")
       t4Again.t1.name should equal("lazy one")
+    }
+    "query for a lazy value by id" in {
+      val results = c4.query.filter(Test4.t1.sub(Lazy.id[Test1] equal t1UUID)).toList
+      results.length should equal(1)
+      results.head.name should equal("fourth")
     }
     "insert a few Test5 entries for 'and' query" in {
       c5.persist(Test5("One", 1), Test5("Two", 2), Test5("Three", 3), Test5("Two", 3))
@@ -238,8 +245,9 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       val results = c7.query.filter(Test7.test(Test8.name equal("test8"))).toList
       results.length should equal(1)
     }
+    val oneUUID = UUID.randomUUID()
     "properly persist a LazyList" in {
-      val t9 = Test9("TestLazyList", LazyList(Test1("One"), Test1("Two"), Test1("Three")))
+      val t9 = Test9("TestLazyList", LazyList(Test1("One", oneUUID), Test1("Two"), Test1("Three")))
       c9.persist(t9)
     }
     "properly load a LazyList" in {
@@ -250,6 +258,13 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t9.list()(0).name should equal("One")
       t9.list()(1).name should equal("Two")
       t9.list()(2).name should equal("Three")
+    }
+    "property query a LazyList with a type-safe query" in {
+      c9.logger.setLevel(Level.DEBUG)
+      val results = c9.query.filter(Test9.list.sub(LazyList.id[Test1] equal oneUUID)).toList
+      results.length should equal(1)
+      results.head.name should equal("TestLazyList")
+      c9.logger.setLevel(Level.INFO)
     }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
@@ -288,7 +303,7 @@ case class Test4(name: String, t1: Lazy[Test1], id: UUID = UUID.randomUUID()) ex
 
 object Test4 extends Queryable[Test3] {
   val name = Field.string[Test4]("name")
-  val t1 = Field.embedded[Test4, Test1]("t1")
+  val t1 = Field.lzy[Test4, Test1]("t1")
   val id = Field.id[Test4]
 }
 
@@ -323,3 +338,9 @@ object Test8 extends Queryable[Test8] {
 }
 
 case class Test9(name: String, list: LazyList[Test1], id: UUID = UUID.randomUUID()) extends Identifiable
+
+object Test9 extends Queryable[Test9] {
+  val name = Field.string[Test9]("name")
+  val list = Field.lazyList[Test9, Test1]("list")
+  val id = Field.id[Test9]
+}

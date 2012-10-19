@@ -83,6 +83,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     if (query._limit > 0) {
       cursor = cursor.limit(query._limit)
     }
+    debug("Executing Query: %s".format(cursor.getQuery))
     val sort = query._sort.reverse
     if (sort.nonEmpty) {
       val sdbo = new BasicDBObject()
@@ -95,6 +96,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
           sdbo.put(s.field.name, direction)
         }
       }
+      debug("Sorting: %s".format(sdbo))
       cursor = cursor.sort(sdbo)
     }
     cursor
