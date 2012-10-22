@@ -11,8 +11,8 @@ import org.powerscala.naming.NamedChild
 class PropertySpec extends WordSpec with ShouldMatchers {
   "Property values" when {
     "created without a default value" should {
-      val sp = Property[String]("sp", null)(null)
-      val ip = Property[Int]("ip", 0)(null)
+      val sp = Property[String]("sp", null)(null, implicitly[Manifest[String]])
+      val ip = Property[Int]("ip", 0)(null, implicitly[Manifest[Int]])
       "have the correct default values" in {
         sp() should equal(null)
         ip() should equal(0)

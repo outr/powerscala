@@ -6,6 +6,8 @@ import org.powerscala.ChangeInterceptor
 import org.powerscala.bind.Bindable
 import org.powerscala.event.{ChangeEvent, Listenable}
 
+import org.powerscala.reflect._
+
 /**
  * StandardProperty is the default implementation of mutable properties with change listening and
  * interception.
@@ -13,12 +15,16 @@ import org.powerscala.event.{ChangeEvent, Listenable}
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = new VariableBacking[T])
-                         (implicit override val parent: PropertyParent)
+                         (implicit override val parent: PropertyParent, val manifest: Manifest[T])
                                     extends MutableProperty[T]
                                     with Listenable
                                     with ChangeInterceptor[T]
                                     with Bindable[T]
                                     with Default[T] {
+  def this(_name: String = null)(implicit parent: PropertyParent, manifest: Manifest[T]) = {
+    this(_name, manifest.erasure.defaultForType[T])(parent, manifest)
+  }
+
   val name = () => _name
   @volatile private var _modified = false
   backing.setValue(default)

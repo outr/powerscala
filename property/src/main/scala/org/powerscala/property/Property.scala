@@ -25,8 +25,8 @@ object Property {
   /**
    * Creates a new StandardProperty with VariableBacking and the value supplied.
    */
-  def apply[T](name: String, value: T, backing: Backing[T] = new VariableBacking[T])(implicit parent: PropertyParent) = {
-    new StandardProperty[T](name, value, backing)(parent)
+  def apply[T](name: String, value: T, backing: Backing[T] = new VariableBacking[T])(implicit parent: PropertyParent, manifest: Manifest[T]) = {
+    new StandardProperty[T](name, value, backing)(parent, manifest)
   }
 
   /**
@@ -41,15 +41,15 @@ object Property {
   /**
    * Creates a new StandardProperty with VolatileVariableBacking.
    */
-  def volatile[T](name: String, value: T)(implicit parent: PropertyParent) = apply(name, value, new VolatileVariableBacking[T])(parent)
+  def volatile[T](name: String, value: T)(implicit parent: PropertyParent, manifest: Manifest[T]) = apply(name, value, new VolatileVariableBacking[T])(parent, manifest)
 
   /**
    * Creates a new StandardProperty with AtomicBacking.
    */
-  def atomic[T](name: String, value: T)(implicit parent: PropertyParent) = apply(name, value, new AtomicBacking[T])(parent)
+  def atomic[T](name: String, value: T)(implicit parent: PropertyParent, manifest: Manifest[T]) = apply(name, value, new AtomicBacking[T])(parent, manifest)
 
   /**
    * Creates a new StandardProperty with LocalBacking.
    */
-  def local[T](name: String, value: T)(implicit parent: PropertyParent) = apply(name, value, new LocalBacking[T])(parent)
+  def local[T](name: String, value: T)(implicit parent: PropertyParent, manifest: Manifest[T]) = apply(name, value, new LocalBacking[T])(parent, manifest)
 }

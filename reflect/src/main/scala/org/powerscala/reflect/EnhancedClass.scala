@@ -6,6 +6,7 @@ import java.lang.reflect.{Modifier, Method}
 import org.reflections.Reflections
 
 import scala.collection.JavaConversions._
+import annotation.tailrec
 
 /**
  * Wraps a Class to provide more powerful functionality.
@@ -133,6 +134,58 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   def caseValue(name: String) = caseValues.find(cv => cv.name == name)
 
   /**
+   * Utilizes case classes to derive the value of the field defined by 'name' on the given 'instance'.
+   *
+   * @param instance the instance for this class
+   * @param name the dot-separated hierarchical field structure.
+   * @tparam T the return type
+   * @return T or NPE
+   */
+  @tailrec
+  final def value[T](instance: AnyRef, name: String): T = {
+    val hasMore = name.indexOf('.') != -1
+    val n = if (hasMore) {
+      name.substring(0, name.indexOf('.'))
+    } else {
+      name
+    }
+    val cv = caseValue(n).getOrElse(throw new NullPointerException("Unable to find %s.%s for %s".format(this.name, n, name)))
+    val result = cv.apply[Any](instance)
+    if (!hasMore) {
+      result.asInstanceOf[T]
+    } else {
+      cv.valueType.value[T](result.asInstanceOf[AnyRef], name.substring(name.indexOf('.') + 1))
+    }
+  }
+
+  /**
+   * Utilizes case classes to copy the hierarchical value and return a new instance of the case class with the new
+   * value.
+   *
+   * @param instance the instance to copy
+   * @param name the dot-separated hierarchical field structure.
+   * @param value the new value to set
+   * @tparam T the copied instance with the new value
+   * @return copied instance T
+   */
+  final def modify[T](instance: T, name: String, value: Any): T = {
+    val hasMore = name.indexOf('.') != -1
+    val n = if (hasMore) {
+      name.substring(0, name.indexOf('.'))
+    } else {
+      name
+    }
+    val cv = caseValue(n).getOrElse(throw new NullPointerException("Unable to find %s.%s for %s".format(this.name, n, name)))
+    if (!hasMore) {
+      cv.copy[T](instance, value)
+    } else {
+      val result = cv.apply[AnyRef](instance.asInstanceOf[AnyRef])
+      val modified = cv.valueType.modify[Any](result, name.substring(name.indexOf('.') + 1), value)
+      cv.copy[T](instance, modified)
+    }
+  }
+
+  /**
    * Reflective copy of a case class with the supplied arguments.
    *
    * Note that an empty arguments list may be supplied to create a clone.
@@ -222,7 +275,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    * Returns the default value by type. For primitives this will return zero or false and for references this will
    * return null.
    */
-  def defaultForType: Any = EnhancedClass.convertClass(javaClass) match {
+  def defaultForType[T]: T = (EnhancedClass.convertClass(javaClass) match {
     case "Boolean" => false
     case "Byte" => 0.byteValue()
     case "Int" => 0
@@ -231,7 +284,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     case "Double" => 0.doubleValue()
     case "List" => Nil
     case _ => null
-  }
+  }).asInstanceOf[T]
 }
 
 object EnhancedClass {
