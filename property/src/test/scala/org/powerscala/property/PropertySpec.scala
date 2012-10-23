@@ -1,9 +1,11 @@
 package org.powerscala.property
 
+import event.PropertyChangingEvent
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.event.{Listenable, ChangeEvent}
 import org.powerscala.naming.NamedChild
+import org.powerscala.bus.Routing
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -32,7 +34,7 @@ class PropertySpec extends WordSpec with ShouldMatchers {
     PropertyTester.listeners.filter.descendant().synchronous {
       case event: ChangeEvent => outter += 1
     }
-    "hierarchy is validate" should {
+    "hierarchy is validated" should {
       "have the correct parent for the property" in {
         PropertyTester.inner.p.parent should equal(PropertyTester.inner)
       }
@@ -55,6 +57,30 @@ class PropertySpec extends WordSpec with ShouldMatchers {
       }
       "have updated the outter listener" in {
         outter should equal(1)
+      }
+    }
+    "utilizing PropertyChangingEvents to intercept" should {
+      val test = Property[String]("test", "Initial")(null, implicitly[Manifest[String]])
+      "add a cancelling and modifying listener" in {
+        test.listeners.synchronous {
+          case evt: PropertyChangingEvent => if (evt.newValue == "Bad") {
+            Routing.Stop
+          } else if (evt.newValue == "New") {
+            Routing.Response("Newer")
+          }
+        }
+      }
+      "change the value to something that won't get cancelled" in {
+        test := "Good"
+        test() should equal("Good")
+      }
+      "change the value to something that will get cancelled" in {
+        test := "Bad"
+        test() should equal("Good")
+      }
+      "change the value to something that will get modified" in {
+        test := "New"
+        test() should equal("Newer")
       }
     }
   }

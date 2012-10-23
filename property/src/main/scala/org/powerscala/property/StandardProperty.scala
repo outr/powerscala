@@ -1,12 +1,12 @@
 package org.powerscala.property
 
 import backing.{VariableBacking, Backing}
-import event.PropertyChangeEvent
-import org.powerscala.ChangeInterceptor
+import event.{PropertyChangingEvent, PropertyChangeEvent}
 import org.powerscala.bind.Bindable
 import org.powerscala.event.{ChangeEvent, Listenable}
 
 import org.powerscala.reflect._
+import org.powerscala.bus.{RoutingResults, RoutingResponse, Routing}
 
 /**
  * StandardProperty is the default implementation of mutable properties with change listening and
@@ -18,7 +18,6 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
                          (implicit override val parent: PropertyParent, val manifest: Manifest[T])
                                     extends MutableProperty[T]
                                     with Listenable
-                                    with ChangeInterceptor[T]
                                     with Bindable[T]
                                     with Default[T] {
   def this(_name: String = null)(implicit parent: PropertyParent, manifest: Manifest[T]) = {
@@ -44,7 +43,15 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
 
   def apply(v: T) = {
     val oldValue = backing.getValue
-    val newValue = change(oldValue, v)
+    fire(PropertyChangingEvent(this, oldValue, v)) match {
+      case Routing.Stop => // We're finished
+      case routing: RoutingResponse => valueChanged(oldValue, routing.response.asInstanceOf[T])
+      case routing: RoutingResults => throw new UnsupportedOperationException("RoutingResults not supported for PropertyChangingEvents")
+      case _ => valueChanged(oldValue, v)
+    }
+  }
+
+  private def valueChanged(oldValue: T, newValue: T) = {
     _modified = true
     if (oldValue != newValue) {
       backing.setValue(newValue)
