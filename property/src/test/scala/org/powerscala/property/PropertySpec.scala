@@ -13,8 +13,8 @@ import org.powerscala.bus.Routing
 class PropertySpec extends WordSpec with ShouldMatchers {
   "Property values" when {
     "created without a default value" should {
-      val sp = Property[String]("sp", null)(null, implicitly[Manifest[String]])
-      val ip = Property[Int]("ip", 0)(null, implicitly[Manifest[Int]])
+      val sp = Property[String].build()
+      val ip = Property[Int].build()
       "have the correct default values" in {
         sp() should equal(null)
         ip() should equal(0)
@@ -60,7 +60,7 @@ class PropertySpec extends WordSpec with ShouldMatchers {
       }
     }
     "utilizing PropertyChangingEvents to intercept" should {
-      val test = Property[String]("test", "Initial")(null, implicitly[Manifest[String]])
+      val test = Property[String].default("Initial").build()
       "add a cancelling and modifying listener" in {
         test.listeners.synchronous {
           case evt: PropertyChangingEvent => if (evt.newValue == "Bad") {
@@ -84,6 +84,41 @@ class PropertySpec extends WordSpec with ShouldMatchers {
       }
     }
   }
+  "StaticProperty" when {
+    val p = new StandardProperty[StaticTest] {
+      val one = field[String]("one")
+      val two = field[Int]("two")
+      val three = field[List[String]]("three")
+    }
+
+    "created" should {
+      val t = StaticTest("1", 2, List("Uno", "Dos", "Tres"))
+      p := t
+      "represent the proper values" in {
+        p.one() should equal("1")
+        p.two() should equal(2)
+        p.three() should equal(List("Uno", "Dos", "Tres"))
+      }
+      "change 'one' in property" in {
+        p.one := "One"
+        p.one() should equal("One")
+        p.two() should equal(2)
+        p.three() should equal(List("Uno", "Dos", "Tres"))
+      }
+      "change 'two' in property" in {
+        p.two := 200
+        p.one() should equal("One")
+        p.two() should equal(200)
+        p.three() should equal(List("Uno", "Dos", "Tres"))
+      }
+      "change 'three' in property" in {
+        p.three := List("One", "Two", "Three")
+        p.one() should equal("One")
+        p.two() should equal(200)
+        p.three() should equal(List("One", "Two", "Three"))
+      }
+    }
+  }
 }
 
 object PropertyTester extends PropertyParent with Listenable with NamedChild {
@@ -92,6 +127,8 @@ object PropertyTester extends PropertyParent with Listenable with NamedChild {
   object inner extends PropertyParent with Listenable with NamedChild {
     override def parent = PropertyTester
 
-    val p = Property[Int]("p", 0)
+    val p = Property[Int].default(0).build()
   }
 }
+
+case class StaticTest(one: String, two: Int, three: List[String])

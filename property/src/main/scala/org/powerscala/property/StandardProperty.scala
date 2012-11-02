@@ -17,10 +17,11 @@ import org.powerscala.bus.{RoutingResults, RoutingResponse, Routing}
 class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = new VariableBacking[T])
                          (implicit override val parent: PropertyParent, val manifest: Manifest[T])
                                     extends MutableProperty[T]
+                                    with CaseClassProperty[T]
                                     with Listenable
                                     with Bindable[T]
                                     with Default[T] {
-  def this(_name: String = null)(implicit parent: PropertyParent, manifest: Manifest[T]) = {
+  def this(_name: String = null)(implicit parent: PropertyParent = null, manifest: Manifest[T]) = {
     this(_name, manifest.erasure.defaultForType[T])(parent, manifest)
   }
 

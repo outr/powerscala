@@ -19,7 +19,7 @@ import org.powerscala.reflect._
  * @param valueProperty the container of the value
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-case class CaseClassBinding[T <: AnyRef](property: StandardProperty[T],
+case class CaseClassBinding(property: StandardProperty[_],
                                          name: String,
                                          valueProperty: StandardProperty[Any]) {
   val propertyClazz: EnhancedClass = property.manifest.erasure
@@ -27,7 +27,7 @@ case class CaseClassBinding[T <: AnyRef](property: StandardProperty[T],
   val propertyListener = property.listeners.synchronous {
     case evt: PropertyChangeEvent => {
       // property changed, apply new value to valueProperty
-      val value = propertyClazz.value[Any](property(), name)
+      val value = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
       if (valueProperty() != null) {
         valueProperty := value
       }
@@ -38,10 +38,10 @@ case class CaseClassBinding[T <: AnyRef](property: StandardProperty[T],
     case evt: PropertyChangeEvent => {
       // value property changed, apply new value to property
       val value = valueProperty()
-      val currentValue = propertyClazz.value[Any](property(), name)
+      val currentValue = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
       if (value != currentValue) {
-        val updated = propertyClazz.modify[T](property(), name, value)
-        property := updated
+        val updated = propertyClazz.modify[Any](property(), name, value)
+        property.asInstanceOf[StandardProperty[Any]] := updated
       }
     }
   }
