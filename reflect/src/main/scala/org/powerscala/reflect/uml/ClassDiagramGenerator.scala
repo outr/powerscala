@@ -25,7 +25,7 @@ object ClassDiagramGenerator {
       cached.set(cached.get() + c.name)
       val entry = "[%s|%s{bg:orange}]".format(c.simpleName, c.caseValues.map(generateCaseValue).mkString(";"))
       val additional = c.caseValues.collect {
-        case cv if (cv.valueType.isCase) => {
+        case cv if (cv.valueType.isCase) => {   // TODO: add modularity to support special handling for classes (ie. Lazy and LazyList)
           "[%s]->[%s]".format(c.simpleName, cv.valueType.simpleName) :: generateRecursively(cv.valueType)
         }
       }.flatten

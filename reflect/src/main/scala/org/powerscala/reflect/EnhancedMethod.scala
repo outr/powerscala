@@ -133,7 +133,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   /**
    * The absolute absoluteSignature of this method including package and class name.
    */
-  def absoluteSignature = parent.name + "." + signature
+  def absoluteSignature = declaring.name + "." + signature
 
   /**
    * The localized absoluteSignature of this method. Excludes class name and package.

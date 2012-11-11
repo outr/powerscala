@@ -2,6 +2,7 @@ package org.powerscala.property
 
 import event.PropertyChangeEvent
 import org.powerscala.reflect._
+import org.powerscala.Logging
 
 /**
  * Binds a top-level property and a hierarchically lower property together so a change to one updates the other.
@@ -20,29 +21,21 @@ import org.powerscala.reflect._
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 case class CaseClassBinding(property: StandardProperty[_],
-                                         name: String,
-                                         valueProperty: StandardProperty[Any]) {
+                            name: String,
+                            valueProperty: StandardProperty[Any],
+                            var valueUpdatesProperty: Boolean = true,
+                            var propertyUpdatesValue: Boolean = true) extends Logging {
   val propertyClazz: EnhancedClass = property.manifest.erasure
   // Manage property -> valueProperty
   val propertyListener = property.listeners.synchronous {
-    case evt: PropertyChangeEvent => {
-      // property changed, apply new value to valueProperty
-      val value = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
-      if (valueProperty() != null) {
-        valueProperty := value
-      }
+    case evt: PropertyChangeEvent => if (propertyUpdatesValue) {
+      updateValueProperty()
     }
   }
   // Manage valueProperty -> property
   val valuePropertyListener = valueProperty.listeners.synchronous {
-    case evt: PropertyChangeEvent => {
-      // value property changed, apply new value to property
-      val value = valueProperty()
-      val currentValue = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
-      if (value != currentValue) {
-        val updated = propertyClazz.modify[Any](property(), name, value)
-        property.asInstanceOf[StandardProperty[Any]] := updated
-      }
+    case evt: PropertyChangeEvent => if (valueUpdatesProperty) {
+      updateProperty()
     }
   }
 
@@ -50,14 +43,35 @@ case class CaseClassBinding(property: StandardProperty[_],
    * Updates the valueProperty to reflect the value contained in property
    */
   def updateValueProperty(): Unit = {
-    property.fireChanged()    // Update the value property
+    try {
+      // property changed, apply new value to valueProperty
+      val value = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
+      val currentValue = valueProperty()
+      debug("propertyListener PropertyChangeEvent: %s / %s".format(value, valueProperty))
+      if (currentValue != value) {
+        valueProperty := value
+      }
+    } catch {
+      case t: Throwable => error("Error on updateProperty", t)
+    }
   }
 
   /**
    * Updates the property to reflect the value contained in valueProperty
    */
   def updateProperty(): Unit = {
-    valueProperty.fireChanged()
+    try {
+      // value property changed, apply new value to property
+      val value = valueProperty()
+      val currentValue = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
+      debug("valuePropertyListener PropertyChangeEvent: %s / %s".format(value, currentValue))
+      if (value != currentValue) {
+        val updated = propertyClazz.modify[Any](property(), name, value)
+        property.asInstanceOf[StandardProperty[Any]] := updated
+      }
+    } catch {
+      case t: Throwable => error("Error on updateValueProperty", t)
+    }
   }
 
   /**
