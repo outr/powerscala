@@ -97,7 +97,7 @@ object DataObjectConverter {
   private def toDBList(seq: Seq[_], collection: DatastoreCollection[_]): java.util.List[_] = {
     val dbList = new BasicDBList()
 //    dbList.put("class", seq.getClass.getName)
-    seq.foreach {
+    seq.asInstanceOf[Seq[Any]].foreach {
       case v => dbList.add(toDBValue(v, collection).asInstanceOf[AnyRef])
     }
     dbList

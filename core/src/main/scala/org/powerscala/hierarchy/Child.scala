@@ -1,10 +1,27 @@
 package org.powerscala.hierarchy
 
+import org.powerscala.reflect._
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 trait Child {
   def parent: Any
+
+  /**
+   * Walks up the hierarchical structure returning Some[T] if the top-level element is of type T. Otherwise None is
+   * returned. Note that this method may return itself if it has no parent and matches the conditions of T.
+   */
+  def root[T](implicit manifest: Manifest[T]): Option[T] = parent match {
+    case child: Child => child.root[T](manifest)
+    case null => if (getClass.hasType(manifest.erasure)) {
+      Some(this.asInstanceOf[T])
+    } else {
+      None
+    }
+    case p if (p.asInstanceOf[AnyRef].getClass.hasType(manifest.erasure)) => Some(p.asInstanceOf[T])
+    case _ => None
+  }
 }
 
 object Child {

@@ -107,6 +107,12 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   }
   // TODO: add support for class-level docs
 
+  lazy val nonCompanion: EnhancedClass = if (isCompanion) {
+    Class.forName(javaClass.getName.substring(0, javaClass.getName.length - 1))
+  } else {
+    this
+  }
+
   /**
    * CaseValue instances representing the arguments if this is a case class.
    */

@@ -40,7 +40,7 @@ case class PropertyBuilder[T](_name: String = null,
    */
   def local = copy[T](_backing = new LocalBacking[T])
   def variable = copy[T](_backing = new VariableBacking[T])
-  def parent(_parent: PropertyParent) = copy[T]()(_parent = _parent)
+  def parent(_parent: PropertyParent) = copy[T]()(_parent, manifest)
 
   def build() = if (_default.nonEmpty) {
     new StandardProperty[T](_name, _default.get, _backing)(_parent, manifest)

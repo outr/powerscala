@@ -27,7 +27,6 @@ object MapDataObjectConverter extends DataObjectConverter {
     } else if (clazz.isAssignableFrom(classOf[java.util.Map[_, _]])) {
       val hashMap = new java.util.HashMap[Any, Any](entries)
       map.foreach(entry => hashMap.put(entry._1, entry._2))
-      hashMap
       map
     } else {
       throw new RuntimeException("Unsupported map type: %s".format(clazz))

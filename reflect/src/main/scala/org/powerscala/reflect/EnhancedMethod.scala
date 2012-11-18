@@ -72,8 +72,9 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   def isStatic = Modifier.isStatic(javaMethod.getModifiers)
 
   private def getDefault(index: Int) = {
+    val instanceClass = parent.nonCompanion
     val defaultMethodName = name + "$default$" + (index + 1)
-    parent.method(defaultMethodName)
+    instanceClass.method(defaultMethodName)
   }
 
   /**
@@ -98,11 +99,23 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
    * values for the unsupplied argument names.
    */
   def apply[R](instance: AnyRef, args: Map[String, Any] = Map.empty): R = {
-    var map = Map.empty[String, Any]
+    val arguments = this.args.map {
+      case methodArgument => args.get(methodArgument.name) match {
+        case Some(value) => EnhancedMethod.convertTo(value, methodArgument.`type`)            // Value supplied directly
+        case _ if (methodArgument.hasDefault) => methodArgument.default[Any](instance).get    // Method had a default argument
+        case _ => methodArgument.`type`.defaultForType[Any]                                   // No argument found so we use the default for the type
+      }
+    }
+
+    /*var map = Map.empty[String, Any]
+
+    // Assign default values if specified
     this.args.foreach(arg => if (arg.hasDefault) map += arg.name -> arg.default[AnyRef](instance).get) // Assign defaults
     map ++= args
 
     val arguments = new Array[Any](map.size)
+
+    // Validate all arguments have correct values
     this.args.foreach {
       case arg => {
         val value = map.getOrElse(arg.name, arg.`type`.defaultForType).asInstanceOf[AnyRef]   // Get the argument or assign the default for the type
@@ -111,13 +124,17 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
         }
       }
     }
+
+    // Put arguments into Array
     map.foreach(arg => {
       val index = argIndex(arg._1)
       if (index == -1) {
         throw new RuntimeException("Unable to find %s for method %s".format(arg._1, EnhancedMethod.this))
       }
       arguments(index) = arg._2
-    })
+    })*/
+
+    // Invoke method
     try {
       invoke[R](instance, arguments: _*)
     } catch {
@@ -149,4 +166,33 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   }
 
   override def toString = absoluteSignature
+}
+
+object EnhancedMethod {
+  def convertTo(value: Any, resultType: EnhancedClass) = resultType.name match {
+    case "Int" => value match {
+      case b: Byte => b.toInt
+      case c: Char => c.toInt
+      case l: Long => l.toInt
+      case f: Float => f.toInt
+      case d: Double => d.toInt
+    }
+    case "Long" => value match {
+      case b: Byte => b.toLong
+      case c: Char => c.toLong
+      case i: Int => i.toLong
+      case f: Float => f.toLong
+      case d: Double => d.toLong
+    }
+    case "Float" => value match {
+      case b: Byte => b.toFloat
+      case c: Char => c.toFloat
+      case i: Int => i.toFloat
+      case l: Long => l.toFloat
+      case d: Double => d.toFloat
+    }
+    // TODO: add more type conversions
+    case _ if (resultType.isCastable(value)) => value
+    case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
+  }
 }
