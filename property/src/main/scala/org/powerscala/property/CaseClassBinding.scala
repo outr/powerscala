@@ -45,11 +45,13 @@ case class CaseClassBinding(property: StandardProperty[_],
   def updateValueProperty(): Unit = {
     try {
       // property changed, apply new value to valueProperty
-      val value = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
-      val currentValue = valueProperty()
-      debug("propertyListener PropertyChangeEvent: %s / %s".format(value, valueProperty))
-      if (currentValue != value) {
-        valueProperty := value
+      if (property() != null) {   // Only if the property value is not null
+        val value = propertyClazz.value[Any](property().asInstanceOf[AnyRef], name)
+        val currentValue = valueProperty()
+        debug("propertyListener PropertyChangeEvent: %s / %s".format(value, valueProperty))
+        if (currentValue != value) {
+          valueProperty := value
+        }
       }
     } catch {
       case t: Throwable => error("Error on updateProperty", t)

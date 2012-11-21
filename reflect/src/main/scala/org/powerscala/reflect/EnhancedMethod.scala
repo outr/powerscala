@@ -176,6 +176,7 @@ object EnhancedMethod {
       case l: Long => l.toInt
       case f: Float => f.toInt
       case d: Double => d.toInt
+      case i: java.lang.Integer => i.intValue()
     }
     case "Long" => value match {
       case b: Byte => b.toLong
@@ -183,6 +184,7 @@ object EnhancedMethod {
       case i: Int => i.toLong
       case f: Float => f.toLong
       case d: Double => d.toLong
+      case l: java.lang.Long => l.longValue()
     }
     case "Float" => value match {
       case b: Byte => b.toFloat
@@ -190,6 +192,7 @@ object EnhancedMethod {
       case i: Int => i.toFloat
       case l: Long => l.toFloat
       case d: Double => d.toFloat
+      case f: java.lang.Float => f.floatValue()
     }
     // TODO: add more type conversions
     case _ if (resultType.isCastable(value)) => value
