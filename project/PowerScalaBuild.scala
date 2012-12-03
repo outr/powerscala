@@ -15,7 +15,8 @@ object PowerScalaBuild extends Build {
       scalaTest
     ),
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
-    resolvers ++= Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"),
+    resolvers ++= Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+                      "twitter-repo" at "http://maven.twttr.com"),
     publishTo <<= version {
       (v: String) =>
         val nexus = "https://oss.sonatype.org/"
@@ -69,7 +70,8 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections))
+    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections, twitterUtilsEval))
+    .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ ))
 }
 
 object Dependencies {
@@ -81,4 +83,5 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
+  val twitterUtilsEval = "com.twitter"   % "util-eval"   % "5.3.10"
 }

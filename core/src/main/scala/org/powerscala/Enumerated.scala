@@ -15,13 +15,18 @@ trait Enumerated[E <: EnumEntry[E]] extends NamingParent {
    */
   lazy val name = getClass.getSimpleName.replaceAll("\\$", "")
 
+  def apply(name: String): E = apply(name, caseSensitive = false)
+
   /**
    * Retrieve the EnumEntry by name.
    *
    * @param name the name of the EnumEntry as defined by the field.
+   * @param caseSensitive defines whether the lookup should be case-sensitive. Defaults to false.
    * @return EnumEntry or null if not found
    */
-  def apply(name: String) = values.find(e => e.name() == name).getOrElse(null.asInstanceOf[E])
+  def apply(name: String, caseSensitive: Boolean) = {
+    values.find(e => (caseSensitive && e.name() == name) || (!caseSensitive && name.equalsIgnoreCase(e.name()))).getOrElse(null.asInstanceOf[E])
+  }
 
   /**
    * Retrieve the EnumEntry by index.

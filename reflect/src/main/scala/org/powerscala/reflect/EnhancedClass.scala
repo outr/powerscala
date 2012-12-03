@@ -81,7 +81,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * True if this is a companion object.
    */
-  def isCompanion = javaClass.getName.endsWith("$")
+  lazy val isCompanion = javaClass.getName.endsWith("$") && javaClass.getFields.find(f => f.getName == "MODULE$").nonEmpty
 
   /**
    * True if this is a case class
