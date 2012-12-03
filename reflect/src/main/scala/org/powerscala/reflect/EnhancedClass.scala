@@ -86,7 +86,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * True if this is a case class
    */
-  def isCase = copyMethod != None
+  def isCase = !javaClass.isArray && copyMethod != None
 
   /**
    * True if this is a transient class

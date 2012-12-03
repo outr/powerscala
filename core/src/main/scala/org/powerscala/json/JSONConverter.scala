@@ -40,16 +40,26 @@ object JSONConverter {
   def generate(value: Any): String = value match {
     case null => null
     case json: JSONType => formatter(value)
-    case _ => generate(generateJSON(value))
+    case _ => {
+      val result = generateJSON(value)
+      if (result == value) {
+        throw new RuntimeException("Unable to convert: %s (%s)".format(value, value.asInstanceOf[AnyRef].getClass))
+      }
+      generate(result)
+    }
   }
 
-  def generateJSON(value: Any): Any = if (value == null) {
-    null
-  } else if (value.asInstanceOf[AnyRef].getClass.isCase) {
-    val c: EnhancedClass = value.asInstanceOf[AnyRef].getClass
-    val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap
-    JSONObject(map)
-  } else {
-    value
+  def generateJSON(value: Any): Any = {
+    if (value == null) {
+      null
+    } else if (value.asInstanceOf[AnyRef].getClass.isArray) {
+      JSONArray(value.asInstanceOf[Array[_]].toList.map(v => generateJSON(v)))
+    } else if (value.asInstanceOf[AnyRef].getClass.isCase) {
+      val c: EnhancedClass = value.asInstanceOf[AnyRef].getClass
+      val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap
+      JSONObject(map)
+    } else {
+      value
+    }
   }
 }
