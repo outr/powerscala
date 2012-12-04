@@ -1,5 +1,8 @@
 package org.powerscala.event
 
+import org.powerscala.bus.{RoutingResponse, RoutingResults, Routing}
+import collection.mutable.ListBuffer
+
 
 /**
  * Event is the core object sent to listeners.
@@ -36,7 +39,17 @@ object Event {
     event._cause = current
     event._target = target
     _current.set(event)
-    val routing = target.bus(event)
+    val routing = target.localizedBus.receive(target.bus, event) match {
+      case Routing.Continue => target.bus(event)
+      case Routing.Stop => Routing.Stop
+      case r: RoutingResults => {
+        val buffer = new ListBuffer[Any]
+        buffer ++= r.results
+        target.bus(event, buffer)
+      }
+      case r: RoutingResponse => r
+    }
+//    val routing = target.bus(event)
     _current.set(event.cause)
     routing
   }

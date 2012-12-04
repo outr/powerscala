@@ -19,7 +19,8 @@ trait Bindable[T] extends Function1[T, Unit] with Listenable {
    */
   def bind(listenable: Listenable) = {
     val binding = new Binding[T](this, listenable.filters.target)
-    listenable.listeners.synchronous += binding
+    listenable.listeners.synchronous.addListener(binding, localized = true)
+//    listenable.listeners.synchronous += binding
     binding
   }
 

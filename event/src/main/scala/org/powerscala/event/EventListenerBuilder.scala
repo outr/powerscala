@@ -69,7 +69,8 @@ case class EventListenerBuilder(private val listenable: Listenable,
       case existingFilter => existingFilter
     }
     val listener = EventListener(listenable, function, filter, maxInvocation, processingMode, priority)
-    listenable.addListener(listener, referenceType)
+    val localized = filter == listenable.filters.target
+    listenable.addListener(listener, referenceType, localized = localized)
   }
 
   def waitFor[T <: Event, R](time: Double,
@@ -109,10 +110,14 @@ case class EventListenerBuilder(private val listenable: Listenable,
     listenable.removeListener(listener)
   }
 
+  def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft, localized: Boolean = false) = {
+    listenable.addListener(listener, referenceType, localized)
+  }
+
   def values = listenable.listenersList
 }
 
-case class EventListener(listenable: Listenable,
+private case class EventListener(listenable: Listenable,
                          function: Function[Event, Any],
                          filter: Event => Boolean,
                          maxInvocation: Int,

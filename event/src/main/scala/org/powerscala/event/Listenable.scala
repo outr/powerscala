@@ -15,6 +15,8 @@ trait Listenable {
 
   protected[event] var listenersList: List[Listener] = Nil
 
+  protected[event] val localizedBus = new Bus()
+
 //  protected[event] val asynchronousActor = new DaemonActor {
 //    def act() {
 //      loop {
@@ -25,14 +27,19 @@ trait Listenable {
 //    }
 //  }.start()
 
-  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft) = synchronized {
+  protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft, localized: Boolean = false) = synchronized {
     listenersList = (listener :: listenersList.reverse).reverse
-    bus.add(listener, referenceType)
+    if (localized) {
+      localizedBus.add(listener, referenceType)
+    } else {
+      bus.add(listener, referenceType)
+    }
     listener
   }
 
   protected[event] def removeListener(listener: Listener) = synchronized {
     listenersList = listenersList.filterNot(l => l == listener)
+    localizedBus.remove(listener)
     bus.remove(listener)
     listener
   }

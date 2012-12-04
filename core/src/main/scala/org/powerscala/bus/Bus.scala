@@ -4,6 +4,7 @@ import annotation.tailrec
 import org.powerscala.ref.{ReferenceType, Reference}
 import org.powerscala.Priority
 import collection.mutable.ListBuffer
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Bus represents a global location for receiving and handling messaging. Nodes can be added in order to process
@@ -12,6 +13,9 @@ import collection.mutable.ListBuffer
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class Bus(val priority: Priority = Priority.Normal) extends Node {
+  private val _messagesProcessed = new AtomicLong(0L)
+  def messagesProcessed = _messagesProcessed.get()
+
   /**
    * Sorting method for ordering of nodes. This defaults to sorting on the Priority associated with the Nodes.
    *
@@ -62,17 +66,22 @@ class Bus(val priority: Priority = Priority.Normal) extends Node {
    *
    * @return Routing defining how this was processed by the nodes.
    */
-  def apply(message: Any) = {
+  def apply(message: Any, results: ListBuffer[Any] = null) = {
     val previous = Bus.current
     Bus.current = this
     try {
-      receive(this, message)
+      receive(this, message, results)
     } finally {
       Bus.current = previous
     }
   }
 
-  def receive(bus: Bus, message: Any) = process(message, nodes, null)
+  def receive(bus: Bus, message: Any) = receive(bus, message, null)
+
+  def receive(bus: Bus, message: Any, results: ListBuffer[Any]) = {
+    _messagesProcessed.addAndGet(1L)
+    process(message, nodes, results)
+  }
 
   @tailrec
   private def process(message: Any, nodes: List[Reference[Node]], buffer: ListBuffer[Any]): Routing = {
