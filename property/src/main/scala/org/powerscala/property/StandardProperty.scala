@@ -89,16 +89,17 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
    */
   def fireChanged() = fire(new PropertyChangeEvent(this, value, value))
 
+  def and(property: StandardProperty[T]) = StandardPropertyGroup[T](List(property, this))
+
   override def toString() = "Property[%s](%s)".format(name, value)
 }
 
+case class StandardPropertyGroup[T](properties: List[StandardProperty[T]]) {
+  // TODO: evaluate other methods and means
 
+  def :=(value: T) = properties.foreach {
+    case p => p := value
+  }
 
-
-
-
-
-
-
-
-
+  def and(property: StandardProperty[T]) = copy[T](property :: properties)
+}
