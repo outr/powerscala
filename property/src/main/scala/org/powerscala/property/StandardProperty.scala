@@ -2,7 +2,6 @@ package org.powerscala.property
 
 import backing.{VariableBacking, Backing}
 import event.{PropertyChangingEvent, PropertyChangeEvent}
-import org.powerscala.bind.Bindable
 import org.powerscala.event.{ChangeEvent, Listenable}
 
 import org.powerscala.reflect._
@@ -19,7 +18,7 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
                                     extends MutableProperty[T]
                                     with CaseClassProperty[T]
                                     with Listenable
-                                    with Bindable[T]
+//                                    with Bindable[T]
                                     with Default[T] {
   def this(_name: String = null)(implicit parent: PropertyParent = null, manifest: Manifest[T]) = {
     this(_name, manifest.erasure.defaultForType[T])(parent, manifest)
@@ -64,6 +63,23 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
 
   def onChange(f: => Any) = listeners.synchronous {
     case evt: ChangeEvent => f
+  }
+
+  def bind(property: StandardProperty[T], twoWay: Boolean = false) = {
+    property.listeners.synchronous {
+      case evt: PropertyChangeEvent => this := property()
+    }
+    if (twoWay) {
+      listeners.synchronous {
+        case evt: PropertyChangeEvent => property := this()
+      }
+    }
+  }
+
+  def bindTo[O](property: StandardProperty[O])(implicit conversion: O => T) = {
+    property.listeners.synchronous {
+      case evt: PropertyChangeEvent => this := conversion(property())
+    }
   }
 
   def readOnly: Property[T] = this
