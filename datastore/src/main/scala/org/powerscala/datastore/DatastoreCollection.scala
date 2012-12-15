@@ -126,6 +126,16 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def executeQueryIds(query: DatastoreQuery[T]): Iterator[UUID]
 
+  /**
+   * Updates the data to replace all entries with revision of 'revision' with the supplied newClass. This is useful for
+   * revising a datastore programmatically.
+   *
+   * @param revision the revision to find and use the new class
+   * @param newClass the new class to instantiate this revision with
+   * @return the number of entries updated
+   */
+  def replaceRevisionClass(revision: Int, newClass: String): Int
+
   protected def persistNew(ref: T): Unit
 
   protected def persistModified(ref: T): Unit

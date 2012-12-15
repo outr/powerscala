@@ -25,6 +25,8 @@ object LazyList {
 
   def apply[T <: Identifiable](values: List[T])(implicit manifest: Manifest[T]) = StaticLazyList(values)
 
+  def apply[T <: Identifiable](ids: List[UUID])(implicit manifest: Manifest[T]) = UUIDLazyList[T](ids)(manifest)
+
   def apply[T <: Identifiable](ids: List[UUID], datastore: Datastore, collectionName: String)(implicit manifest: Manifest[T]) = {
     LazyListValue(ids, datastore, collectionName)
   }
@@ -35,6 +37,11 @@ case class StaticLazyList[T <: Identifiable](values: List[T])(implicit val manif
   def loaded = true
 
   def apply() = values
+}
+
+case class UUIDLazyList[T <: Identifiable](ids: List[UUID])(implicit val manifest: Manifest[T]) extends LazyList[T] {
+  def loaded = false
+  def apply() = null
 }
 
 case class LazyListValue[T <: Identifiable](ids: List[UUID], datastore: Datastore, collectionName: String)(implicit val manifest: Manifest[T]) extends LazyList[T] {

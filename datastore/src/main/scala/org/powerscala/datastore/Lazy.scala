@@ -2,6 +2,7 @@ package org.powerscala.datastore
 
 import java.util
 import query.Field
+import util.UUID
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -32,6 +33,8 @@ object Lazy {
   def apply[T <: Identifiable](id: util.UUID, datastore: Datastore, collectionName: String)(implicit manifest: Manifest[T]) = {
     LazyValue(id, datastore, collectionName)
   }
+
+  def apply[T <: Identifiable](id: UUID)(implicit manifest: Manifest[T]) = UUIDLazy[T](id)(manifest)
 }
 
 case class StaticLazy[T <: Identifiable](value: T)(implicit val manifest: Manifest[T]) extends Lazy[T] {
@@ -39,6 +42,11 @@ case class StaticLazy[T <: Identifiable](value: T)(implicit val manifest: Manife
   def loaded = true
 
   def apply() = value
+}
+
+case class UUIDLazy[T <: Identifiable](id: UUID)(implicit val manifest: Manifest[T]) extends Lazy[T] {
+  def loaded = false
+  def apply() = null.asInstanceOf[T]
 }
 
 case class LazyValue[T <: Identifiable](id: util.UUID, datastore: Datastore, collectionName: String)(implicit val manifest: Manifest[T]) extends Lazy[T] {

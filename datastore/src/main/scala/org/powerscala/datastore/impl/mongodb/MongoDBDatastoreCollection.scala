@@ -123,4 +123,11 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
 //  def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
 
   def drop() = collection.drop()
+
+  def replaceRevisionClass(revision: Int, newClass: String) = {
+    val query = new BasicDBObject("revision", revision)
+    val update = new BasicDBObject("$set", new BasicDBObject("class", newClass))
+    val result = collection.update(query, update, false, true)
+    result.getN
+  }
 }
