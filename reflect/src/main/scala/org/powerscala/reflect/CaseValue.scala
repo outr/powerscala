@@ -41,7 +41,7 @@ object CaseValue {
     var p = ' '
     name.foreach {
       case c => {
-        if ((c.isUpper || c.isDigit) && (!p.isUpper && !p.isDigit)) {
+        if (b.length > 0 && (c.isUpper || c.isDigit) && (!p.isUpper && !p.isDigit)) {
           b.append(' ')
         }
         b.append(c)
