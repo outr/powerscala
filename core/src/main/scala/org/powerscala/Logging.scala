@@ -6,6 +6,7 @@ import ch.qos.logback.classic.joran.JoranConfigurator
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.rolling.{TimeBasedRollingPolicy, RollingFileAppender}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -33,21 +34,52 @@ object Logging {
 //  def apply(instance: Logging) = LoggerFactory.getLogger(instance.getClass)
   def apply(instance: Logging) = context.getLogger(instance.getClass)
 
-  def reconfigure(pattern: String = Standard, level: Level = Level.INFO) = {
+  def reconfigure(pattern: String = Standard, level: Level = Level.INFO, consoleLogging: Boolean = true, fileLogging: Boolean = false) = {
     val configurator = new JoranConfigurator
-    configurator.setContext(context)
     context.reset()
-    val appender = new ConsoleAppender[ILoggingEvent]
-    appender.setContext(context)
-    appender.setName("console")
-    val encoder = new PatternLayoutEncoder
-    encoder.setContext(context)
-    encoder.setPattern(pattern)
-    encoder.start()
-    appender.setEncoder(encoder)
-    appender.start()
+    configurator.setContext(context)
+
     val rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME)
+    rootLogger.setAdditive(true)
     rootLogger.setLevel(level)
-    rootLogger.addAppender(appender)
+
+    if (fileLogging) {
+      val encoder = new PatternLayoutEncoder
+      encoder.setContext(context)
+      encoder.setPattern(pattern)
+      encoder.start()
+
+      val fileAppender = new RollingFileAppender[ILoggingEvent]()
+      fileAppender.setFile("application.log")
+      val rollingPolicy = new TimeBasedRollingPolicy[ILoggingEvent]()
+      rollingPolicy.setFileNamePattern("application.%d{yyyy-MM-dd}.log")
+      rollingPolicy.setMaxHistory(30)
+      rollingPolicy.setContext(context)
+      rollingPolicy.setParent(fileAppender)
+      fileAppender.setRollingPolicy(rollingPolicy)
+      fileAppender.setPrudent(true)
+      fileAppender.setName("file")
+      fileAppender.setContext(context)
+      fileAppender.setEncoder(encoder)
+      rollingPolicy.start()
+      fileAppender.start()
+
+      rootLogger.addAppender(fileAppender)
+    }
+
+    if (consoleLogging) {
+      val encoder = new PatternLayoutEncoder
+      encoder.setContext(context)
+      encoder.setPattern(pattern)
+      encoder.start()
+
+      val consoleAppender = new ConsoleAppender[ILoggingEvent]
+      consoleAppender.setContext(context)
+      consoleAppender.setName("console")
+      consoleAppender.setEncoder(encoder)
+      consoleAppender.start()
+
+      rootLogger.addAppender(consoleAppender)
+    }
   }
 }
