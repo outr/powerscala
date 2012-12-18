@@ -194,6 +194,14 @@ object EnhancedMethod {
       case d: Double => d.toFloat
       case f: java.lang.Float => f.floatValue()
     }
+    case "Double" => value match {
+      case b: Byte => b.toDouble
+      case c: Char => c.toDouble
+      case i: Int => i.toDouble
+      case l: Long => l.toDouble
+      case d: Double => d.toDouble
+      case f: java.lang.Double => f.doubleValue()
+    }
     // TODO: add more type conversions
     case _ if (resultType.isCastable(value)) => value
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
