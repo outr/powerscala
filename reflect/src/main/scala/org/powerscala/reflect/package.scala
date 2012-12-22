@@ -12,11 +12,15 @@ package object reflect {
     ec
   }
 
-  implicit def class2EnhancedClass(c: Class[_]): EnhancedClass = map.get(c) match {
-    case null => registerEnhancedClass(c)
-    case ref if (!ref.isEnqueued) => ref.get match {
-      case Some(ec) => ec
-      case None => registerEnhancedClass(c)
+  implicit def class2EnhancedClass(c: Class[_]): EnhancedClass = if (c == null) {
+    null
+  } else {
+    map.get(c) match {
+      case null => registerEnhancedClass(c)
+      case ref if (!ref.isEnqueued) => ref.get match {
+        case Some(ec) => ec
+        case None => registerEnhancedClass(c)
+      }
     }
   }
 

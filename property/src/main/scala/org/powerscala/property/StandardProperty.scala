@@ -55,7 +55,7 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
     _modified = true
     if (oldValue != newValue) {
       backing.setValue(newValue)
-      fire(PropertyChangeEvent(this, oldValue, newValue))
+      fireChanged(oldValue, newValue)
     }
   }
 
@@ -85,9 +85,15 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
   def readOnly: Property[T] = this
 
   /**
-   * Convenience method for notifying that a change has occured.
+   * Convenience method for notifying that a change has occurred. This is also invoked internal to fire any and all
+   * PropertyChangeEvents so overriding this method modifies how PropertyChangeEvents are fired.
    */
-  def fireChanged() = fire(new PropertyChangeEvent(this, value, value))
+  def fireChanged(oldValue: T, newValue: T): Routing = fire(new PropertyChangeEvent(this, oldValue, newValue))
+
+  /**
+   * Convenience method for notifying that a change has occurred.
+   */
+  def fireChanged(): Routing = fireChanged(value, value)
 
   def and(property: StandardProperty[T]) = StandardPropertyGroup[T](List(property, this))
 

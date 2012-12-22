@@ -6,4 +6,4 @@ import org.powerscala.property.Property
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-case class PropertyChangeEvent(property: Property[_], oldValue: Any, newValue: Any) extends ChangeEvent
+class PropertyChangeEvent(val property: Property[_], val oldValue: Any, val newValue: Any) extends ChangeEvent
