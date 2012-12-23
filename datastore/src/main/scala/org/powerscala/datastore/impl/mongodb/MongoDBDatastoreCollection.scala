@@ -76,7 +76,16 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     filters.foreach(f => addFilter(qb, f))
 
     val dbo = qb.get()
-    var cursor = collection.find(dbo)
+    var cursor = if (query._fields.nonEmpty) {
+      val keys = new BasicDBObject(query._fields.size)
+      query._fields.foreach {
+        case f => keys.put(f.name, true)
+      }
+      keys.put("class", true)
+      collection.find(dbo, keys)
+    } else {
+      collection.find(dbo)
+    }
     if (query._skip > 0) {
       cursor = cursor.skip(query._skip)
     }

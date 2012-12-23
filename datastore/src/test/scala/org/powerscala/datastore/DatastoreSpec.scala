@@ -259,11 +259,19 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t9.list()(1).name should equal("Two")
       t9.list()(2).name should equal("Three")
     }
-    "property query a LazyList with a type-safe query" in {
+    "properly query a LazyList with a type-safe query" in {
       c9.logger.setLevel(Level.DEBUG)
       val results = c9.query.filter(Test9.list.sub(LazyList.id[Test1] equal oneUUID)).toList
       results.length should equal(1)
       results.head.name should equal("TestLazyList")
+      c9.logger.setLevel(Level.INFO)
+    }
+    "properly load specific fields from the datastore" in {
+      c9.logger.setLevel(Level.DEBUG)
+      val t9 = c9.query.fields(Test9.name).head
+      t9.name should equal("TestLazyList")
+      t9.list should equal(null)
+      t9.id should not equal(null)
       c9.logger.setLevel(Level.INFO)
     }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
