@@ -22,19 +22,25 @@ trait Hierarchical {
     f(_children)
   }
 
-  protected def addParent(p: Hierarchical) = synchronized {
+  protected def addParent(p: Hierarchical): Boolean = synchronized {
     if (!hierarchicalParents.contains(p)) {
       _parents += p
       p.addChild(this)
       parentAdded(p)
+      true
+    } else {
+      false
     }
   }
 
-  protected def addChild(c: Hierarchical) = synchronized {
+  protected def addChild(c: Hierarchical): Boolean = synchronized {
     if (!hierarchicalChildren.contains(c)) {
       _children += c
       c.addParent(this)
       childAdded(c)
+      true
+    } else {
+      false
     }
   }
 
