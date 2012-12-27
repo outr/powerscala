@@ -1,55 +1,18 @@
 package org.powerscala
 
-import collection.mutable.ListBuffer
 import annotation.tailrec
+import collection.mutable.ListBuffer
 
 /**
  * @author Matt Hicks <mhicks@outr.com>
  */
 trait Hierarchical {
-  private val _parents = ListBuffer.empty[Hierarchical]
-  private val _children = ListBuffer.empty[Hierarchical]
-
-  protected def hierarchicalParents = _parents
-  protected def hierarchicalParent = _parents.headOption
-  protected def hierarchicalChildren = _children
-
-  protected def modifyHierarchicalParents[T](f: ListBuffer[Hierarchical] => T) = synchronized {
-    f(_parents)
-  }
-
-  protected def modifyHierarchicalChildren[T](f: ListBuffer[Hierarchical] => T) = synchronized {
-    f(_children)
-  }
-
-  protected def addParent(p: Hierarchical): Boolean = synchronized {
-    if (!hierarchicalParents.contains(p)) {
-      _parents += p
-      p.addChild(this)
-      parentAdded(p)
-      true
-    } else {
-      false
-    }
-  }
-
-  protected def addChild(c: Hierarchical): Boolean = synchronized {
-    if (!hierarchicalChildren.contains(c)) {
-      _children += c
-      c.addParent(this)
-      childAdded(c)
-      true
-    } else {
-      false
-    }
-  }
-
-  protected def parentAdded(parent: Hierarchical) = {}
-
-  protected def childAdded(child: Hierarchical) = {}
+  protected def hierarchicalParents: Seq[Hierarchical]
+  protected def hierarchicalChildren: Seq[Hierarchical]
+  protected def hierarchicalParent = hierarchicalParents.headOption
 
   protected def processHierarchically(f: Hierarchical => Unit) = {
-    processInternal(f, _children)
+    processInternal(f, hierarchicalChildren)
   }
 
   @tailrec
