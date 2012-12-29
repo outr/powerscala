@@ -2,7 +2,6 @@ package org.powerscala
 
 import naming.NamedChild
 
-
 /**
  * EnumEntries should be instanced within an Enumerated companion object.
  *
