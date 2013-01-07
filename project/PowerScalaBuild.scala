@@ -83,5 +83,5 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
-  val twitterUtilsEval = "com.twitter"   % "util-eval"   % "5.3.10"
+  val twitterUtilsEval = "com.twitter" % "util-eval" % "5.3.10"
 }
