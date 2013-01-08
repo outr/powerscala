@@ -1,6 +1,7 @@
 package org.powerscala.reflect
 
 import java.lang.reflect.{Modifier, Method}
+import java.io.File
 
 /**
  * EnhancedMethod wraps a java.lang.reflect.Method to provide more functionality and easier access.
@@ -177,6 +178,7 @@ object EnhancedMethod {
       case f: Float => f.toInt
       case d: Double => d.toInt
       case i: java.lang.Integer => i.intValue()
+      case s: String => s.toInt
     }
     case "Long" => value match {
       case b: Byte => b.toLong
@@ -185,6 +187,7 @@ object EnhancedMethod {
       case f: Float => f.toLong
       case d: Double => d.toLong
       case l: java.lang.Long => l.longValue()
+      case s: String => s.toLong
     }
     case "Float" => value match {
       case b: Byte => b.toFloat
@@ -193,6 +196,7 @@ object EnhancedMethod {
       case l: Long => l.toFloat
       case d: Double => d.toFloat
       case f: java.lang.Float => f.floatValue()
+      case s: String => s.toFloat
     }
     case "Double" => value match {
       case b: Byte => b.toDouble
@@ -201,6 +205,10 @@ object EnhancedMethod {
       case l: Long => l.toDouble
       case d: Double => d.toDouble
       case f: java.lang.Double => f.doubleValue()
+      case s: String => s.toDouble
+    }
+    case "java.io.File" => value match {
+      case s: String => new File(s)
     }
     // TODO: add more type conversions
     case _ if (resultType.isCastable(value)) => value

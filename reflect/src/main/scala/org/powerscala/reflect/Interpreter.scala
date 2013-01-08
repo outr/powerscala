@@ -19,7 +19,15 @@ class Interpreter {
     interpreter.bind[T](name, value)
   }
 
-  def eval(code: String) = interpreter.interpret(code)
+  def importPackage(packageName: String) = eval("import %s".format(packageName), beQuiet = true)
+
+  def eval(code: String, beQuiet: Boolean = false) = if (beQuiet) {
+    interpreter.beQuietDuring {
+      interpreter.interpret(code)
+    }
+  } else {
+    interpreter.interpret(code)
+  }
 
   def evalAndReturn[T](code: String): T = {
     eval("interpreterReference.set(%s)".format(code))
