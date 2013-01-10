@@ -207,6 +207,9 @@ object EnhancedMethod {
       case f: java.lang.Double => f.doubleValue()
       case s: String => s.toDouble
     }
+    case "Boolean" => value match {
+      case s: String => s.toBoolean
+    }
     case "java.io.File" => value match {
       case s: String => new File(s)
     }

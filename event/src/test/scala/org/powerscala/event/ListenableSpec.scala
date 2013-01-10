@@ -45,15 +45,14 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         Bus().isEmpty should equal(true)
       }
     }
-    // TODO: add back asynchronous support
-    /*"one asynchronous listener is added" should {
-      var received = false
+    "one asynchronous listener is added" should {
+      var received = 0
       var listener: Listener = null
       "add a listener" in {
         listener = TestListenable.listeners.asynchronous {
           case event => {
             Thread.sleep(500)
-            received = true
+            received += 1
           }
         }
       }
@@ -64,11 +63,19 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.fire(Event())
       }
       "not have received the event on the listener" in {
-        received should equal(false)
+        received should equal(0)
       }
       "receive the event a little later" in {
         Time.waitFor(1.0) {
-          received
+          received == 1
+        } should equal(true)
+      }
+      "fire a second event" in {
+        TestListenable.fire(Event())
+      }
+      "receive the second event" in {
+        Time.waitFor(1.0) {
+          received == 2
         } should equal(true)
       }
       "remove the listener" in {
@@ -80,7 +87,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       "have no nodes on the Bus" in {
         Bus().isEmpty should equal(true)
       }
-    }*/
+    }
     "one concurrent listener is added" should {
       var received = false
       var listener: Listener = null

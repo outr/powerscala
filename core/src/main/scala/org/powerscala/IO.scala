@@ -30,6 +30,33 @@ object IO {
   def copy(read: File, write: File) = {
     val input = new FileInputStream(read)
     val output = new FileOutputStream(write)
+    try {
+      stream(input, output)
+    } catch {
+      case t: Throwable => {
+        output.flush()
+        output.close()
+        input.close()
+        throw t
+      }
+    }
+  }
+
+  def copy(read: String, write: File) = {
+    val output = new FileOutputStream(write)
+    try {
+      output.write(read.getBytes)
+    } finally {
+      output.flush()
+      output.close()
+    }
+  }
+
+  def copy(read: File) = {
+    val input = new FileInputStream(read)
+    val output = new ByteArrayOutputStream(read.length().toInt)
     stream(input, output)
+    val bytes = output.toByteArray
+    new String(bytes)
   }
 }

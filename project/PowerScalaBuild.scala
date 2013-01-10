@@ -16,7 +16,8 @@ object PowerScalaBuild extends Build {
     ),
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
     resolvers ++= Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-                      "twitter-repo" at "http://maven.twttr.com"),
+                      "twitter-repo" at "http://maven.twttr.com",
+                      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
     publishTo <<= version {
       (v: String) =>
         val nexus = "https://oss.sonatype.org/"
@@ -57,6 +58,7 @@ object PowerScalaBuild extends Build {
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .dependsOn(reflect)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
+    .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(core)
   lazy val convert = Project("convert", file("convert"), settings = createSettings("powerscala-convert"))
     .dependsOn(core)
@@ -84,4 +86,5 @@ object Dependencies {
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
   val twitterUtilsEval = "com.twitter" % "util-eval" % "5.3.10"
+  val akkaActors = "com.typesafe.akka" % "akka-actor" % "2.0.5"
 }

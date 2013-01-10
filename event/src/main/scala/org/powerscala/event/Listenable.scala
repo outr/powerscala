@@ -3,6 +3,7 @@ package org.powerscala.event
 import org.powerscala.ref.ReferenceType
 import org.powerscala.hierarchy.{Child, Parent}
 import org.powerscala.bus.Bus
+import akka.actor.{Props, ActorSystem, Actor}
 
 /**
  * Listenable can be mixed in to provide the ability for event management on an object.
@@ -16,6 +17,8 @@ trait Listenable {
   protected[event] var listenersList: List[Listener] = Nil
 
   protected[event] val localizedBus = new Bus()
+
+  protected[event] lazy val asynchronousActor = Listenable.system.actorOf(Props[ListenableAsynchronousActor], name = "listenableAsynchronous")
 
 //  protected[event] val asynchronousActor = new DaemonActor {
 //    def act() {
@@ -105,7 +108,15 @@ trait Listenable {
   def fire(event: Event) = Event.fire(event, this)
 }
 
+class ListenableAsynchronousActor extends Actor {
+  def receive = {
+    case f: Function0[_] => f()
+  }
+}
+
 object Listenable {
+  val system = ActorSystem("ListenableActorSystem")
+
   /**
    * Adds change listeners to the Listenables to invoke the supplied function immediately when a
    * change occurs.

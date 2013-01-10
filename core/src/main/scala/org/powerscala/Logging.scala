@@ -12,7 +12,7 @@ import ch.qos.logback.core.rolling.{TimeBasedRollingPolicy, RollingFileAppender}
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 trait Logging {
-  lazy val logger = Logging(this)
+  def logger = Logging(this)
 
   def trace(message: => String) = if (logger.isTraceEnabled) logger.trace(message)
   def debug(message: => String) = if (logger.isDebugEnabled) logger.debug(message)

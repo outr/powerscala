@@ -14,7 +14,7 @@ case class EventListenerBuilder(private val listenable: Listenable,
                                 private val referenceType: ReferenceType = ReferenceType.Soft,
                                 private val priority: Priority = Priority.Normal) {
   def synchronous = copy(processingMode = ProcessingMode.Synchronous)
-//  def asynchronous = copy(processingMode = ProcessingMode.Asynchronous)
+  def asynchronous = copy(processingMode = ProcessingMode.Asynchronous)
   def concurrent = copy(processingMode = ProcessingMode.Concurrent)
   def once = copy(maxInvocation = 1)
   def maximum(max: Int) = copy(maxInvocation = max)
@@ -129,7 +129,7 @@ private case class EventListener(listenable: Listenable,
     count += 1
     val result = processingMode match {
       case ProcessingMode.Synchronous => function(event)
-//      case ProcessingMode.Asynchronous if (!event.singleThreaded) => listenable.asynchronousActor ! (() => function(event))
+      case ProcessingMode.Asynchronous if (!event.singleThreaded) => listenable.asynchronousActor ! (() => function(event))
       case ProcessingMode.Concurrent if (!event.singleThreaded) => Executor.invoke {
         function(event)
       }
