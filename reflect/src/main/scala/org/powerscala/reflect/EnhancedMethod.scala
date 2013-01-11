@@ -171,6 +171,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
 
 object EnhancedMethod {
   def convertTo(value: Any, resultType: EnhancedClass) = resultType.name match {
+    case _ if (resultType.isCastable(value)) => value   // No conversion necessary
     case "Int" => value match {
       case b: Byte => b.toInt
       case c: Char => c.toInt
@@ -203,7 +204,6 @@ object EnhancedMethod {
       case c: Char => c.toDouble
       case i: Int => i.toDouble
       case l: Long => l.toDouble
-      case d: Double => d.toDouble
       case f: java.lang.Double => f.doubleValue()
       case s: String => s.toDouble
     }
@@ -214,7 +214,6 @@ object EnhancedMethod {
       case s: String => new File(s)
     }
     // TODO: add more type conversions
-    case _ if (resultType.isCastable(value)) => value
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }
 }
