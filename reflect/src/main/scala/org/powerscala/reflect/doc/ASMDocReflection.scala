@@ -99,20 +99,21 @@ object ASMDocReflection extends DocMapper {
   def apply(c: Class[_]) = new ASMDocReflection(c)
 
   def classNode(clazz: Class[_]) = {
-    val classLoader = clazz.getClassLoader
+    val classLoader = Thread.currentThread().getContextClassLoader
     val declaringType = Type.getType(clazz)
     val url = declaringType.getInternalName + ".class"
     val classNode = new ClassNode()
-    val input = classLoader.getResourceAsStream(url)
-    if (input == null) {
-      throw new NullPointerException("Unable to look up class %s by url %s".format(declaringType.getClassName, url))
-    }
     try {
-      val classReader = new ClassReader(input)
-      classReader.accept(classNode, 0)
-    } finally {
-      input.close()
+      val input = classLoader.getResourceAsStream(url)
+      try {
+        val classReader = new ClassReader(input)
+        classReader.accept(classNode, 0)
+      } finally {
+        input.close()
+      }
+      classNode
+    } catch {
+      case exc: NullPointerException => throw new NullPointerException("Unable to look up class %s by url %s".format(declaringType.getClassName, url))
     }
-    classNode
   }
 }
