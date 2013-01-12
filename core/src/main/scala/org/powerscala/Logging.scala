@@ -50,9 +50,9 @@ object Logging {
       encoder.start()
 
       val fileAppender = new RollingFileAppender[ILoggingEvent]()
-      fileAppender.setFile("application.log")
+      fileAppender.setFile("logs/application.log")
       val rollingPolicy = new TimeBasedRollingPolicy[ILoggingEvent]()
-      rollingPolicy.setFileNamePattern("application.%d{yyyy-MM-dd}.log")
+      rollingPolicy.setFileNamePattern("logs/application.%d{yyyy-MM-dd}.log")
       rollingPolicy.setMaxHistory(30)
       rollingPolicy.setContext(context)
       rollingPolicy.setParent(fileAppender)
