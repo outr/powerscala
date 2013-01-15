@@ -5,7 +5,7 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.4-SNAPSHOT",
+    version := "1.5.0-SNAPSHOT",
     organization := "org.powerscala",
     scalaVersion := "2.9.2",
     libraryDependencies ++= Seq(
@@ -15,9 +15,7 @@ object PowerScalaBuild extends Build {
       scalaTest
     ),
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
-    resolvers ++= Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-                      "twitter-repo" at "http://maven.twttr.com",
-                      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
+    resolvers ++= Seq("Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
     publishTo <<= version {
       (v: String) =>
         val nexus = "https://oss.sonatype.org/"
@@ -72,7 +70,7 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections, twitterUtilsEval))
+    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections))
     .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ ))
 }
 
@@ -85,6 +83,5 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
   val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
-  val twitterUtilsEval = "com.twitter" % "util-eval" % "5.3.10"
   val akkaActors = "com.typesafe.akka" % "akka-actor" % "2.0.5"
 }
