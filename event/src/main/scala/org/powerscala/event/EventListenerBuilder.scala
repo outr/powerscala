@@ -110,6 +110,8 @@ case class EventListenerBuilder(private val listenable: Listenable,
     listenable.removeListener(listener)
   }
 
+  def clear() = listenable.clearListeners()
+
   def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft, localized: Boolean = false) = {
     listenable.addListener(listener, referenceType, localized)
   }

@@ -291,6 +291,15 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     case "List" => Nil
     case _ => null
   }).asInstanceOf[T]
+
+  /**
+   * Attempts to convert the supplied value to the type of this class.
+   *
+   * @param value the value to convert
+   * @tparam T the generic type of the return
+   * @return T
+   */
+  def convertTo[T](value: Any) = EnhancedMethod.convertTo(value, this).asInstanceOf[T]
 }
 
 object EnhancedClass {

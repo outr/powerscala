@@ -17,7 +17,7 @@ import java.util.concurrent.atomic
  *
  * @author Matt Hicks <mhicks@outr.com>
  */
-class DirectoryWatcher(path: Path) extends Listenable {
+class DirectoryWatcher(val path: Path) extends Listenable {
   private val keepAlive = new AtomicBoolean(true)
   val watcher = FileSystems.getDefault.newWatchService()
   private val _started = new atomic.AtomicBoolean(false)
