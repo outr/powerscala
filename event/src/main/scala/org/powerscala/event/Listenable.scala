@@ -20,16 +20,6 @@ trait Listenable {
 
   protected[event] lazy val asynchronousActor = Listenable.system.actorOf(Props[ListenableAsynchronousActor], name = "listenableAsynchronous")
 
-//  protected[event] val asynchronousActor = new DaemonActor {
-//    def act() {
-//      loop {
-//        react {
-//          case f: Function0[_] => f()
-//        }
-//      }
-//    }
-//  }.start()
-
   protected[event] def addListener(listener: Listener, referenceType: ReferenceType = ReferenceType.Soft, localized: Boolean = false) = synchronized {
     listenersList = (listener :: listenersList.reverse).reverse
     if (localized) {
@@ -115,6 +105,7 @@ class ListenableAsynchronousActor extends Actor {
 }
 
 object Listenable {
+  System.setProperty("akka.daemonic", "on")
   val system = ActorSystem("ListenableActorSystem")
 
   /**
