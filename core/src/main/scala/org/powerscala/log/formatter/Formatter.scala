@@ -10,6 +10,7 @@ trait Formatter {
 }
 
 object Formatter {
+  // TODO: apply text-based format: "${date} [${threadName}] ${levelPaddedRight} ${classNameAbbreviated} - ${message}${newLine}"
   val Default = FormatterBuilder().date().string(" [").threadName.string("] ").levelPaddedRight.string(" ").classNameAbbreviated.string(" - ").message.newLine
   val Advanced = FormatterBuilder().date().string(" [").threadName.string("] ").levelPaddedRight.string(" ").classNameAbbreviated.string(".").methodName.string(":").lineNumber.string(" - ").message.newLine
 }

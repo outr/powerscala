@@ -1,6 +1,10 @@
 package org.powerscala.log
 
 import akka.actor.{Actor, Props, ActorSystem}
+import formatter.Formatter
+import handler.Handler
+import writer.FileWriter
+import java.io.File
 
 /**
  * @author Matt Hicks <mhicks@outr.com>
@@ -13,13 +17,24 @@ trait Logging {
     def apply() = Logging(Logging.this)
     def isLevelEnabled(level: Level) = apply().isLevelEnabled(level)
     def parent = apply().parent
+    def configure(f: Logger => Logger) = Logger.configure(className)(f)
   }
 
-  def trace(message: => String) = log(Level.Trace, message)
-  def debug(message: => String) = log(Level.Debug, message)
-  def info(message: => String) = log(Level.Info, message)
-  def warn(message: => String) = log(Level.Warn, message)
-  def error(message: => String) = log(Level.Error, message)
+  def trace(message: => String): Unit = log(Level.Trace, message)
+  def debug(message: => String): Unit = log(Level.Debug, message)
+  def info(message: => String): Unit = log(Level.Info, message)
+  def warn(message: => String): Unit = log(Level.Warn, message)
+  def warn(t: Throwable): Unit = log(Level.Warn, Logging.throwable2String(t))
+  def warn(message: => String, t: Throwable): Unit = {
+    log(Level.Warn, message)
+    warn(t)
+  }
+  def error(message: => String): Unit = log(Level.Error, message)
+  def error(t: Throwable): Unit = log(Level.Error, Logging.throwable2String(t))
+  def error(message: => String, t: Throwable): Unit = {
+    log(Level.Error, message)
+    error(t)
+  }
 
   def log(level: Level, message: => String) = if (logger.isLevelEnabled(level)) {
     val record = new LogRecord(level, message, className, asynchronous = asynchronousLogging)
@@ -37,6 +52,47 @@ object Logging {
   private val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
 
   def apply(logging: Logging): Logger = Logger(logging.getClass.getName)
+
+  def throwable2String(t: Throwable, primaryCause: Boolean = true): String = {
+    val b = new StringBuilder
+    if (!primaryCause) {
+      b.append("Caused by: ")
+    }
+    b.append(t.getClass.getName)
+    if (t.getLocalizedMessage != null) {
+      b.append(": ")
+      b.append(t.getLocalizedMessage)
+    }
+    b.append(System.lineSeparator())
+    writeStackTrace(b, t.getStackTrace)
+    if (t.getCause != null) {
+      b.append(throwable2String(t.getCause, primaryCause = false))
+    }
+    b.toString()
+  }
+
+  private def writeStackTrace(b: StringBuilder, elements: Array[StackTraceElement]): Unit = {
+    if (elements.nonEmpty) {
+      val head = elements.head
+      b.append("\tat ")
+      b.append(head.getClassName)
+      b.append('.')
+      b.append(head.getMethodName)
+      b.append('(')
+      if (head.getLineNumber == -2) {
+        b.append("Native Method")
+      } else {
+        b.append(head.getFileName)
+        if (head.getLineNumber > 0) {
+          b.append(':')
+          b.append(head.getLineNumber)
+        }
+      }
+      b.append(')')
+      b.append(System.lineSeparator())
+      writeStackTrace(b, elements.tail)
+    }
+  }
 }
 
 class AsynchronousLoggingActor extends Actor {
@@ -49,13 +105,18 @@ class AsynchronousLoggingActor extends Actor {
 
 object Test extends Logging {
   def main(args: Array[String]): Unit = {
+    logger.configure {
+      case l => l.withHandler(Handler(Formatter.Advanced, Level.Info, new FileWriter(new File("."), () => "test.log")))
+    }
     info("Hello World!")
     trace("A trace!")
     error("An error!")
     (0 until 100).foreach {
-      case i => info("Number %s".format(i))
+      case i => {
+        info("Number %s".format(i))
+      }
     }
-    test()
+    error("Testing Exceptions", new RuntimeException("Argh! I be dead!"))
     Thread.sleep(1000)
   }
 

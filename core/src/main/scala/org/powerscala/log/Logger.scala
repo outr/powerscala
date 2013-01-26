@@ -8,18 +8,18 @@ import writer.ConsoleWriter
 /**
  * @author Matt Hicks <mhicks@outr.com>
  */
-class Logger(parentName: String, handlers: List[Handler] = Nil) {
+class Logger private(val name: String, val parentName: String, val handlers: List[Handler] = Nil) {
   def parent = if (parentName == null) {
     null
   } else {
     Logger(parentName)
   }
 
-  def withParentName(parentName: String) = new Logger(parentName, handlers)
+  def withParentName(parentName: String) = new Logger(name, parentName, handlers)
 
-  def withHandler(handler: Handler) = new Logger(parentName, (handler :: handlers.reverse).reverse)
+  def withHandler(handler: Handler) = new Logger(name, parentName, (handler :: handlers.reverse).reverse)
 
-  def withoutHandlers = new Logger(parentName, Nil)
+  def withoutHandlers = new Logger(name, parentName, Nil)
 
   def isLevelEnabled(level: Level): Boolean = hasLevel(level, handlers) || (parentName != null && parent.isLevelEnabled(level))
 
@@ -72,7 +72,7 @@ object Logger {
     } else {
       "root"
     }
-    val original = loggers.getOrElse(name, new Logger(parentName = parentName, handlers = Nil))
+    val original = loggers.getOrElse(name, new Logger(name = name, parentName = parentName, handlers = Nil))
     val configured = f(original)
     loggers += name -> configured
   }
