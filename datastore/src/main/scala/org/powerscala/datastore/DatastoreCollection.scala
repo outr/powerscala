@@ -11,7 +11,7 @@ import query.FieldFilter
 import util.UUID
 import scala.Some
 import collection.mutable.ListBuffer
-import org.powerscala.Logging
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>

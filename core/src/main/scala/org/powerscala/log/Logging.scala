@@ -1,22 +1,35 @@
 package org.powerscala.log
 
 import akka.actor.{Actor, Props, ActorSystem}
-import formatter.Formatter
-import handler.Handler
-import writer.FileWriter
-import java.io.File
 
 /**
+ * Logging trait can be mixed in to provide class-level logging.
+ *
  * @author Matt Hicks <mhicks@outr.com>
  */
 trait Logging {
+  /**
+   * Determines whether logging should be asynchronous.
+   *
+   * Defaults to true
+   */
   protected def asynchronousLogging = true
   protected lazy val className = getClass.getName
 
   val logger = new {
+    /**
+     * Logger for this instance. Defaults to root logger if no explicit logger is configured.
+     */
     def apply() = Logging(Logging.this)
+
+    /**
+     * Determines if any logging exists for the supplied level.
+     */
     def isLevelEnabled(level: Level) = apply().isLevelEnabled(level)
-    def parent = apply().parent
+
+    /**
+     * Configures this class-level Logger. If no instance currently exists a new one will be created.
+     */
     def configure(f: Logger => Logger) = Logger.configure(className)(f)
   }
 
@@ -100,27 +113,5 @@ class AsynchronousLoggingActor extends Actor {
 
   def receive = {
     case f: Function0[_] => f()
-  }
-}
-
-object Test extends Logging {
-  def main(args: Array[String]): Unit = {
-    logger.configure {
-      case l => l.withHandler(Handler(Formatter.Advanced, Level.Info, new FileWriter(new File("."), () => "test.log")))
-    }
-    info("Hello World!")
-    trace("A trace!")
-    error("An error!")
-    (0 until 100).foreach {
-      case i => {
-        info("Number %s".format(i))
-      }
-    }
-    error("Testing Exceptions", new RuntimeException("Argh! I be dead!"))
-    Thread.sleep(1000)
-  }
-
-  def test() = {
-    warn("Another?")
   }
 }

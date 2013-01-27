@@ -2,7 +2,7 @@ package org.powerscala.property
 
 import event.PropertyChangeEvent
 import org.powerscala.reflect._
-import org.powerscala.Logging
+import org.powerscala.log.Logging
 
 /**
  * Binds a top-level property and a hierarchically lower property together so a change to one updates the other.
