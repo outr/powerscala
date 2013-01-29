@@ -1,6 +1,7 @@
 package org.powerscala.log
 
 import akka.actor.{Actor, Props, ActorSystem}
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Logging trait can be mixed in to provide class-level logging.
@@ -52,7 +53,12 @@ trait Logging {
   def log(level: Level, message: => String) = if (logger.isLevelEnabled(level)) {
     val record = new LogRecord(level, message, className, asynchronous = asynchronousLogging)
     if (asynchronousLogging) {
-      Logging.actor ! (() => logger().log(record))
+      Logging.asynchronous.incrementAndGet()      // Keep track of unsaved logs
+      val f = () => {
+        logger().log(record)
+        Logging.asynchronous.decrementAndGet()
+      }
+      Logging.actor ! f
     } else {
       logger().log(record)
     }
@@ -60,6 +66,30 @@ trait Logging {
 }
 
 object Logging {
+  private val asynchronous = new AtomicInteger(0)
+
+  /**
+   * Returns the number of asynchronous logging requests are currently queued
+   */
+  def queued = asynchronous.get()
+
+  /**
+   * Waits for the queue to become empty or the timeout to elapse.
+   *
+   * @param timeout the amount of time to wait for the queue to empty (defaults to 5.0 - five seconds)
+   * @param precision the frequency at which the queue is checked (defaults to 0.01 - every 10 milliseconds)
+   * @return true if queue is empty upon exit
+   */
+  def await(timeout: Double = 5.0, precision: Double = 0.01) = {
+    val start = System.currentTimeMillis()
+    val timeoutLong = start + math.round(timeout * 1000.0)
+    val precisionLong = math.round(precision * 1000.0)
+    while (queued != 0 || System.currentTimeMillis() < timeoutLong) {
+      Thread.sleep(precisionLong)
+    }
+    queued == 0
+  }
+
   System.setProperty("akka.daemonic", "on")
   private val system = ActorSystem("LoggingActorSystem")
   private val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")

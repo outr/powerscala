@@ -6,5 +6,5 @@ package org.powerscala
 package object json {
   def parse[T](content: String)(implicit manifest: Manifest[T]) = JSONConverter.parse[T](content)(manifest)
 
-  def generate(value: Any): String = JSONConverter.generate(value)
+  def generate(value: Any, specifyClassName: Boolean = true): String = JSONConverter.generate(value, specifyClassName)
 }

@@ -3,7 +3,7 @@ package org.powerscala.log
 import formatter.Formatter
 import handler.Handler
 import annotation.tailrec
-import writer.ConsoleWriter
+import writer.{Writer, ConsoleWriter}
 
 /**
  * @author Matt Hicks <mhicks@outr.com>
@@ -17,7 +17,11 @@ class Logger private(val name: String, val parentName: String, val handlers: Lis
 
   def withParentName(parentName: String) = new Logger(name, parentName, handlers)
 
-  def withHandler(handler: Handler) = new Logger(name, parentName, (handler :: handlers.reverse).reverse)
+  def withHandler(handler: Handler): Logger = new Logger(name, parentName, (handler :: handlers.reverse).reverse)
+
+  def withHandler(formatter: Formatter = Formatter.Default,
+                  level: Level = Level.Info,
+                  writer: Writer = ConsoleWriter): Logger = withHandler(Handler(formatter, level, writer))
 
   def withoutHandlers = new Logger(name, parentName, Nil)
 

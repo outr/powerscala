@@ -26,22 +26,32 @@ object JSONConverter {
   def parseJSON[T](json: Any)(implicit manifest: Manifest[T]): T = json match {
     case map: Map[_, _] => {
       var args = map.asInstanceOf[Map[String, Any]]
-      val c: EnhancedClass = manifest.erasure
+      val c: EnhancedClass = if (args.contains("class")) {
+        Class.forName(args("class").asInstanceOf[String])
+      } else {
+        manifest.erasure
+      }
       c.caseValues.foreach {
         case cv => if (cv.valueType.isCase && args.contains(cv.name)) {
           args += cv.name -> parseJSON[Any](args(cv.name))(Manifest.classType[Any](cv.valueType.javaClass))
+        } else if (cv.valueType == classOf[List[_]]) {
+          args += cv.name -> parseJSON[Any](args(cv.name))(Manifest.classType[Any](classOf[List[_]]))
         }
       }
       c.create[T](args)
     }
-    case _ => throw new RuntimeException("Unsupported: %s".format(json))
+    case list: List[_] => {
+      list.map(v => parseJSON[Any](v)(null)).asInstanceOf[T]
+    }
+    case _ => json.asInstanceOf[T]
+//    case _ => throw new RuntimeException("Unsupported: %s (%s)".format(json, manifest))
   }
 
-  def generate(value: Any): String = value match {
+  def generate(value: Any, specifyClassName: Boolean = true): String = value match {
     case null => null
     case json: JSONType => formatter(value)
     case _ => {
-      val result = generateJSON(value)
+      val result = generateJSON(value, specifyClassName)
       if (result == value) {
         throw new RuntimeException("Unable to convert: %s (%s)".format(value, value.asInstanceOf[AnyRef].getClass))
       }
@@ -49,14 +59,19 @@ object JSONConverter {
     }
   }
 
-  def generateJSON(value: Any): Any = {
+  def generateJSON(value: Any, specifyClassName: Boolean = true): Any = {
     if (value == null) {
       null
     } else if (value.asInstanceOf[AnyRef].getClass.isArray) {
       JSONArray(value.asInstanceOf[Array[_]].toList.map(v => generateJSON(v)))
+    } else if (value.isInstanceOf[Seq[_]]) {
+      JSONArray(value.asInstanceOf[Seq[_]].toList.map(v => generateJSON(v)))
     } else if (value.asInstanceOf[AnyRef].getClass.isCase) {
       val c: EnhancedClass = value.asInstanceOf[AnyRef].getClass
-      val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap
+      val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap match {
+        case m if (specifyClassName) => m + ("class" -> c.javaClass.getName)
+        case m => m
+      }
       JSONObject(map)
     } else {
       value

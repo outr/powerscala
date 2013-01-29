@@ -6,7 +6,7 @@ import query.Field
 
 import scala.math._
 import org.powerscala.concurrent.Time
-import org.powerscala.Logging
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>

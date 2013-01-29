@@ -11,6 +11,8 @@ class FileWriter(val directory: File, val filenameGenerator: () => String, val a
   private var currentFilename: String = _
   private var output: BufferedOutputStream = _
 
+  directory.mkdirs()
+
   protected def checkOutput(out: BufferedOutputStream) = {
     val filename = filenameGenerator()
     if (out == null) {
@@ -40,4 +42,6 @@ class FileWriter(val directory: File, val filenameGenerator: () => String, val a
 
 object FileWriter {
   def DatePattern(pattern: String) = () => pattern.format(System.currentTimeMillis())
+
+  def Daily(name: String = "application") = DatePattern(name + ".%1$tY-%1$tm-%1$td.log")
 }
