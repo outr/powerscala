@@ -108,7 +108,7 @@ object Color extends Enumerated[Color] {
   val Gold = immutable(0xffffd700)
   val Goldenrod = immutable(0xffdaa520)
   val Gray = immutable(0xffbebebe)
-  val Green = immutable(0xff00ff00)
+  val Green = immutable(0xff008000)
   val GreenYellow = immutable(0xffadff2f)
   val HaloBlue = immutable(0xff93a9b4)
   val HighlightBlue = immutable(0xffb2e1ff)
