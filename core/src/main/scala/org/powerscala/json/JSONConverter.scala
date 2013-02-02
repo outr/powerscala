@@ -17,9 +17,19 @@ object JSONConverter {
   }
 
   def parse[T](content: String)(implicit manifest: Manifest[T]) = {
-    JSON.parseFull(content) match {
-      case Some(value) => parseJSON[T](value)(manifest)
-      case None => throw new NullPointerException("Unsupported JSON data: %s".format(content))
+    if (manifest != null && manifest.erasure.hasType(classOf[Jsonify])) {
+      val empty = manifest.erasure.create[Jsonify](Map.empty)
+      val instance = empty.parse(content)
+      instance.asInstanceOf[T]
+    } else {
+      try {
+        JSON.parseFull(content) match {
+          case Some(value) => parseJSON[T](value)(manifest)
+          case None => throw new NullPointerException("Unsupported JSON data: %s".format(content))
+        }
+      } catch {
+        case t: Throwable => throw new RuntimeException("Unable to parse (%s): %s".format(manifest, content), t)
+      }
     }
   }
 
@@ -28,6 +38,8 @@ object JSONConverter {
       var args = map.asInstanceOf[Map[String, Any]]
       val c: EnhancedClass = if (args.contains("class")) {
         Class.forName(args("class").asInstanceOf[String])
+      } else if (args.contains("clazz")) {
+        Class.forName(args("clazz").asInstanceOf[String])
       } else {
         manifest.erasure
       }
@@ -49,6 +61,7 @@ object JSONConverter {
 
   def generate(value: Any, specifyClassName: Boolean = true): String = value match {
     case null => null
+    case jsonify: Jsonify => jsonify.generate()
     case json: JSONType => formatter(value)
     case _ => {
       val result = generateJSON(value, specifyClassName)

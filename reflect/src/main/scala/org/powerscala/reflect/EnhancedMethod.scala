@@ -172,6 +172,9 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
 object EnhancedMethod {
   def convertTo(value: Any, resultType: EnhancedClass) = resultType.name match {
     case _ if (resultType.isCastable(value)) => value   // No conversion necessary
+    case "[D" => value match {
+      case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
+    }
     case "Int" => value match {
       case b: Byte => b.toInt
       case c: Char => c.toInt
