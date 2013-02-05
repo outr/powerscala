@@ -15,7 +15,7 @@ trait Logging {
    * Defaults to true
    */
   protected def asynchronousLogging = true
-  protected lazy val className = getClass.getName
+  protected lazy val loggerName = getClass.getName
 
   val logger = new {
     /**
@@ -31,7 +31,7 @@ trait Logging {
     /**
      * Configures this class-level Logger. If no instance currently exists a new one will be created.
      */
-    def configure(f: Logger => Logger) = Logger.configure(className)(f)
+    def configure(f: Logger => Logger) = Logger.configure(loggerName)(f)
   }
 
   def trace(message: => String): Unit = log(Level.Trace, message)
@@ -51,7 +51,7 @@ trait Logging {
   }
 
   def log(level: Level, message: => String) = if (logger.isLevelEnabled(level)) {
-    val record = new LogRecord(level, message, className, asynchronous = asynchronousLogging)
+    val record = new LogRecord(level = level, _message = message, className = loggerName, asynchronous = asynchronousLogging)
     if (asynchronousLogging) {
       Logging.asynchronous.incrementAndGet()      // Keep track of unsaved logs
       val f = () => {

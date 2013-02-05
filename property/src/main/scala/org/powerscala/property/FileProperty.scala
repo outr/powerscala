@@ -73,10 +73,15 @@ trait FileProperty[T] {
   def load() = if (file.exists()) {
     if (changing.compareAndSet(false, true)) {
       try {
-        val content = Source.fromFile(file).mkString
-        val loaded = parse[T](content)(manifest)
-        lastModified = file.lastModified()
-        value = loaded
+        val source = Source.fromFile(file)
+        try {
+          val content = source.mkString
+          val loaded = parse[T](content)(manifest)
+          lastModified = file.lastModified()
+          value = loaded
+        } finally {
+          source.close()
+        }
       } finally {
         changing.set(false)
       }
