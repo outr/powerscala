@@ -2,6 +2,8 @@ package org.powerscala
 
 import java.io._
 import annotation.tailrec
+import java.net.URL
+import io.Source
 
 /**
  * @author Matt Hicks <mhicks@outr.com>
@@ -55,8 +57,33 @@ object IO {
   def copy(read: File) = {
     val input = new FileInputStream(read)
     val output = new ByteArrayOutputStream(read.length().toInt)
-    stream(input, output)
+    stream(input, output, closeOnComplete = true)
     val bytes = output.toByteArray
     new String(bytes)
+  }
+
+  def copy(read: URL) = {
+    val source = Source.fromURL(read)
+    try {
+      source.mkString
+    } finally {
+      source.close()
+    }
+  }
+
+  def delete(file: File) = {
+    if (file.isDirectory) {
+      deleteFiles(file.listFiles().toList)
+    }
+    file.delete()
+  }
+
+  @tailrec
+  final def deleteFiles(files: List[File]): Unit = {
+    if (files.nonEmpty) {
+      val f = files.head
+      delete(f)
+      deleteFiles(files.tail)
+    }
   }
 }

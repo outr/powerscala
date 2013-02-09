@@ -14,8 +14,14 @@ import org.powerscala.reflect._
  */
 class JavaDocReflection(className: String) extends DocumentationReflection {
   private lazy val url = JavaDocReflection.baseURL + className.replaceAll("[.]", "/") + ".html"
-  private lazy val source = Source.fromURL(new URL(url), "UTF-8")
-  private lazy val string = source.mkString
+  private lazy val string = {
+    val source = Source.fromURL(new URL(url), "UTF-8")
+    try {
+      source.mkString
+    } finally {
+      source.close()
+    }
+  }
 
   def method(m: Method): MethodDocumentation = {
     assert(m.getDeclaringClass.getName == className, "Attempting to load documentation for %s.%s on the wrong class: %s".format(m.getDeclaringClass.getName, m.getName, className))

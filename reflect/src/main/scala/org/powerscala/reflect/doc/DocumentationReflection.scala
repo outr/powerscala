@@ -108,14 +108,19 @@ object DocumentationReflection {
     case docMapper => docMapper
   }
 
-  def source(className: String, urlString: String) = {
-    getClass.getClassLoader.getResource(className + ".html") match {
+  def string(className: String, urlString: String) = {
+    val source = getClass.getClassLoader.getResource(className + ".html") match {
       case null => if (remoteSources) {
         Source.fromURL(new URL(urlString), "UTF-8")
       } else {
         throw new RuntimeException("Unable to find local copy of: " + className + ".html")
       }
       case url => Source.fromURL(url, "UTF-8")
+    }
+    try {
+      source.mkString
+    } finally {
+      source.close()
     }
   }
 }

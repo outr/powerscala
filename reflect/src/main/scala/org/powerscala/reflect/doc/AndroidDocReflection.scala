@@ -11,8 +11,7 @@ import annotation.tailrec
  */
 class AndroidDocReflection(className: String) extends DocumentationReflection {
   private lazy val url = AndroidDocReflection.baseURL + className.replaceAll("[.]", "/") + ".html"
-  private lazy val source = DocumentationReflection.source(className, url)
-  private lazy val string = source.mkString
+  private lazy val string = DocumentationReflection.string(className, url)
 
   def method(m: Method) = {
     val nameLookup = generateNameLookup(m)
