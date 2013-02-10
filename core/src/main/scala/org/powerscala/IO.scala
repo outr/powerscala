@@ -86,4 +86,9 @@ object IO {
       deleteFiles(files.tail)
     }
   }
+
+  def lastModified(url: URL) = {
+    val connection = url.openConnection()
+    connection.getLastModified
+  }
 }
