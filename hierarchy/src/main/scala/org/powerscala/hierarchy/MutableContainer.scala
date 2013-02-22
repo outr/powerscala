@@ -71,6 +71,20 @@ trait MutableContainer[T <: Element] extends AbstractMutableContainer[T] {
     def insert(index: Int, children: T*) = insertChildren(index, children: _*)
 
     /**
+     * Adds the supplied children immediately after the supplied child in this container.
+     *
+     * @param existingChild the child currently in this container to add after
+     * @param childrenToAdd the children to add
+     */
+    def addAfter(existingChild: T, childrenToAdd: T*) = {
+      val index = indexOf(existingChild)
+      if (index == -1) {
+        throw new IndexOutOfBoundsException("Unable to find %s in this container.".format(existingChild))
+      }
+      insertChildren(index + 1, childrenToAdd: _*)
+    }
+
+    /**
      * Removes the supplied child from this container and nullifies parent if the child is of type
      * Element.
      */

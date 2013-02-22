@@ -25,7 +25,7 @@ object JSONConverter {
       try {
         JSON.parseFull(content) match {
           case Some(value) => parseJSON[T](value)(manifest)
-          case None => throw new NullPointerException("Unsupported JSON data: %s".format(content))
+          case None => throw new NullPointerException("Unsupported JSON data: [%s]".format(content))
         }
       } catch {
         case t: Throwable => throw new RuntimeException("Unable to parse (%s): %s".format(manifest, content), t)
