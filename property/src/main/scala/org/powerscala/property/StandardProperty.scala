@@ -18,7 +18,6 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
                                     extends MutableProperty[T]
                                     with CaseClassProperty[T]
                                     with Listenable
-//                                    with Bindable[T]
                                     with Default[T] {
   def this(_name: String = null)(implicit parent: PropertyParent = null, manifest: Manifest[T]) = {
     this(_name, manifest.erasure.defaultForType[T])(parent, manifest)

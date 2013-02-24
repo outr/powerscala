@@ -52,10 +52,12 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(core, concurrent, convert, datastore, event, hierarchy, property, reflect)
+    .aggregate(core, concurrent, communication, convert, datastore, event, hierarchy, property, reflect)
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
+  lazy val communication = Project("communication", file("communication"), settings = createSettings("powerscala-communication"))
+    .dependsOn(core)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
   lazy val convert = Project("convert", file("convert"), settings = createSettings("powerscala-convert"))
