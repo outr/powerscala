@@ -37,11 +37,12 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
       ff.operator match {
         case Operator.equal => qb.put(name).is(value)
         case Operator.nequal => qb.put(name).notEquals(value)
+        case Operator.exists => qb.put(name).exists(value)
         case Operator.< => qb.put(name).lessThan(value)
         case Operator.> => qb.put(name).greaterThan(value)
         case Operator.<= => qb.put(name).lessThanEquals(value)
         case Operator.>= => qb.put(name).greaterThanEquals(value)
-        case Operator.regex => qb.put(name).regex(Pattern.compile(value.toString))
+        case Operator.regex => qb.put(name).regex(value.asInstanceOf[Pattern])
         case Operator.subfilter => addFilter(qb, ff.value.asInstanceOf[Filter[_]], "%s.".format(name))
         case Operator.in => {
           val list = new BasicDBList()
@@ -126,6 +127,15 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
   def executeQueryIds(query: DatastoreQuery[T]) = {
     val cursor = queryCursor(query)
     asScalaIterator(cursor).map(entry => entry.get("_id").asInstanceOf[UUID])
+  }
+
+  def executeQuerySize(query: DatastoreQuery[T]) = {
+    val cursor = queryCursor(query)
+    try {
+      cursor.count()
+    } finally {
+      cursor.close()
+    }
   }
 
   def iterator = query.iterator

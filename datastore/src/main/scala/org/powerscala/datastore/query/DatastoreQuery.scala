@@ -25,5 +25,7 @@ case class DatastoreQuery[T <: Identifiable](collection: DatastoreCollection[T],
 
   def ids = collection.executeQueryIds(this)
 
+  override def size = collection.executeQuerySize(this)
+
   override def toString() = "DatastoreQuery(%s, skip = %s, limit = %s, filters = %s)".format(collection.name, _skip, _limit, _filters)
 }

@@ -10,7 +10,7 @@ trait Storage[V] {
   } else {
     None
   }
-  def getOrSet[T <: V](key: String, value: T) = get[T](key) match {
+  def getOrSet[T <: V](key: String, value: => T) = get[T](key) match {
     case Some(v) => v
     case None => {
       update(key, value)

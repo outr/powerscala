@@ -10,6 +10,7 @@ import org.bson.types.ObjectId
 import scala.collection.JavaConversions._
 import org.powerscala.datastore.{LazyList, DatastoreCollection, Lazy}
 import java.util
+import util.regex.Pattern
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -73,6 +74,7 @@ object DataObjectConverter {
     case l: Long => l
     case f: Float => f
     case d: Double => d
+    case p: Pattern => p
     case null => null
     case obj: AnyRef => toDBObject(obj, collection)
   }

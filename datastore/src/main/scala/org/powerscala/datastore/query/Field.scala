@@ -3,6 +3,7 @@ package org.powerscala.datastore.query
 
 import java.util
 import org.powerscala.datastore.{Identifiable, LazyList, Lazy}
+import util.regex.Pattern
 
 trait Field[T, F] {
   def name: String
@@ -41,6 +42,9 @@ class BaseField[T, F](val name: String) extends Field[T, F] {
 
   def nequal(value: F) = FieldFilter(this, Operator.nequal, value)
 
+  lazy val exists = FieldFilter(this, Operator.exists, true)
+  lazy val nexists = FieldFilter(this, Operator.exists, false)
+
   def in(values: F*) = FieldFilter(this, Operator.in, values)
 
   def ascending = Sort(this, SortDirection.Ascending)
@@ -59,7 +63,13 @@ class NumericField[T, F](name: String) extends BaseField[T, F](name) {
 }
 
 class StringField[T](name: String) extends BaseField[T, String](name) {
-  def regex(value: String) = FieldFilter(this, Operator.regex, value)
+  def regex(value: String, flags: RegexFlag*): FieldFilter[T] = {
+    val bitFlags = flags.foldLeft(0)((value, flag) => value | flag.flag)
+    val pattern = Pattern.compile(value.toString, bitFlags)
+    regex(pattern)
+  }
+
+  def regex(pattern: Pattern) = FieldFilter(this, Operator.regex, pattern)
 }
 
 class EmbeddedField[T, F](name: String) extends BaseField[T, F](name) {

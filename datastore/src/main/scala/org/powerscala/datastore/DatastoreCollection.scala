@@ -88,7 +88,17 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   final def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
 
+  final def getById(id: util.UUID) = byId(id).getOrElse(throw new NullPointerException("Unable to find %s by id: %s".format(manifest.erasure.getName, id)))
+
   final def byIds(ids: util.UUID*) = ids.map(id => byId(id)).flatten.toList
+
+  /**
+   * Reloads the passed instance from the datastore and returns it.
+   *
+   * @param t the instance to refresh
+   * @return refreshed copy of t
+   */
+  final def refresh(t: T) = getById(t.id)
 
   def byExample(example: T) = {
     val ec = EnhancedClass(example.getClass)
@@ -125,6 +135,8 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
   def executeQuery(query: DatastoreQuery[T]): Iterator[T]
 
   def executeQueryIds(query: DatastoreQuery[T]): Iterator[UUID]
+
+  def executeQuerySize(query: DatastoreQuery[T]): Int
 
   /**
    * Updates the data to replace all entries with revision of 'revision' with the supplied newClass. This is useful for

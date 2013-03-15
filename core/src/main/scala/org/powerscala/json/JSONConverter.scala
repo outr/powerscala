@@ -21,6 +21,8 @@ object JSONConverter {
       val empty = manifest.erasure.create[Jsonify](Map.empty)
       val instance = empty.parse(content)
       instance.asInstanceOf[T]
+    } else if (content == "") {
+      null.asInstanceOf[T]
     } else {
       try {
         JSON.parseFull(content) match {
