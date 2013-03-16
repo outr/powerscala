@@ -18,6 +18,14 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
                                                    extends DatastoreCollection[T] {
   lazy val collection = session.database.getCollection(name)
 
+  def removeField(field: Field[T, _]) = {
+    val query = new BasicDBObject(field.name, new BasicDBObject("$exists", true))
+    val update = new BasicDBObject("$unset", new BasicDBObject(field.name, 1))
+    val upsert = false
+    val multi = true
+    collection.update(query, update, upsert, multi)
+  }
+
   protected def persistNew(ref: T) = collection.insert(DataObjectConverter.toDBObject(ref, this))
 
   protected def persistModified(ref: T) = {

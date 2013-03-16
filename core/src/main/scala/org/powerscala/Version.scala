@@ -5,7 +5,7 @@ package org.powerscala
  *
  * @author Matt Hicks <matt@outr.com>
  */
-case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: Int = 0) extends Ordered[Version] {
+case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: Int = 0, extra: String = null) extends Ordered[Version] {
   private lazy val string = {
     val b = new StringBuilder
     b.append(major)
@@ -21,6 +21,10 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
         }
       }
     }
+    if (extra != null && extra.nonEmpty) {
+      b.append('-')
+      b.append(extra)
+    }
     b.toString
   }
 
@@ -34,7 +38,21 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
     maintenance.compare(that.maintenance)
   } else if (build != that.build) {
     build.compare(that.build)
+  } else if (extra != that.extra && extra != null) {
+    extra.compare(that.extra)
+  } else if (extra != that.extra && that.extra != null) {
+    -1
   } else {
     0
+  }
+}
+
+object Version {
+  val Matcher = """(\d+)[.]?(\d*)[.]?(\d*)[.]?(\d*)[-]?(.*)""".r
+
+  def apply(version: String): Version = version match {
+    case Matcher(major, minor, maintenance, build, other) => {
+      Version(major.toInt, minor.toInt, maintenance.toInt, build.toInt, other)
+    }
   }
 }
