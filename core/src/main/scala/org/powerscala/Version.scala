@@ -52,7 +52,12 @@ object Version {
 
   def apply(version: String): Version = version match {
     case Matcher(major, minor, maintenance, build, other) => {
-      Version(major.toInt, minor.toInt, maintenance.toInt, build.toInt, other)
+      Version(n(major), n(minor), n(maintenance), n(build), other)
     }
+  }
+
+  private def n(s: String) = s match {
+    case "" => 0
+    case _ => s.toInt
   }
 }
