@@ -37,14 +37,43 @@ trait Datastore extends Listenable with Child {
     }
   }
 
+  private var _aliases = List.empty[Class[_] => Option[String]]
+
   /**
    * Allows overriding the collection name being utilized for the datastore.
    *
    * Defaults to return the same value passed in or the simple class name if name is null.
    */
-  def aliasName(name: String, clazz: Class[_]) = name match {
-    case null => clazz.getSimpleName
-    case _ => name
+  final def aliasName(name: String, clazz: Class[_]) = {
+    val alias = name match {
+      case null => collectionNameForClass(clazz)
+      case _ => name
+    }
+    alias
+  }
+
+  def alias(f: Class[_] => Option[String]) = synchronized {
+    _aliases = (f :: _aliases.reverse).reverse
+  }
+
+  def collectionNameForClass(clazz: Class[_]) = _aliases.view.map(f => f(clazz)).flatten.headOption match {
+    case Some(s) => s
+    case None => clazz.getSimpleName
+  }
+
+  /**
+   * Creates an alias for all classes that are subclasses of clazz to map to the clazz.getSimpleName.
+   *
+   * @param clazz
+   */
+  def register(clazz: Class[_]) = {
+    alias {
+      case c => if (clazz.isAssignableFrom(c)) {
+        Some(clazz.getSimpleName)
+      } else {
+        None
+      }
+    }
   }
 
   def collection[T <: Identifiable, R](f: DatastoreCollection[T] => R)(implicit manifest: Manifest[T]): R = {

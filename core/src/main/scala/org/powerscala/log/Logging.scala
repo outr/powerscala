@@ -15,24 +15,8 @@ trait Logging {
    * Defaults to true
    */
   protected def asynchronousLogging = true
-  protected lazy val loggerName = getClass.getName
 
-  val logger = new {
-    /**
-     * Logger for this instance. Defaults to root logger if no explicit logger is configured.
-     */
-    def apply() = Logging(Logging.this)
-
-    /**
-     * Determines if any logging exists for the supplied level.
-     */
-    def isLevelEnabled(level: Level) = apply().isLevelEnabled(level)
-
-    /**
-     * Configures this class-level Logger. If no instance currently exists a new one will be created.
-     */
-    def configure(f: Logger => Logger) = Logger.configure(loggerName)(f)
-  }
+  val logger = new InnerLogging(getClass.getName)
 
   def trace(message: => String): Unit = log(Level.Trace, message)
   def debug(message: => String): Unit = log(Level.Debug, message)
@@ -51,7 +35,7 @@ trait Logging {
   }
 
   def log(level: Level, message: => String) = if (logger.isLevelEnabled(level)) {
-    val record = new LogRecord(level = level, _message = message, className = loggerName, asynchronous = asynchronousLogging)
+    val record = new LogRecord(level = level, _message = message, className = getClass.getName, asynchronous = asynchronousLogging)
     if (asynchronousLogging) {
       Logging.asynchronous.incrementAndGet()      // Keep track of unsaved logs
       val f = () => {
@@ -65,6 +49,23 @@ trait Logging {
   }
 }
 
+class InnerLogging(className: String) {
+  /**
+   * Logger for this instance. Defaults to root logger if no explicit logger is configured.
+   */
+  def apply() = Logging(className)
+
+  /**
+   * Determines if any logging exists for the supplied level.
+   */
+  def isLevelEnabled(level: Level) = apply().isLevelEnabled(level)
+
+  /**
+   * Configures this class-level Logger. If no instance currently exists a new one will be created.
+   */
+  def configure(f: Logger => Logger) = Logger.configure(className)(f)
+}
+
 object Logging {
   private val asynchronous = new AtomicInteger(0)
 
@@ -72,6 +73,8 @@ object Logging {
    * Returns the number of asynchronous logging requests are currently queued
    */
   def queued = asynchronous.get()
+
+  lazy val root = new InnerLogging("root")
 
   /**
    * Waits for the queue to become empty or the timeout to elapse.
@@ -95,6 +98,8 @@ object Logging {
   private val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
 
   def apply(logging: Logging): Logger = Logger(logging.getClass.getName)
+
+  def apply(name: String) = Logger(name)
 
   def throwable2String(t: Throwable, primaryCause: Boolean = true): String = {
     val b = new StringBuilder

@@ -36,7 +36,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     collection.findAndRemove(new BasicDBObject("_id", ref.id))
   }
 
-  override def size = collection.count().toInt
+  override def size = query.size
 
   private def addFilter(qb: QueryBuilder, filter: Filter[_], prepend: String = ""): Unit = filter match {
     case ff: FieldFilter[_] => {
@@ -101,7 +101,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     if (query._limit > 0) {
       cursor = cursor.limit(query._limit)
     }
-    debug("Executing Query: %s".format(cursor.getQuery))
+    debug("Executing Query (skip: %s, limit: %s): %s".format(query._skip, query._limit, cursor.getQuery))
     val sort = query._sort.reverse
     if (sort.nonEmpty) {
       val sdbo = new BasicDBObject()
@@ -140,7 +140,7 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
   def executeQuerySize(query: DatastoreQuery[T]) = {
     val cursor = queryCursor(query)
     try {
-      cursor.count()
+      cursor.size()
     } finally {
       cursor.close()
     }

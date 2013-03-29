@@ -13,6 +13,11 @@ import java.util.UUID
  */
 class DatastoreSpec extends WordSpec with ShouldMatchers {
   lazy val datastore = new MongoDBDatastore("localhost", 27017, "DatastoreSpec")
+  datastore.register(classOf[BaseTrait])
+
+//  Logging.root.configure {
+//    case l => l.withLevel(Level.Debug)
+//  }
 
   "Datastore" when {
     "using mongodb" should {
@@ -269,6 +274,32 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       t9.list should equal(null)
       t9.id should not equal(null)
     }
+    "alias properly when referencing subclasses" in {
+      datastore.collectionNameForClass(classOf[BaseTrait]) should equal("BaseTrait")
+      datastore.collectionNameForClass(classOf[FirstCase]) should equal("BaseTrait")
+      datastore.collectionNameForClass(classOf[SecondCase]) should equal("BaseTrait")
+    }
+    "insert multiple classes for aliases" in {
+      datastore {
+        case session => session[FirstCase].persist(FirstCase("One"), FirstCase("Two"), FirstCase("Three"))
+      }
+      datastore {
+        case session => session[SecondCase].persist(SecondCase(1), SecondCase(2), SecondCase(3))
+      }
+    }
+    "verify that BaseTrait has six entries" in {
+      datastore {
+        case session => session[BaseTrait].size should equal(6)
+      }
+    }
+    "verify that querying of specific class type only returns those types" in {
+      datastore {
+        case session => session[FirstCase].size should equal(3)
+      }
+      datastore {
+        case session => session[SecondCase].size should equal(3)
+      }
+    }
     // TODO: sub-query support: Test4.t1.name (lazy) and Test7.names.contains("Matt")
     "close resources in" in {
       finish
@@ -347,3 +378,9 @@ object Test9 extends Queryable[Test9] {
   val list = Field.lazyList[Test9, Test1]("list")
   val id = Field.id[Test9]
 }
+
+trait BaseTrait extends Identifiable
+
+case class FirstCase(name: String, id: UUID = UUID.randomUUID()) extends BaseTrait
+
+case class SecondCase(value: Int, id: UUID = UUID.randomUUID()) extends BaseTrait
