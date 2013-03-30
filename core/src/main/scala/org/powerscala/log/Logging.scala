@@ -12,9 +12,9 @@ trait Logging {
   /**
    * Determines whether logging should be asynchronous.
    *
-   * Defaults to true
+   * Defaults to false
    */
-  protected def asynchronousLogging = true
+  protected def asynchronousLogging = false
 
   val logger = new InnerLogging(getClass.getName)
 
