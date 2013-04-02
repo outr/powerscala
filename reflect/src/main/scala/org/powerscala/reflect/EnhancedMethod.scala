@@ -19,8 +19,12 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   /**
    * The arguments this method takes to invoke.
    */
-  lazy val args: List[MethodArgument] = for ((dc, index) <- _docs.args.zipWithIndex) yield {
-    new MethodArgument(index, dc.name, dc.`type`, getDefault(index), dc.doc)
+  lazy val args: List[MethodArgument] = if (javaMethod.getParameterTypes.length == 0) {
+    Nil
+  } else {
+    _docs.args.zipWithIndex.map {
+      case (documentedClass, index) => new MethodArgument(index, documentedClass.name, documentedClass.`type`, getDefault(index), documentedClass.doc)
+    }
   }
 
   /**
@@ -99,12 +103,13 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
    * The arguments list does not have to have the same number of arguments as the method if the method provides default
    * values for the unsupplied argument names.
    */
-  def apply[R](instance: AnyRef, args: Map[String, Any] = Map.empty): R = {
+  def apply[R](instance: AnyRef, args: Map[String, Any] = Map.empty, requireValues: Boolean = false): R = {
     val arguments = this.args.map {
       case methodArgument => args.get(methodArgument.name) match {
         case Some(value) => EnhancedMethod.convertTo(value, methodArgument.`type`)            // Value supplied directly
         case _ if (methodArgument.hasDefault) => methodArgument.default[Any](instance).get    // Method had a default argument
-        case _ => methodArgument.`type`.defaultForType[Any]                                   // No argument found so we use the default for the type
+        case _ if (!requireValues) => methodArgument.`type`.defaultForType[Any]               // No argument found so we use the default for the type
+        case _ => throw new RuntimeException("No value supplied for %s.".format(methodArgument.name))
       }
     }
 

@@ -5,7 +5,7 @@ import org.powerscala.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Repeat extends EnumEntry[Repeat]
+sealed class Repeat private() extends EnumEntry[Repeat]
 
 object Repeat extends Enumerated[Repeat] {
   val All = new Repeat()

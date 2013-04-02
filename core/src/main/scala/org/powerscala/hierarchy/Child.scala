@@ -14,12 +14,12 @@ trait Child {
    */
   def root[T](implicit manifest: Manifest[T]): Option[T] = parent match {
     case child: Child => child.root[T](manifest)
-    case null => if (getClass.hasType(manifest.erasure)) {
+    case null => if (getClass.hasType(manifest.runtimeClass)) {
       Some(this.asInstanceOf[T])
     } else {
       None
     }
-    case p if (p.asInstanceOf[AnyRef].getClass.hasType(manifest.erasure)) => Some(p.asInstanceOf[T])
+    case p if (p.asInstanceOf[AnyRef].getClass.hasType(manifest.runtimeClass)) => Some(p.asInstanceOf[T])
     case _ => None
   }
 }
@@ -41,7 +41,7 @@ object Child {
    */
   def ancestor[T](child: Child, matcher: T => Boolean, maxDepth: Int = Int.MaxValue)(implicit manifest: Manifest[T]): Option[T] = {
     child.parent match {
-      case p: Child if (manifest.erasure.isAssignableFrom(p.asInstanceOf[AnyRef].getClass) && matcher(p.asInstanceOf[T])) => Option(p.asInstanceOf[T])
+      case p: Child if (manifest.runtimeClass.isAssignableFrom(p.asInstanceOf[AnyRef].getClass) && matcher(p.asInstanceOf[T])) => Option(p.asInstanceOf[T])
       case p: Child if (maxDepth > 1) => ancestor[T](p, matcher, maxDepth - 1)(manifest)
       case _ => None
     }

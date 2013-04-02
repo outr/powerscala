@@ -3,6 +3,8 @@ package org.powerscala.property
 import org.powerscala.workflow.WorkflowBuilder
 
 package object workflow {
+  import language.implicitConversions
+
   implicit def wb2pab(b: WorkflowBuilder) = new PropertyAnimatorBuilder(b)
 
   implicit def p2pab(p: MutableProperty[Double]) = new PropertyAnimatorBuilder(new WorkflowBuilder().and(p))

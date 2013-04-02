@@ -88,7 +88,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   final def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
 
-  final def getById(id: util.UUID) = byId(id).getOrElse(throw new NullPointerException("Unable to find %s by id: %s".format(manifest.erasure.getName, id)))
+  final def getById(id: util.UUID) = byId(id).getOrElse(throw new NullPointerException("Unable to find %s by id: %s".format(manifest.runtimeClass.getName, id)))
 
   final def byIds(ids: util.UUID*) = ids.map(id => byId(id)).flatten.toList
 
@@ -125,8 +125,8 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def query = {
     val q = DatastoreQuery(collection = this)
-    if (manifest.erasure.isCase) {    // Auto-filter to case class
-      q.filter(FieldFilter[T](classField, Operator.equal, manifest.erasure.getName))
+    if (manifest.runtimeClass.isCase) {    // Auto-filter to case class
+      q.filter(FieldFilter[T](classField, Operator.equal, manifest.runtimeClass.getName))
     } else {                          // Generalization, can't auto-filter
       q
     }
@@ -154,5 +154,5 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   protected def deleteInternal(ref: T): Unit
 
-  override def toString() = "%s[%s](%s)".format(getClass.getSimpleName, manifest.erasure.getSimpleName, name)
+  override def toString() = "%s[%s](%s)".format(getClass.getSimpleName, manifest.runtimeClass.getSimpleName, name)
 }

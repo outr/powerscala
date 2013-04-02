@@ -42,7 +42,7 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
         TestListenable.listeners.values.isEmpty should equal(true)
       }
       "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
+        Bus().length should equal(0)
       }
     }
     "one asynchronous listener is added" should {

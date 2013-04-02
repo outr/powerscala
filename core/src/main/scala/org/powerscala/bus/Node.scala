@@ -39,7 +39,7 @@ trait TypedNode[T] extends Node {
   def manifest: Manifest[T]
 
   def receive(bus: Bus, message: Any) = {
-    if (manifest.erasure.isAssignableFrom(message.asInstanceOf[AnyRef].getClass)) {
+    if (manifest.runtimeClass.isAssignableFrom(message.asInstanceOf[AnyRef].getClass)) {
       process(message.asInstanceOf[T])
     } else {
       Routing.Continue

@@ -21,7 +21,7 @@ class StaticProperty[T](parent: MutableProperty[_], _name: String)(implicit mani
 
   private def loadValue(): T = {
     p match {
-      case null => manifest.erasure.defaultForType[T]
+      case null => manifest.runtimeClass.defaultForType[T]
       case _ => caseValue.apply[T](p)
     }
   }

@@ -18,7 +18,7 @@ trait DatastoreSession extends Listenable with Child {
   def delete(): Unit
 
   final def collection[T <: Identifiable](name: String = null)(implicit manifest: Manifest[T]) = {
-    val n = datastore.aliasName(name, manifest.erasure)
+    val n = datastore.aliasName(name, manifest.runtimeClass)
     createCollection[T](n)
   }
 

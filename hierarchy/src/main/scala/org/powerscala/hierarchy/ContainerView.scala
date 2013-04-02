@@ -161,7 +161,7 @@ class ContainerView[T](val container: Container[_ <: Element],
    * Returns true if Manifest is assignable and query returns true.
    */
   private def isValid(child: AnyRef) = {
-    manifest.erasure.isAssignableFrom(child.getClass) &&      // Make sure it is of the right type
+    manifest.runtimeClass.isAssignableFrom(child.getClass) &&      // Make sure it is of the right type
     (query == null || query(child.asInstanceOf[T])) &&        // Validate it against the query
     (!queue.contains(child) && !filtered.contains(child))     // Make sure it is not already in the system
   }

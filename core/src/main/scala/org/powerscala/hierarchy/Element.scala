@@ -18,7 +18,7 @@ trait Element extends Child {
    * Returns true if the generic type matched.
    */
   def apply[T](f: T => Unit)(implicit manifest: Manifest[T]): Boolean = {
-    if (manifest.erasure.isAssignableFrom(getClass)) {
+    if (manifest.runtimeClass.isAssignableFrom(getClass)) {
       f(this.asInstanceOf[T])
       true
     }
@@ -33,7 +33,7 @@ trait Element extends Child {
      * this element if applicable.
      */
     def process[T](f: T => Unit)(implicit manifest: Manifest[T]) = {
-      if (manifest.erasure.isAssignableFrom(Element.this.getClass)) {
+      if (manifest.runtimeClass.isAssignableFrom(Element.this.getClass)) {
         f(Element.this.asInstanceOf[T])
       }
       Element.this match {
@@ -134,7 +134,7 @@ trait Element extends Child {
       case element => element.hierarchy.first
     }
 
-    protected def matchesManifest[T <: AnyRef](value: AnyRef, manifest: Manifest[T]) = manifest.erasure.isAssignableFrom(value.getClass)
+    protected def matchesManifest[T <: AnyRef](value: AnyRef, manifest: Manifest[T]) = manifest.runtimeClass.isAssignableFrom(value.getClass)
 
     /**
      * The last element hierarchically from this level.

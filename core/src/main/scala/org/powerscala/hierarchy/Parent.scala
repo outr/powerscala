@@ -43,9 +43,9 @@ trait Parent extends Element {
      */
     def descendant[T](matcher: T => Boolean, maxDepth: Int = Int.MaxValue, children: Seq[Element] = contents)(implicit manifest: Manifest[T]): Option[T] = {
       if (children.nonEmpty) {
-        // if (manifest.erasure.isAssignableFrom(p.getClass) && matcher(p.asInstanceOf[T])) {
+        // if (manifest.runtimeClass.isAssignableFrom(p.getClass) && matcher(p.asInstanceOf[T])) {
         val child = children.head
-        if (manifest.erasure.isAssignableFrom(child.asInstanceOf[AnyRef].getClass) && matcher(child.asInstanceOf[T])) {
+        if (manifest.runtimeClass.isAssignableFrom(child.asInstanceOf[AnyRef].getClass) && matcher(child.asInstanceOf[T])) {
           Option(child.asInstanceOf[T])
         } else {
           val result = descendant[T](matcher, maxDepth, children.tail)(manifest)

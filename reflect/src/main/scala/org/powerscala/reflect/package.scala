@@ -5,6 +5,8 @@ import scala.ref.SoftReference
 import java.util.concurrent.ConcurrentHashMap
 
 package object reflect {
+  import language.implicitConversions
+
   private val map = new ConcurrentHashMap[Class[_], SoftReference[EnhancedClass]]
 
   protected[reflect] def register(c: Class[_], ec: EnhancedClass) = {

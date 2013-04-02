@@ -133,7 +133,7 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
       }
       "be able to instantiate a new instance via copy with null instance and default args" in {
         val clazz: EnhancedClass = classOf[TestCaseClass]
-        val test = clazz.copy[TestCaseClass](null)
+        val test = clazz.copy[TestCaseClass](null, requireValues = true)
         test.firstName should equal("John")
         test.lastName should equal("Doe")
         test.age should equal(21)

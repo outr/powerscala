@@ -79,10 +79,10 @@ object DocumentationReflection {
   var remoteSources = true
   private var packageMapping = new ConcurrentHashMap[String, DocMapper]
 
-  register("java", JavaDocReflection)
-  register("javax", JavaDocReflection)
-  register("javax.microedition", AndroidDocReflection)
-  register("android", AndroidDocReflection)
+//  register("java", JavaDocReflection)
+//  register("javax", JavaDocReflection)
+//  register("javax.microedition", AndroidDocReflection)
+//  register("android", AndroidDocReflection)
 
   /**
    * Registers a DocMapper to a base package.

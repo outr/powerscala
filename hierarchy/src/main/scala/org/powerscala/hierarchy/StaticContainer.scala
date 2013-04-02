@@ -54,7 +54,7 @@ class StaticContainer[T <: Element](implicit manifest: Manifest[T]) extends Muta
     if (!methods.isEmpty) {
       val m = methods.head
       val l = if (m.args.isEmpty &&
-        manifest.erasure.isAssignableFrom(m.returnType.`type`.javaClass) &&
+        manifest.runtimeClass.isAssignableFrom(m.returnType.`type`.javaClass) &&
         m.name.indexOf('$') == -1 &&
         m.name != "toString") {
         val element = m.invoke[T](this)

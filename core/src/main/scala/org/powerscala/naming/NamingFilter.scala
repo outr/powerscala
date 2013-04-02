@@ -14,7 +14,7 @@ class NamingFilter[T <: Named](protected val parent: NamingParent, filter: Parti
   private lazy val r = new Random()
 
   private lazy val classType = if (manifest != null) {
-    manifest.erasure
+    manifest.runtimeClass
   } else {
     Class.forName(parent.getClass.getName.substring(0, parent.getClass.getName.length - 1))
   }

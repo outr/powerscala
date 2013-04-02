@@ -1,5 +1,6 @@
 package org.powerscala.convert
 
+import language.implicitConversions
 
 /**
  * @author Matt Hicks <matt@outr.com>

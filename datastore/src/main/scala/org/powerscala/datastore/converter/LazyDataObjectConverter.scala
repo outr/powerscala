@@ -31,7 +31,7 @@ object LazyDataObjectConverter extends DataObjectConverter {
     }
     dbo.put("_id", id)
     dbo.put("class", classOf[Lazy[_]].getName)
-    dbo.put("lazyClass", l.manifest.erasure.getName)
+    dbo.put("lazyClass", l.manifest.runtimeClass.getName)
     val lazyCollection = collection.session.collection()(l.manifest)
     if (instance != null && l.isInstanceOf[StaticLazy[_]]) {    // Only persist if the value has changed
       lazyCollection.persist(instance)

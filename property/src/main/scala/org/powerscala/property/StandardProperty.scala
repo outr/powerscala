@@ -20,7 +20,7 @@ class StandardProperty[T](_name: String, val default: T, backing: Backing[T] = n
                                     with Listenable
                                     with Default[T] {
   def this(_name: String = null)(implicit parent: PropertyParent = null, manifest: Manifest[T]) = {
-    this(_name, manifest.erasure.defaultForType[T])(parent, manifest)
+    this(_name, manifest.runtimeClass.defaultForType[T])(parent, manifest)
   }
 
   val name = () => _name

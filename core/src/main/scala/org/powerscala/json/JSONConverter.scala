@@ -17,8 +17,8 @@ object JSONConverter {
   }
 
   def parse[T](content: String)(implicit manifest: Manifest[T]) = {
-    if (manifest != null && manifest.erasure.hasType(classOf[Jsonify])) {
-      val empty = manifest.erasure.create[Jsonify](Map.empty)
+    if (manifest != null && manifest.runtimeClass.hasType(classOf[Jsonify])) {
+      val empty = manifest.runtimeClass.create[Jsonify](Map.empty)
       val instance = empty.parse(content)
       instance.asInstanceOf[T]
     } else if (content == "") {
@@ -43,7 +43,7 @@ object JSONConverter {
       } else if (args.contains("clazz")) {
         Class.forName(args("clazz").asInstanceOf[String])
       } else {
-        manifest.erasure
+        manifest.runtimeClass
       }
       c.caseValues.foreach {
         case cv => if (cv.valueType.isCase && args.contains(cv.name)) {

@@ -83,7 +83,7 @@ case class EventListenerBuilder(private val listenable: Listenable,
     val function = f.lift
     var listener: Listener = null
     listener = apply {
-      case event if (manifest.erasure.isAssignableFrom(event.getClass)) => if (!finished) {
+      case event if (manifest.runtimeClass.isAssignableFrom(event.getClass)) => if (!finished) {
         function(event.asInstanceOf[T]) match {
           case None => // Hasn't returned what we want yet
           case s => {

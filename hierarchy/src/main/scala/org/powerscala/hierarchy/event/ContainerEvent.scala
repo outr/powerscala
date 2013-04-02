@@ -36,6 +36,8 @@ import org.powerscala.hierarchy.Container
 import org.powerscala.event.Event
 import org.powerscala.hierarchy.Element
 
+import language.existentials
+
 /**
  * ContainerEvent
  *

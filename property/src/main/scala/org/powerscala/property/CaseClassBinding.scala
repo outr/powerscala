@@ -4,6 +4,8 @@ import event.PropertyChangeEvent
 import org.powerscala.reflect._
 import org.powerscala.log.Logging
 
+import language.existentials
+
 /**
  * Binds a top-level property and a hierarchically lower property together so a change to one updates the other.
  *
@@ -25,7 +27,7 @@ case class CaseClassBinding(property: StandardProperty[_],
                             valueProperty: StandardProperty[Any],
                             var valueUpdatesProperty: Boolean = true,
                             var propertyUpdatesValue: Boolean = true) extends Logging {
-  val propertyClazz: EnhancedClass = property.manifest.erasure
+  val propertyClazz: EnhancedClass = property.manifest.runtimeClass
   // Manage property -> valueProperty
   val propertyListener = property.listeners.synchronous {
     case evt: PropertyChangeEvent => if (propertyUpdatesValue) {

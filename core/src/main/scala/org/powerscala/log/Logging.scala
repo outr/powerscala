@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Matt Hicks <mhicks@outr.com>
  */
 trait Logging {
+  import language.reflectiveCalls
+
   /**
    * Determines whether logging should be asynchronous.
    *

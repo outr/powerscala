@@ -1,5 +1,6 @@
 package org.powerscala.datastore.query
 
+import language.existentials
 
 sealed trait Filter[T] {
   def operator: Operator

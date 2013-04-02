@@ -23,15 +23,16 @@ class EnhancedConstructor protected[reflect](val parent: EnhancedClass, val java
   }
 
   private def getDefault(index: Int) = {
-    val defaultMethodName = "init$default$" + (index + 1)
+    val defaultMethodName = "apply$default$" + (index + 1)
     parent.method(defaultMethodName)
   }
 
-  def apply[T](args: Map[String, Any] = Map.empty) = {
+  def apply[T](args: Map[String, Any] = Map.empty, requireValues: Boolean = false) = {
     val params = this.args.map {
       case arg if (args.contains(arg.name)) => args(arg.name)                                         // Provided value
       case arg if (arg.hasDefault) => arg.default[Any](null).getOrElse(arg.`type`.defaultForType)     // Default value
-      case arg => arg.`type`.defaultForType                                                           // Default for type
+      case arg if (!requireValues) => arg.`type`.defaultForType                                       // Default for type
+      case arg => throw new RuntimeException("No value supplied for %s.".format(arg.name))
     }.asInstanceOf[List[AnyRef]]
     try {
       javaConstructor.newInstance(params: _*).asInstanceOf[T]

@@ -5,16 +5,13 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.5.1-SNAPSHOT",
+    version := "1.5.2-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.9.2",
+    scalaVersion := "2.10.1",
     libraryDependencies ++= Seq(
-      logbackCore,
-      logbackClassic,
-      slf4j,
       scalaTest
     ),
-    scalacOptions ++= Seq("-unchecked", "-deprecation"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     resolvers ++= Seq("Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"),
     publishTo <<= version {
       (v: String) =>
@@ -72,18 +69,17 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, paranamer, reflections))
+    .settings(libraryDependencies ++= Seq(asm, slf4j, reflections))
+  lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
     .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ ))
+    .dependsOn(reflect)
 }
 
 object Dependencies {
   val asm = "org.ow2.asm" % "asm-all" % "4.0"
-  val paranamer = "com.thoughtworks.paranamer" % "paranamer" % "2.5"
-  val scalaTest = "org.scalatest" % "scalatest_2.9.1" % "1.7.1" % "test"
+  val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.8.0"
-  val reflections = "org.reflections" % "reflections" % "0.9.8"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
-  val logbackCore = "ch.qos.logback" % "logback-core" % "1.0.7"
-  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.7"
-  val akkaActors = "com.typesafe.akka" % "akka-actor" % "2.0.5"
+  val reflections = "org.reflections" % "reflections" % "0.9.8"
+  val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.1.2"
 }

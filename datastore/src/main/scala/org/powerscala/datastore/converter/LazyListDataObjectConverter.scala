@@ -37,7 +37,7 @@ object LazyListDataObjectConverter extends DataObjectConverter {
     }
     dbo.put("listIds", array)
     dbo.put("class", classOf[LazyList[_]].getName)
-    dbo.put("lazyClass", ll.manifest.erasure.getName)
+    dbo.put("lazyClass", ll.manifest.runtimeClass.getName)
     dbo
   }
 }

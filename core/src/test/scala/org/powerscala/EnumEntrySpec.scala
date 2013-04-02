@@ -56,7 +56,7 @@ class EnumEntrySpec extends WordSpec with ShouldMatchers {
       val values = Currency.values.toList
       values.length should equal(Currency.values.length)
       val elapsed = System.nanoTime() - time
-      elapsed should be < 10000000L
+      elapsed should be < 20000000L
     }
   }
 }

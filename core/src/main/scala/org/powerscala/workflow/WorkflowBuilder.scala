@@ -15,7 +15,7 @@ case class WorkflowBuilder(currentItems: List[WorkflowItem] = Nil,
 
   def loop(count: Int) = copy(loopCount = count)
 
-  def then(item: WorkflowItem) = nextStep().add(item)
+  def next(item: WorkflowItem) = nextStep().add(item)
 
   def add(item: WorkflowItem) = copy(currentItems = item :: currentItems)
 

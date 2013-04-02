@@ -69,6 +69,8 @@ sealed case class Time(value: Double, pattern: String) extends EnumEntry[Time] {
 }
 
 object Time extends Enumerated[Time] {
+  import language.implicitConversions
+
   val Second = new Time(1.0, "MM/dd/yyyy hh:mm:ss a")
   val Minute = new Time(60.0 * Second.value, "MM/dd/yyyy hh:mm a")
   val Hour = new Time(60.0 * Minute.value, "MM/dd/yyyy hh a")
