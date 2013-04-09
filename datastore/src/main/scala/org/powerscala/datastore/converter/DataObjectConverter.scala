@@ -43,6 +43,8 @@ object DataObjectConverter {
             EnumDataObjectConverter
           } else if (classOf[Calendar].isAssignableFrom(clazz)) {
             CalendarDataObjectConverter
+          } else if (classOf[BigDecimal].isAssignableFrom(clazz)) {
+            BigDecimalDataObjectConverter
           } else if (classOf[Map[_, _]].isAssignableFrom(clazz)) {
             MapDataObjectConverter
           } else if (classOf[java.util.Map[_, _]].isAssignableFrom(clazz)) {
