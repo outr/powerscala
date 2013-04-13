@@ -60,7 +60,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * Finds a method from the supplied name and argument names and types.
    */
-  def method(name: String, args: List[(String, EnhancedClass)]) = methods.find(m => m.hasArgs(args))
+  def method(name: String, args: List[(String, EnhancedClass)]) = methods.find(m => m.name == name && m.hasArgs(args))
 
   /**
    * Finds the first method match for the name supplied.
