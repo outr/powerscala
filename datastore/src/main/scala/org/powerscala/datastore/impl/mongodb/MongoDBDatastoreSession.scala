@@ -1,7 +1,7 @@
 package org.powerscala.datastore.impl.mongodb
 
 import org.powerscala.datastore.{Identifiable, DatastoreSession}
-import com.mongodb.Mongo
+import com.mongodb.MongoClient
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -10,7 +10,7 @@ class MongoDBDatastoreSession(val datastore: MongoDBDatastore) extends Datastore
   private var connected = false
   protected[mongodb] lazy val connection = {
     connected = true
-    new Mongo(datastore.host, datastore.port)
+    new MongoClient(datastore.host, datastore.port)
   }
   protected[mongodb] lazy val database = connection.getDB(datastore.database)
 
