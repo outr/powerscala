@@ -49,7 +49,7 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(core, concurrent, communication, convert, datastore, event, hierarchy, property, reflect)
+    .aggregate(core, concurrent, communication, convert, datastore, search, event, hierarchy, property, reflect)
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
@@ -59,6 +59,9 @@ object PowerScalaBuild extends Build {
     .dependsOn(core)
   lazy val convert = Project("convert", file("convert"), settings = createSettings("powerscala-convert"))
     .dependsOn(core)
+  lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
+    .dependsOn(core, event, convert)
+    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon))
   lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
     .dependsOn(core, event, convert)
     .settings(libraryDependencies ++= Seq(mongodb))
@@ -82,4 +85,6 @@ object Dependencies {
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
   val reflections = "org.reflections" % "reflections" % "0.9.8"
   val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.1.2"
+  val luceneCore = "org.apache.lucene" % "lucene-core" % "4.2.1"
+  val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % "4.2.1"
 }
