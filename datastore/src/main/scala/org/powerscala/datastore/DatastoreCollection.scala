@@ -44,7 +44,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
    */
   private val alreadyPersisted = new ThreadLocal[ListBuffer[T]]
 
-  final def persist(refs: T*): Unit = {
+  final def persist(refs: T*): Unit = synchronized {
     val wrapped = alreadyPersisted.get() != null
     if (!wrapped) {
       alreadyPersisted.set(ListBuffer.empty)
@@ -74,7 +74,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     }
   }
 
-  final def delete(refs: T*): Unit = {
+  final def delete(refs: T*): Unit = synchronized {
     refs.foreach {
       case ref => {
         deleteInternal(ref)
@@ -86,7 +86,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def drop(): Unit
 
-  final def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
+  def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
 
   final def getById(id: util.UUID) = byId(id).getOrElse(throw new NullPointerException("Unable to find %s by id: %s".format(manifest.runtimeClass.getName, id)))
 
