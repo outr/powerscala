@@ -13,7 +13,7 @@ import org.apache.lucene.document.Document
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(path: File,
-             analyzer: => Analyzer = new StandardAnalyzer(Version.LUCENE_42),
+             val analyzer: Analyzer = new StandardAnalyzer(Version.LUCENE_42),
              refreshRate: Double = 5.0,
              maximumDelay: Double = 0.1) {
   private val directory = FSDirectory.open(path, new NativeFSLockFactory())
@@ -39,7 +39,7 @@ class Search(path: File,
    * @tparam T the return value from the function
    * @return T
    */
-  protected def process[T](f: IndexSearcher => T): T = {
+  def process[T](f: IndexSearcher => T): T = {
     val searcher = manager.acquire()
     try {
       f(searcher)
@@ -50,7 +50,7 @@ class Search(path: File,
 
   protected def write[T](f: IndexWriter => T): T = f(writer)
 
-  protected def add(document: Document, commit: Boolean = true) = write {
+  def add(document: Document, commit: Boolean = true) = write {
     case w => {
       w.addDocument(document)
       if (commit) {
@@ -59,7 +59,7 @@ class Search(path: File,
     }
   }
 
-  protected def update(term: Term, document: Document, commit: Boolean = true) = write {
+  def update(term: Term, document: Document, commit: Boolean = true) = write {
     case w => {
       w.updateDocument(term, document)
       if (commit) {
@@ -68,7 +68,7 @@ class Search(path: File,
     }
   }
 
-  protected def delete(term: Term, commit: Boolean = true) = write {
+  def delete(term: Term, commit: Boolean = true) = write {
     case w => {
       w.deleteDocuments(term)
       if (commit) {

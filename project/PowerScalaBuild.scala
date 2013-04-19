@@ -61,7 +61,7 @@ object PowerScalaBuild extends Build {
     .dependsOn(core)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event, convert)
-    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon))
+    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser))
   lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
     .dependsOn(core, event, convert)
     .settings(libraryDependencies ++= Seq(mongodb))
@@ -79,12 +79,16 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
+  val luceneVersion = "4.2.1"
+
   val asm = "org.ow2.asm" % "asm-all" % "4.0"
   val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.1"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
   val reflections = "org.reflections" % "reflections" % "0.9.8"
   val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.1.2"
-  val luceneCore = "org.apache.lucene" % "lucene-core" % "4.2.1"
-  val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % "4.2.1"
+  val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
+  val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
+  val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
+  val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
 }
