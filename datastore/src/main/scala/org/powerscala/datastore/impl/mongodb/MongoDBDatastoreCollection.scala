@@ -151,6 +151,14 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
 
   def drop() = collection.drop()
 
+  def createIndexes(fields: List[Field[T, _]]) = {
+    fields.foreach {
+      case f => {
+        collection.ensureIndex(new BasicDBObject(f.name, 1))
+      }
+    }
+  }
+
   def replaceRevisionClass(revision: Int, newClass: String) = {
     val query = new BasicDBObject("revision", revision)
     val update = new BasicDBObject("$set", new BasicDBObject("class", newClass))

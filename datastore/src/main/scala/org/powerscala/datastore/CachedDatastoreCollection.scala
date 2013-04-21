@@ -1,6 +1,6 @@
 package org.powerscala.datastore
 
-import org.powerscala.datastore.query.DatastoreQuery
+import org.powerscala.datastore.query.{Field, DatastoreQuery}
 import java.util.UUID
 
 /**
@@ -14,6 +14,8 @@ class CachedDatastoreCollection[T <: Identifiable](collection: DatastoreCollecti
   lazy val cache = CachedDatastoreCollection(name, collection)
 
   def drop() = cache.drop(collection)
+
+  def createIndexes(fields: List[Field[T, _]]) = collection.createIndexes(fields)
 
   override def byId(id: UUID) = cache.byId(id, collection)
 

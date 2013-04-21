@@ -298,7 +298,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    * @tparam T the generic type of the return
    * @return T
    */
-  def convertTo[T](value: Any) = EnhancedMethod.convertTo(value, this).asInstanceOf[T]
+  def convertTo[T](name: String, value: Any) = EnhancedMethod.convertTo(name, value, this).asInstanceOf[T]
 }
 
 object EnhancedClass {

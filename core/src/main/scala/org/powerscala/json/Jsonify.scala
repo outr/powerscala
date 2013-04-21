@@ -21,7 +21,7 @@ trait Jsonify {
 object Jsonify {
   def getOrElse[T](name: String, default: T, map: Map[String, Any])(implicit manifest: Manifest[T]) = {
     if (map.contains(name)) {
-      manifest.runtimeClass.convertTo[T](map(name))
+      manifest.runtimeClass.convertTo[T](name, map(name))
     } else {
       default
     }

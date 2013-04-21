@@ -1,6 +1,6 @@
 package org.powerscala.datastore.converter
 
-import org.powerscala.reflect.{CaseValue, EnhancedClass}
+import org.powerscala.reflect.{EnhancedMethod, CaseValue, EnhancedClass}
 import com.mongodb.{DBObject, BasicDBObject}
 import org.powerscala.datastore.DatastoreCollection
 
@@ -57,7 +57,11 @@ class ReflectiveDataObjectConverter(erasure: EnhancedClass) extends DataObjectCo
       }
     }).flatten.toMap
     try {
-      clazz.create[AnyRef](values)
+      collection.session.datastore.convertValues.context(values) {
+        EnhancedMethod.converter.context(collection.session.datastore.convertFunction) {   // Allows the datastore to handle specialized type conversions
+          clazz.create[AnyRef](values)
+        }
+      }
     } catch {
       case t: Throwable => throw new RuntimeException("Unable to instantiate %s with values %s".format(clazz, values), t)
     }

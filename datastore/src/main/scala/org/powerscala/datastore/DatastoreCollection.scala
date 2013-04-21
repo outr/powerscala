@@ -86,7 +86,9 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
 
   def drop(): Unit
 
-  def byId(id: util.UUID) = query.filter(Field.id[T].equal(id)).headOption
+  def createIndexes(fields: List[Field[T, _]]): Unit
+
+  def byId(id: util.UUID) = query.filter(Field.id[T](manifest).equal(id)).headOption
 
   final def getById(id: util.UUID) = byId(id).getOrElse(throw new NullPointerException("Unable to find %s by id: %s".format(manifest.runtimeClass.getName, id)))
 
@@ -115,13 +117,13 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     var q = this.query
     ec.caseValues.foreach(cv => if (cv.name != "id" && defaults(cv.name) != cv[Any](example)) {
       val value = cv[Any](example)
-      val field = Field.basic[T, Any](cv.name)
+      val field = Field.basic[T, Any](cv.name)(manifest)
       q = q.filter(field equal value)
     })
     q
   }
 
-  lazy val classField = new StringField[T]("class")
+  lazy val classField = new StringField[T]("class")(manifest)
 
   def query = {
     val q = DatastoreQuery(collection = this)

@@ -26,7 +26,7 @@ trait Lazy[T <: Identifiable] extends Function0[T] with Identifiable {
 }
 
 object Lazy {
-  def id[T <: Identifiable] = Field.id[Lazy[T]]
+  def id[T <: Identifiable](implicit manifest: Manifest[T]) = Field.id[Lazy[T]]
 
   def apply[T <: Identifiable](value: T)(implicit manifest: Manifest[T]) = StaticLazy(value)
 

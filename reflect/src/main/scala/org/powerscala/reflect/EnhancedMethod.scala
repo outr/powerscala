@@ -2,6 +2,7 @@ package org.powerscala.reflect
 
 import java.lang.reflect.{Modifier, Method}
 import java.io.File
+import org.powerscala.LocalStack
 
 /**
  * EnhancedMethod wraps a java.lang.reflect.Method to provide more functionality and easier access.
@@ -106,7 +107,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   def apply[R](instance: AnyRef, args: Map[String, Any] = Map.empty, requireValues: Boolean = false): R = {
     val arguments = this.args.map {
       case methodArgument => args.get(methodArgument.name) match {
-        case Some(value) => EnhancedMethod.convertTo(value, methodArgument.`type`)            // Value supplied directly
+        case Some(value) => EnhancedMethod.convertTo(methodArgument.name, value, methodArgument.`type`)            // Value supplied directly
         case _ if (methodArgument.hasDefault) => methodArgument.default[Any](instance).get    // Method had a default argument
         case _ if (!requireValues) => methodArgument.`type`.defaultForType[Any]               // No argument found so we use the default for the type
         case _ => throw new RuntimeException("No value supplied for %s.".format(methodArgument.name))
@@ -175,7 +176,9 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
 }
 
 object EnhancedMethod {
-  def convertTo(value: Any, resultType: EnhancedClass) = resultType.name match {
+  val converter = new LocalStack[(String, Any, EnhancedClass) => Any]
+
+  def convertTo(name: String, value: Any, resultType: EnhancedClass) = resultType.name match {
     case _ if (resultType.isCastable(value)) => value   // No conversion necessary
     case "[D" => value match {
       case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
@@ -221,6 +224,7 @@ object EnhancedMethod {
     case "java.io.File" => value match {
       case s: String => new File(s)
     }
+    case _ if (converter.nonEmpty) => converter()(name, value, resultType)
     // TODO: add more type conversions
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }
