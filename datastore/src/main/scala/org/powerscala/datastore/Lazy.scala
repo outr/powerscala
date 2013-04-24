@@ -35,6 +35,10 @@ object Lazy {
   }
 
   def apply[T <: Identifiable](id: UUID)(implicit manifest: Manifest[T]) = UUIDLazy[T](id)(manifest)
+
+  def get[T <: Identifiable](l: Lazy[T]): Option[T] = if (l == null) None else l.get()
+
+  def getOrElse[T <: Identifiable](l: Lazy[T], default: => T): T = if (l == null) default else l()
 }
 
 case class StaticLazy[T <: Identifiable](value: T)(implicit val manifest: Manifest[T]) extends Lazy[T] {
