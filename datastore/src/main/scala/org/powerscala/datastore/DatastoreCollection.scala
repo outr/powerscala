@@ -134,6 +134,8 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
     }
   }
 
+  def iterator = query.iterator
+
   def executeQuery(query: DatastoreQuery[T]): Iterator[T]
 
   def executeQueryIds(query: DatastoreQuery[T]): Iterator[UUID]

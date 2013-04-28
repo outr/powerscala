@@ -32,8 +32,6 @@ class CachedDatastoreCollection[T <: Identifiable](collection: DatastoreCollecti
   protected def persistModified(ref: T) = cache.persistModified(ref, collection)
 
   protected def deleteInternal(ref: T) = cache.deleteInternal(ref, collection)
-
-  def iterator = cache.iterator(collection)
 }
 
 object CachedDatastoreCollection {

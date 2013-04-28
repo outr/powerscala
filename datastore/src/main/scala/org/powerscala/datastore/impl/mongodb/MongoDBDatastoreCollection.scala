@@ -146,9 +146,6 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     }
   }
 
-  def iterator = query.iterator
-//  def iterator = asScalaIterator(collection.find()).map(entry => DataObjectConverter.fromDBValue(entry, this)).asInstanceOf[Iterator[T]]
-
   def drop() = collection.drop()
 
   def createIndexes(fields: List[Field[T, _]]) = {

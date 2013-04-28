@@ -64,7 +64,7 @@ object PowerScalaBuild extends Build {
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser))
   lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
     .dependsOn(core, event, convert)
-    .settings(libraryDependencies ++= Seq(mongodb))
+    .settings(libraryDependencies ++= Seq(mongodb, h2))
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
     .dependsOn(core, concurrent)
   lazy val hierarchy = Project("hierarchy", file("hierarchy"), settings = createSettings("powerscala-hierarchy"))
@@ -91,4 +91,5 @@ object Dependencies {
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
+  val h2 = "com.h2database" % "h2" % "1.3.171"
 }
