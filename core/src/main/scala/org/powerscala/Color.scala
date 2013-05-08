@@ -189,7 +189,6 @@ object Color extends Enumerated[Color] {
   val Tan = immutable(0xffd2b48c)
   val Thistle = immutable(0xffd8bfd8)
   val Tomato = immutable(0xffff6347)
-  val Transparent = immutable(0x00000000)
   val Turquoise = immutable(0xff40e0d0)
   val UmmGold = immutable(0xffffcc33)
   val UmmMaroon = immutable(0xff660000)
@@ -201,7 +200,7 @@ object Color extends Enumerated[Color] {
   val Yellow = immutable(0xffffff00)
   val YellowGreen = immutable(0xff9acd32)
 
-  val Clear = immutable(0x00fffff)
+  val Clear = immutable(0x00ffffff)
 
   def immutable(value: Long): ImmutableColor = {
     val alpha = (value >> 24 & 0xff) / 255.0

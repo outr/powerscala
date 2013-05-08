@@ -19,7 +19,7 @@ trait NamingParent {
     }
   }
 
-  protected[naming] def name(child: NamedChild) = getClass.methods.find(m => if (m.args.isEmpty && m.returnType.`type`.name != "Unit") {
+  protected[naming] def name(child: NamedChild) = getClass.methods.find(m => if (m.javaMethod.getParameterTypes.isEmpty && m.returnType.`type`.name != "Unit") {
     m[Any](this) == child
   } else {
     false
