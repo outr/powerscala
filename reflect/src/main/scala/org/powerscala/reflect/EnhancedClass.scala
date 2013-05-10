@@ -29,6 +29,11 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    */
   lazy val constructors: List[EnhancedConstructor] = javaClass.getConstructors.toList.map(c => new EnhancedConstructor(this, c))
 
+  lazy val fields: List[EnhancedField] = {
+    val javaFields = javaClass.getFields.toSet ++ javaClass.getDeclaredFields.toSet
+    javaFields.toList.map(f => new EnhancedField(this, EnhancedClass(f.getDeclaringClass), f))
+  }
+
   /**
    * All methods on this class.
    */
