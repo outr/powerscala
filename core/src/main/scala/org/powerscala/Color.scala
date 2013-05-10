@@ -1,9 +1,11 @@
 package org.powerscala
 
+import org.powerscala.enum.{Enumerated, EnumEntry}
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Color extends EnumEntry[Color] {
+trait Color extends EnumEntry {
   def red: Double
   def green: Double
   def blue: Double

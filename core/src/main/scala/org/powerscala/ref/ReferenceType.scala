@@ -1,13 +1,13 @@
 package org.powerscala.ref
 
-import org.powerscala.{Enumerated, EnumEntry}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
  *
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed trait ReferenceType extends EnumEntry[ReferenceType] {
+sealed trait ReferenceType extends EnumEntry {
   def apply[T <: AnyRef](value: T): Reference[T]
 }
 

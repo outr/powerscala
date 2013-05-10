@@ -1,9 +1,9 @@
 package org.powerscala.datastore.query
 
-import org.powerscala.{EnumEntry, Enumerated}
+import org.powerscala.enum.{EnumEntry, Enumerated}
 import java.util.regex.Pattern
 
-sealed class Operator extends EnumEntry[Operator]
+sealed class Operator extends EnumEntry
 
 object Operator extends Enumerated[Operator] {
   val < = new Operator
@@ -20,7 +20,7 @@ object Operator extends Enumerated[Operator] {
   val exists = new Operator
 }
 
-sealed class RegexFlag(val flag: Int) extends EnumEntry[RegexFlag]
+sealed class RegexFlag(val flag: Int) extends EnumEntry
 
 object RegexFlag extends Enumerated[RegexFlag] {
   val CaseInsensitive = new RegexFlag(Pattern.CASE_INSENSITIVE)

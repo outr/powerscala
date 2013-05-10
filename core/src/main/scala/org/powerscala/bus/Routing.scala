@@ -1,13 +1,13 @@
 package org.powerscala.bus
 
-import org.powerscala.{Enumerated, EnumEntry}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
  * Routing is used as a response from Node to determine how the Bus should proceed with processing of the message.
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class Routing(val continuing: Boolean) extends EnumEntry[Routing]
+class Routing(val continuing: Boolean) extends EnumEntry
 
 object Routing extends Enumerated[Routing] {
   /**
@@ -33,11 +33,11 @@ object Routing extends Enumerated[Routing] {
 }
 
 class RoutingResponse private[bus](val response: Any) extends Routing(false) {
-  override lazy val name = () => "Response"
+  override lazy val name = "Response"
 }
 
 class RoutingResults private[bus](val results: List[Any]) extends Routing(true) {
-  override lazy val name = () => "Results"
+  override lazy val name = "Results"
 
   override def equals(obj: Any) = obj match {
     case other: RoutingResults => results == other.results

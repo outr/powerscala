@@ -34,10 +34,11 @@ package org.powerscala.concurrent
 
 
 import scala.math._
-import org.powerscala.{Enumerated, EnumEntry, Precision}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import collection.mutable.ListBuffer
+import org.powerscala.Precision
 
 /**
  * Time represents convenience values and utilities
@@ -46,7 +47,7 @@ import collection.mutable.ListBuffer
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed case class Time(value: Double, pattern: String) extends EnumEntry[Time] {
+sealed case class Time(value: Double, pattern: String) extends EnumEntry {
   private lazy val dateFormat = new SimpleDateFormat(pattern)
 
   def format(calendar: Calendar) = dateFormat.format(calendar.getTime)

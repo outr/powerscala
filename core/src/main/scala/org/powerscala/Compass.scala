@@ -1,11 +1,13 @@
 package org.powerscala
 
+import org.powerscala.enum.{Enumerated, EnumEntry}
+
 /**
  * Compass represents the points on a compass as an enum.
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Compass extends EnumEntry[Compass]
+sealed class Compass extends EnumEntry
 
 object Compass extends Enumerated[Compass] {
   val North = new Compass

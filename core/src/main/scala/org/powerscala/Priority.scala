@@ -1,11 +1,13 @@
 package org.powerscala
 
+import org.powerscala.enum.{Enumerated, EnumEntry}
+
 /**
  * Priority represents a linear prioritization.
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class Priority private(val value: Double) extends EnumEntry[Priority] {
+class Priority private(val value: Double) extends EnumEntry {
   private val stepSize = 0.5
 
   def lowerBy(steps: Int) = Priority(value - (steps * stepSize))

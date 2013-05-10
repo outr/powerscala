@@ -1,8 +1,8 @@
 package org.powerscala.easing
 
-import org.powerscala.{Enumerated, EnumEntry}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 
-trait Easing extends EnumEntry[Easing] {
+trait Easing extends EnumEntry {
   def apply(elapsed: Double, start: Double, target: Double, duration: Double): Double
 }
 

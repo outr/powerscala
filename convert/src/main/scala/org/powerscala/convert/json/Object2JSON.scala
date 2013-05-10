@@ -1,7 +1,7 @@
 package org.powerscala.convert.json
 
 import org.powerscala.convert.{CaseClassValue, CaseClass, ConversionBus}
-import org.powerscala.EnumEntry
+import org.powerscala.enum.EnumEntry
 import annotation.tailrec
 import util.parsing.json.JSONFormat
 
@@ -12,7 +12,7 @@ object Object2JSON extends ConversionBus {
   def toJSON(ref: Any): String = ref match {
     case null => null
     case s: String => s
-    case e: EnumEntry[_] => quotedString(e.name())
+    case e: EnumEntry => quotedString(e.name)
     case s: Seq[_] => s.map(v => toJSON(v)).mkString("[", ", ", "]")
     case _ => convert(ref) match {
       case caseClass: CaseClass => cc2json(caseClass)
@@ -76,7 +76,7 @@ class CaseClass2JSON(caseClass: CaseClass) {
       }
       writeLine("]")
     }
-    case e: EnumEntry[_] => write("\"%s\"".format(e.name))
+    case e: EnumEntry => write("\"%s\"".format(e.name))
     case b: Boolean => write(b.toString)
     case b: Byte => write(b.toString)
     case s: Short => write(s.toString)

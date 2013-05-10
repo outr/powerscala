@@ -4,7 +4,7 @@ import collection.mutable.ListBuffer
 
 import java.util.Calendar
 import com.mongodb.{BasicDBList, DBObject}
-import org.powerscala.EnumEntry
+import org.powerscala.enum.EnumEntry
 import org.bson.types.ObjectId
 
 import scala.collection.JavaConversions._
@@ -39,7 +39,7 @@ object DataObjectConverter {
     if (!map.contains(clazz)) {
       synchronized {
         if (!map.contains(clazz)) {
-          val converter = if (classOf[EnumEntry[_]].isAssignableFrom(clazz)) {
+          val converter = if (classOf[EnumEntry].isAssignableFrom(clazz)) {
             EnumDataObjectConverter
           } else if (classOf[Calendar].isAssignableFrom(clazz)) {
             CalendarDataObjectConverter

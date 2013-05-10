@@ -1,8 +1,8 @@
 package org.powerscala.datastore.query
 
-import org.powerscala.{EnumEntry, Enumerated}
+import org.powerscala.enum.{EnumEntry, Enumerated}
 
-sealed class SortDirection extends EnumEntry[SortDirection]
+class SortDirection private() extends EnumEntry
 
 object SortDirection extends Enumerated[SortDirection] {
   val Ascending = new SortDirection

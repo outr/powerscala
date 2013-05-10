@@ -1,11 +1,11 @@
 package org.powerscala.workflow
 
-import org.powerscala.{Enumerated, EnumEntry}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Repeat private() extends EnumEntry[Repeat]
+class Repeat private() extends EnumEntry
 
 object Repeat extends Enumerated[Repeat] {
   val All = new Repeat()

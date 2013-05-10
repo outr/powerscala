@@ -1,10 +1,12 @@
 package org.powerscala
 
+import org.powerscala.enum.{Enumerated, EnumEntry}
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Language extends EnumEntry[Language] {
-  override def toString = name()
+sealed class Language extends EnumEntry {
+  override def toString = name
 }
 
 object Language extends Enumerated[Language] {

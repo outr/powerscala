@@ -1,7 +1,7 @@
 package org.powerscala.datastore.impl.sql
 
 import java.sql.{ResultSet, Connection, PreparedStatement}
-import org.powerscala.{Enumerated, EnumEntry}
+import org.powerscala.enum.{Enumerated, EnumEntry}
 import java.util.UUID
 
 /**
@@ -138,7 +138,7 @@ class NullCheckCondition(field: String, not: Boolean = false) extends Condition 
   def apply(ps: PreparedStatement, index: Int) = throw new UnsupportedOperationException("Not prepared!")
 }
 
-sealed class ConditionType(val sql: String) extends EnumEntry[ConditionType]
+sealed class ConditionType(val sql: String) extends EnumEntry
 
 object ConditionType extends Enumerated[ConditionType] {
   val Equal = new ConditionType("=")
@@ -190,7 +190,7 @@ case class SubselectJoin(query: QueryBuilder, as: String, joinType: JoinType, _c
   def conditions = query._conditions ++ _conditions
 }
 
-sealed class JoinType(val sql: String) extends EnumEntry[JoinType]
+sealed class JoinType(val sql: String) extends EnumEntry
 
 object JoinType extends Enumerated[JoinType] {
   val Join = new JoinType("JOIN")

@@ -1,10 +1,12 @@
 package org.powerscala
 
+import org.powerscala.enum.{Enumerated, EnumEntry}
+
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Currency(val description: String) extends EnumEntry[Currency] {
-  override def toString = "%s (%s)".format(description, name())
+sealed class Currency(val description: String) extends EnumEntry {
+  override def toString = "%s (%s)".format(description, name)
 }
 
 object Currency extends Enumerated[Currency] {
