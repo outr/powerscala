@@ -1,52 +1,25 @@
 package org.powerscala.bind
 
-import org.powerscala.event.Listenable
-
-
-//import org.powerscala.Listenable
+import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.event.{ListenerWrapper, Listenable, Change}
 
 /**
- * Bindable is an inheritable trait on mutable objects that allows binding to Listenable objects to
- * reflect the changes back to the Bindable.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
+ * @author Matt Hicks <matt@outr.com>
  */
-trait Bindable[T] extends Function1[T, Unit] with Listenable {
-  /**
-   * Binds this instance to get changes to <code>listenable</code> when they occur.
-   *
-   * @param listenable what to bind to
-   */
-  def bind(listenable: Listenable) = {
-    val binding = new Binding[T](this, listenable.filters.target)
-    listenable.listeners.synchronous.addListener(binding, localized = true)
-//    listenable.listeners.synchronous += binding
-    binding
-  }
+trait Bindable[T] extends ((T) => Unit) with Listenable {
+  def change: UnitProcessor[Change[T]]
 
-  /**
-   * Binds this instance to get changes to <code>listenable</code> when they occur and are converted through the
-   * <code>conversion</code> implicit function to represent the correct value.
-   *
-   * @param listenable what to bind to
-   */
-  def bindTo[S](listenable: Listenable)(implicit conversion: S => T) = {
-    val binding = new Binding[S](conversion.andThen(this), listenable.filters.target)
-    listenable.listeners.synchronous += binding
-    binding
-  }
-
-  /**
-   * Unbinds this instance from changes occurring on <code>listenable</code> when they occur.
-   *
-   * @param listenable to unbind from
-   */
-  def unbind(listenable: Listenable) = {
-    listenable.listeners.values.find(l => l match {
-      case binding: Binding[_] => binding.acceptFilter == listenable.filters.target
-    }) match {
-      case Some(listener) => listenable.listeners -= listener
-      case None => // Not found
+  def bind(bindable: Bindable[T]) = {
+    bindable.change.add(bindable) {
+      case c => apply(c.newValue)
     }
   }
+
+  def bindTo[S](bindable: Bindable[S])(implicit converter: S => T) = {
+    bindable.change.add(bindable) {
+      case c => apply(converter(c.newValue))
+    }
+  }
+
+  def unbind(listener: ListenerWrapper[Change[_], Unit, Unit]) = listeners -= listener
 }

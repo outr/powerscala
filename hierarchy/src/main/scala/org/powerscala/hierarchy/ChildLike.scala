@@ -5,19 +5,19 @@ package org.powerscala.hierarchy
  *
  * @author Matt Hicks <matt@outr.com>
  */
-trait ChildLike {
-  protected def hierarchicalParent: Any
+trait ChildLike[P] {
+  protected def hierarchicalParent: P
 }
 
 object ChildLike {
-  def parentOf(child: ChildLike) = child.hierarchicalParent
+  def parentOf(child: ChildLike[_]) = child.hierarchicalParent
 
   def selfAndAncestors(entry: Any): Iterator[Any] = entry match {
-    case child: ChildLike => Iterator(entry) ++ selfAndAncestors(child.hierarchicalParent)
+    case child: ChildLike[_] => Iterator(entry) ++ selfAndAncestors(child.hierarchicalParent)
     case _ => Iterator.empty
   }
 
   def ancestors(entry: Any): Iterator[Any] = entry match {
-    case child: ChildLike => selfAndAncestors(child.hierarchicalParent)
+    case child: ChildLike[_] => selfAndAncestors(child.hierarchicalParent)
   }
 }

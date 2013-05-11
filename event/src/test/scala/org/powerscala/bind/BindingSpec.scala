@@ -2,7 +2,8 @@ package org.powerscala.bind
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.powerscala.event.ChangeEvent
+import org.powerscala.event.Change
+import org.powerscala.event.processor.UnitProcessor
 
 /**
  * BindingSpec tests Binding and Bindable classes.
@@ -18,15 +19,15 @@ class BindingSpec extends WordSpec with ShouldMatchers {
         BindTest3.value = "0"
       }
       "have no listeners on either BindTest1 or BindTest2" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest2.listeners.values.isEmpty should equal(true)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest2.listeners().isEmpty should equal(true)
       }
       "bind BindTest1 to BindTest2 successfully" in {
         BindTest1 bind BindTest2
       }
       "have one listener on BindTest2" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest2.listeners.values.isEmpty should equal(false)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest2.listeners().isEmpty should equal(false)
       }
       "have the correct initial values" in {
         BindTest1.value should equal(0)
@@ -42,11 +43,12 @@ class BindingSpec extends WordSpec with ShouldMatchers {
         BindTest1.value should equal(1)
       }
       "BindTest1 should remove the binding" in {
-        BindTest1 unbind BindTest2
+//        BindTest1 unbind BindTest2
+        BindTest2.listeners.clear()
       }
       "have no listeners on either test" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest2.listeners.values.isEmpty should equal(true)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest2.listeners().isEmpty should equal(true)
       }
     }
     "conversion binding" should {
@@ -56,16 +58,16 @@ class BindingSpec extends WordSpec with ShouldMatchers {
         BindTest3.value = "0"
       }
       "have no listeners on either BindTest1 or BindTest3" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest3.listeners.values.isEmpty should equal(true)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest3.listeners().isEmpty should equal(true)
       }
       "bind BindTest1 to BindTest3 successfully" in {
         implicit val s2i = (s: String) => s.toInt
         BindTest1.bindTo[String](BindTest3)
       }
       "have one listener on BindTest3" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest3.listeners.values.isEmpty should equal(false)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest3.listeners().isEmpty should equal(false)
       }
       "have the correct initial values" in {
         BindTest1.value should equal(0)
@@ -81,25 +83,27 @@ class BindingSpec extends WordSpec with ShouldMatchers {
         BindTest1.value should equal(1)
       }
       "BindTest1 should remove the binding" in {
-        BindTest1.unbind(BindTest3)
+//        BindTest1.unbind(BindTest3)
+        BindTest3.listeners.clear()
       }
       "have no listeners on either test" in {
-        BindTest1.listeners.values.isEmpty should equal(true)
-        BindTest3.listeners.values.isEmpty should equal(true)
+        BindTest1.listeners().isEmpty should equal(true)
+        BindTest3.listeners().isEmpty should equal(true)
       }
     }
   }
 }
 
 class BindTest[T] extends Bindable[T] {
+  val change = new UnitProcessor[Change[T]]
   private var _value: T = _
 
   def value = _value
 
   def value_=(_value: T) = {
-    val evt = ChangeEvent(this._value, _value)
+    val oldValue = this._value
     this._value = _value
-    fire(evt)
+    change.fire(Change(oldValue, _value), this)
   }
 
   def apply(value: T) = this.value = value

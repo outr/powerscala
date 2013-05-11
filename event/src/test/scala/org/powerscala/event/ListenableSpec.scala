@@ -2,10 +2,7 @@ package org.powerscala.event
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.powerscala.concurrent.{Executor, AtomicInt, Time}
-import org.powerscala.bus.{RoutingResults, Routing, Bus}
-import org.powerscala.hierarchy.{Parent, Element}
-import org.powerscala.ref.WeakReference
+import org.powerscala.event.processor.{ListProcessor, InterceptProcessor, UnitProcessor, OptionProcessor}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -13,309 +10,125 @@ import org.powerscala.ref.WeakReference
  */
 class ListenableSpec extends WordSpec with ShouldMatchers {
   "Listenable" when {
-    "one synchronous listener is added" should {
+    "using UnitProcessor" should {
       var received = false
-      var listener: Listener = null
-      "wait for an empty Bus" in {
-        Time.waitFor(5.0) {
-          Bus().isEmpty
-        } should equal(true)
-      }
-      "add a listener" in {
-        listener = TestListenable.listeners.synchronous {
-          case event => received = true
-        }
+      val listenable = new TestListenable
+      val listener = listenable.basic.add(listenable) {
+        case s => received = true
       }
       "have one listener" in {
-        TestListenable.listeners.values.length should equal(1)
+        listenable.listeners().length should equal(1)
       }
       "fire an event" in {
-        TestListenable.fire(Event())
+        listenable.basic.fire("Test", listenable)
       }
       "have received the event on the listener" in {
         received should equal(true)
       }
       "remove the listener" in {
-        TestListenable.listeners.synchronous -= listener
+        listenable.listeners -= listener
       }
       "have no listeners" in {
-        TestListenable.listeners.values.isEmpty should equal(true)
-      }
-      "have no nodes on the Bus" in {
-        Bus().length should equal(0)
+        listenable.listeners().isEmpty should equal(true)
       }
     }
-    "one asynchronous listener is added" should {
-      var received = 0
-      var listener: Listener = null
+    "using OptionProcessor" should {
+      val listenable = new TestListenable
       "add a listener" in {
-        listener = TestListenable.listeners.asynchronous {
-          case event => {
-            Thread.sleep(500)
-            received += 1
-          }
+        listenable.strings.add(listenable) {
+          case s if (s == "Hello") => Some("World")
+          case _ => None
         }
       }
-      "have one listener" in {
-        TestListenable.listeners.values.length should equal(1)
+      "fire an event with 'Test' and get None back" in {
+        listenable.strings.fire("Test", listenable) should equal(None)
       }
-      "fire an event" in {
-        TestListenable.fire(Event())
+      "fire an event with 'Hello' and get Some('World') back" in {
+        listenable.strings.fire("Hello", listenable) should equal(Some("World"))
       }
-      "not have received the event on the listener" in {
-        received should equal(0)
-      }
-      "receive the event a little later" in {
-        Time.waitFor(1.0) {
-          received == 1
-        } should equal(true)
-      }
-      "fire a second event" in {
-        TestListenable.fire(Event())
-      }
-      "receive the second event" in {
-        Time.waitFor(1.0) {
-          received == 2
-        } should equal(true)
-      }
-      "remove the listener" in {
-        TestListenable.listeners.asynchronous -= listener
+      "clear all listeners" in {
+        listenable.listeners.clear()
       }
       "have no listeners" in {
-        TestListenable.listeners.values.isEmpty should equal(true)
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
+        listenable.listeners().isEmpty should equal(true)
       }
     }
-    "one concurrent listener is added" should {
-      var received = false
-      var listener: Listener = null
+    "using InterceptProcessor" should {
+      val listenable = new TestListenable
       "add a listener" in {
-        listener = TestListenable.listeners.concurrent {
-          case event => {
-            Thread.sleep(500)
-            received = true
+        listenable.intercept.add(listenable) {
+          case i if (i <= 0) => Intercept.Stop
+          case _ => Intercept.Continue
+        }
+      }
+      "fire an event with 5 and get Continue back" in {
+        listenable.intercept.fire(5, listenable) should equal(Intercept.Continue)
+      }
+      "fire an event with -1 and get Stop back" in {
+        listenable.intercept.fire(-1, listenable) should equal(Intercept.Stop)
+      }
+    }
+    "using ListProcessor" should {
+      val listenable = new TestListenable
+      "add several listeners" in {
+        listenable.list.add(listenable) {
+          case s => Some(s"Characters: ${s.length}")
+        }
+        listenable.list.add(listenable) {
+          case s => Some(s"Reverse: ${s.reverse}")
+        }
+        listenable.list.add(listenable) {
+          case s => try {
+            Some(s"Is a number: ${s.toInt}")
+          } catch {
+            case t: Throwable => None
           }
         }
       }
-      "have one listener" in {
-        TestListenable.listeners.values.length should equal(1)
+      "fire an event with 'Hello' and get back expected list" in {
+        listenable.list.fire("Hello", listenable) should equal(List("Characters: 5", "Reverse: olleH"))
       }
-      "fire an event" in {
-        TestListenable.fire(Event())
-      }
-      "not have received the event on the listener" in {
-        received should equal(false)
-      }
-      "receive the event a little later" in {
-        Time.waitFor(1.0) {
-          received
-        } should equal(true)
-      }
-      "remove the listener" in {
-        TestListenable.listeners.concurrent -= listener
-      }
-      "have no listeners" in {
-        TestListenable.listeners.values.isEmpty should equal(true)
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
+      "fire an event with '123' and get back expected list" in {
+        listenable.list.fire("123", listenable) should equal(List("Characters: 3", "Reverse: 321", "Is a number: 123"))
       }
     }
-    "utilizing the 'once' convenience method" should {
-      val received = new AtomicInt(0)
-      var listener: Listener = null
+    "using Change" should {
+      val listenable = new TestListenable
+      var from = -1
+      var to = -1
       "add a listener" in {
-        listener = TestListenable.listeners.synchronous.once {
-          case event => {
-            received += 1
+        listenable.change.add(listenable) {
+          case c => {
+            from = c.oldValue
+            to = c.newValue
           }
         }
       }
-      "have one listener" in {
-        TestListenable.listeners.values.length should equal(1)
-      }
-      "fire an event" in {
-        TestListenable.fire(Event())
-      }
-      "have received one message" in {
-        received() should equal(1)
-      }
-      "fire another event" in {
-        TestListenable.fire(Event())
-      }
-      "not have received any additional messages on the original listener" in {
-        received() should equal(1)
-      }
-      "have no listeners attached" in {
-        TestListenable.listeners.values.isEmpty should equal(true)
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "utilizing the 'waitFor' convenience method" should {
-      val received = new AtomicInt(0)
-      "concurrently wait for an event" in {
-        Executor.invoke {
-          TestListenable.listeners.synchronous.waitFor[Event, Unit](5.0) {
-            case event => received += 1
-          }
-        }
-        Time.waitFor(2.0) {
-          TestListenable.listeners.values.nonEmpty
-        }
-      }
-      "fire an event" in {
-        TestListenable.fire(Event())
-      }
-      "should have received an event" in {
-        received() should equal(1)
-      }
-      "fire another event" in {
-        TestListenable.fire(Event())
-      }
-      "should not have received another event" in {
-        received() should equal(1)
-      }
-      "have no listeners attached" in {
-        TestListenable.listeners.values.isEmpty should equal(true)
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listening for an event on an ancestor" should {
-      var received = false
-      var listener: Listener = null
-      "add an ancestor listener to the child" in {
-        listener = TestChildListenable.listeners.synchronous.filter(TestChildListenable.filters.ancestor()) {
-          case event => received = true
-        }
-      }
-      "fire an event on the child" in {
-        TestChildListenable.fire(Event())
-      }
-      "not have received an event on the child" in {
-        received should equal(false)
-      }
-      "fire an event on the parent" in {
-        TestParentListenable.fire(Event())
-      }
-      "have received an event on the child" in {
-        received should equal(true)
-      }
-      "remove the listener" in {
-        TestChildListenable.listeners.synchronous -= listener
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listening for an event on an parent" should {
-      var received = false
-      var listener: Listener = null
-      "add an ancestor listener to the child" in {
-        listener = TestChildListenable.listeners.synchronous.filter(TestChildListenable.filters.parent()) {
-          case event => received = true
-        }
-      }
-      "fire an event on the child" in {
-        TestChildListenable.fire(Event())
-      }
-      "not have received an event on the child" in {
-        received should equal(false)
-      }
-      "fire an event on the parent" in {
-        TestParentListenable.fire(Event())
-      }
-      "have received an event on the child" in {
-        received should equal(true)
-      }
-      "remove the listener" in {
-        TestChildListenable.listeners.synchronous -= listener
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listening for an event on a descendant" should {
-      var received = false
-      var listener: Listener = null
-      "add a descendant listener to the parent" in {
-        listener = TestParentListenable.listeners.synchronous.filter(TestParentListenable.filters.descendant()) {
-          case event => received = true
-        }
-      }
-      "fire an event on the parent" in {
-        TestParentListenable.fire(Event())
-      }
-      "not receive an event on the child" in {
-        received should equal(false)
-      }
-      "fire an event on the child" in {
-        TestChildListenable.fire(Event())
-      }
-      "have received an event on the parent" in {
-        received should equal(true)
-      }
-      "remove the listener" in {
-        TestChildListenable.listeners -= listener
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listening for an event on a child" should {
-      var received = false
-      var listener: Listener = null
-      "add a descendant listener to the parent" in {
-        listener = TestParentListenable.listeners.synchronous.filter(TestParentListenable.filters.child()) {
-          case event => received = true
-        }
-      }
-      "fire an event on the parent" in {
-        TestParentListenable.fire(Event())
-      }
-      "not receive an event on the child" in {
-        received should equal(false)
-      }
-      "fire an event on the child" in {
-        TestChildListenable.fire(Event())
-      }
-      "have received an event on the parent" in {
-        received should equal(true)
-      }
-      "remove the listener" in {
-        TestChildListenable.listeners.synchronous -= listener
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
+      "fire an event with Change(5, 10)" in {
+        listenable.change.fire(Change(5, 10), listenable)
+        from should equal(5)
+        to should equal(10)
       }
     }
     "listener stopping processing via Routing.Stop" should {
       var received1 = false
       var received2 = false
-      var listener1: Listener = null
-      var listener2: Listener = null
+      val listenable = new TestListenable
       "add the first listener" in {
-        listener1 = TestListenable.listeners.synchronous {
-          case evt => {
+        listenable.basic.add(listenable) {
+          case s => {
             received1 = true
-            Routing.Stop
+            EventState.current.stopPropagation()
           }
         }
       }
       "add the second listener" in {
-        listener2 = TestListenable.listeners.synchronous {
-          case evt => {
-            received2 = true
-          }
+        listenable.basic.add(listenable) {
+          case s => received2 = true
         }
       }
       "fire an event" in {
-        TestListenable.fire(Event()) should equal(Routing.Stop)
+        listenable.basic.fire("Test", listenable)
       }
       "message should have been received on first listener" in {
         received1 should equal(true)
@@ -323,149 +136,16 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
       "message should not have been received on second listener" in {
         received2 should equal(false)
       }
-      "remove the listeners" in {
-        TestListenable.listeners.synchronous -= listener1
-        TestListenable.listeners.synchronous -= listener2
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listener propagating Routing.Results" should {
-      var listener1: Listener = null
-      var listener2: Listener = null
-      var listener3: Listener = null
-      var routing: Routing = null
-      "add the first listener" in {
-        listener1 = TestListenable.listeners.synchronous {
-          case evt => Routing.Results(List(1))
-        }
-      }
-      "add the second listener" in {
-        listener2 = TestListenable.listeners.synchronous {
-          case evt => Routing.Results(List(2))
-        }
-      }
-      "add the third listener" in {
-        listener3 = TestListenable.listeners.synchronous {
-          case evt => Routing.Results(List(3))
-        }
-      }
-      "fire an event" in {
-        routing = TestListenable.fire(Event())
-      }
-      "message should be a Routing.Results of List(1, 2, 3)" in {
-        routing.name() should equal("Results")
-        routing.asInstanceOf[RoutingResults].results should equal(List(1, 2, 3))
-      }
-      "remove the listeners" in {
-        TestListenable.listeners.synchronous -= listener1
-        TestListenable.listeners.synchronous -= listener2
-        TestListenable.listeners.synchronous -= listener3
-      }
-      "have no nodes on the Bus" in {
-        Bus().isEmpty should equal(true)
-      }
-    }
-    "listener weakly added" should {
-      var increment = 0
-      val otherListenable = new Listenable {}
-      var refListenable: WeakReference[Listenable] = null
-      var refListener: WeakReference[Listener] = null
-      "set the listenable and listener" in {
-        val listenable = new Listenable {}
-        refListenable = WeakReference[Listenable](listenable)
-        refListener = WeakReference(listenable.listeners.filter((evt: Event) => true).synchronous {
-          case evt: ActionEvent => increment += 1
-        })
-      }
-      "have a valid reference" in {
-        refListenable.isCleared should equal(false)
-        refListener.isCleared should equal(false)
-      }
-      "have not incremented" in {
-        increment should equal(0)
-      }
-      "fire an ActionEvent" in {
-        otherListenable.fire(ActionEvent("test"))
-      }
-      "have incremented by one" in {
-        increment should equal(1)
-      }
-      "garbage collect the weak references" in {
-        System.gc()
-      }
-//      "have no reference to the Listenable" in {
-//        refListenable.isCleared should equal(true)
-//      }
-//      "have no reference to the Listener" in {
-//        refListener.isCleared should equal(true)
-//      }
-      "fire another ActionEvent" in {
-        otherListenable.fire(ActionEvent("test"))
-      }
-//      "have not incremented any further" in {
-//        increment should equal(1)
-//      }
-//      "have no retained reference" in {
-//        refListenable.isCleared should equal(true)
-//        refListener.isCleared should equal(true)
-//      }
-    }
-    "listener weakly added to hard reference" should {
-      var increment = 0
-      val otherListenable = new Listenable {}
-      val listenable = new Listenable {}
-      var refListenable: WeakReference[Listenable] = null
-      var refListener: WeakReference[Listener] = null
-      "set the listenable and listener" in {
-        refListenable = WeakReference[Listenable](listenable)
-        refListener = WeakReference(listenable.listeners.filter((evt: Event) => true).synchronous {
-          case evt: ActionEvent => increment += 1
-        })
-      }
-      "have a valid reference" in {
-        refListenable.isCleared should equal(false)
-        refListener.isCleared should equal(false)
-      }
-      "have not incremented" in {
-        increment should equal(0)
-      }
-      "fire an ActionEvent" in {
-        otherListenable.fire(ActionEvent("test"))
-      }
-      "have incremented by one" in {
-        increment should equal(1)
-      }
-      "garbage collect the weak references" in {
-        System.gc()
-      }
-      "have reference to the Listenable" in {
-        refListenable.isCleared should equal(false)
-      }
-      "have reference to the Listener" in {
-        refListener.isCleared should equal(false)
-      }
-      "fire another ActionEvent" in {
-        otherListenable.fire(ActionEvent("test"))
-      }
-      "have incremented to 2" in {
-        increment should equal(2)
-      }
-      "have retained references" in {
-        refListenable.isCleared should equal(false)
-        refListener.isCleared should equal(false)
-      }
     }
   }
 }
 
-object TestListenable extends Listenable
-
-object TestParentListenable extends Listenable with Parent {
-  lazy val contents = List(TestChildListenable)
+class TestListenable extends Listenable {
+  val basic = new UnitProcessor[String]
+  def strings = StringProcessor
+  val intercept = new InterceptProcessor[Int]
+  val list = new ListProcessor[String, String]
+  val change = new UnitProcessor[Change[Int]]
 }
 
-object TestChildListenable extends Listenable with Element {
-  override def parent = TestParentListenable
-}
+object StringProcessor extends OptionProcessor[String, String]

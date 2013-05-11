@@ -39,22 +39,11 @@ import org.powerscala.event.Listenable
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Container[E <: Element] extends Element with Parent with Listenable {
+trait Container[E] extends ParentLike[E] with Listenable {
   /**
    * The children associated to this Container.
    */
   def contents: Seq[E]
 
-  /**
-   * Recursively iterates over all descendants to invoke the supplied function on all elements that
-   * match the generic type T.
-   */
-  def descendants[T](f: T => Unit)(implicit manifest: Manifest[T]): Unit = {
-    contents.foreach(child => child match {
-      case e: Element => e(f)
-    })
-    contents.foreach(child => child match {
-      case c: Container[_] => c.descendants(f)
-    })
-  }
+  protected def hierarchicalChildren = contents
 }

@@ -39,7 +39,7 @@ import annotation.tailrec
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait MutableContainer[T <: Element] extends AbstractMutableContainer[T] {
+trait MutableContainer[T] extends AbstractMutableContainer[T] {
   override val contents = new VisibleContents
 
   /**

@@ -1,18 +1,21 @@
 package org.powerscala.hierarchy
 
-import event.{ChildRemovedEvent, ChildAddedEvent}
+import org.powerscala.hierarchy.event.{ChildRemovedProcessor, ChildAddedProcessor, ChildRemovedEvent, ChildAddedEvent}
 import collection.mutable.ListBuffer
 import annotation.tailrec
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class AbstractMutableContainer[T <: Element] extends Container[T] {
-  protected val buffer = new ListBuffer[T]
+class AbstractMutableContainer[E] extends Container[E] {
+  protected val buffer = new ListBuffer[E]
 
-  def contents: Seq[T] = buffer
+  def childAdded = ChildAddedProcessor
+  def childRemoved = ChildRemovedProcessor
 
-  protected def addChild(child: T) = synchronized {
+  def contents: Seq[E] = buffer
+
+  protected def addChild(child: E) = synchronized {
     if (child == null) {
       throw new NullPointerException("Adding a null child is not allowed")
     }
@@ -20,14 +23,14 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
     buffer += child
 
     child match {
-      case element: Element => Element.assignParent(element, this)
+      case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, this)
       case _ =>
     }
 
-    fire(new ChildAddedEvent(this, child))
+    childAdded.fire(ChildAddedEvent(this, child), this)
   }
 
-  protected def insertChildren(index: Int, children: T*) = synchronized {
+  protected def insertChildren(index: Int, children: E*) = synchronized {
     buffer.insert(index, children: _*)
     children.foreach {
       case child => {
@@ -35,21 +38,21 @@ class AbstractMutableContainer[T <: Element] extends Container[T] {
           throw new NullPointerException("Adding a null child is not allowed")
         }
         child match {
-          case element: Element => Element.assignParent(element, this)
+          case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, this)
           case _ =>
         }
-        fire(new ChildAddedEvent(this, child))
+        childAdded.fire(ChildAddedEvent(this, child), this)
       }
     }
   }
 
-  protected def removeChild(child: T) = synchronized {
-    fire(new ChildRemovedEvent(this, child))    // Fire before so index and hierarchy remains during the event
+  protected def removeChild(child: E) = synchronized {
+    childRemoved.fire(ChildRemovedEvent(this, child), this) // Fire before so index and hierarchy remains during the event
 
     buffer -= child
 
     child match {
-      case element: Element => Element.assignParent(element, null)
+      case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, null)
       case _ =>
     }
   }

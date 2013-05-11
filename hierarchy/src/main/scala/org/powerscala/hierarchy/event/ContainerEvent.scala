@@ -33,8 +33,6 @@
 package org.powerscala.hierarchy.event
 
 import org.powerscala.hierarchy.Container
-import org.powerscala.event.Event
-import org.powerscala.hierarchy.Element
 
 import language.existentials
 
@@ -43,12 +41,12 @@ import language.existentials
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-abstract class ContainerEvent extends Event {
-  def parent: Container[_ <: Element]
+abstract class ContainerEvent {
+  def parent: Container[_]
 
   def child: Any
 }
 
-case class ChildAddedEvent(parent: Container[_ <: Element], child: Any) extends ContainerEvent
+case class ChildAddedEvent(parent: Container[_], child: Any) extends ContainerEvent
 
-case class ChildRemovedEvent(parent: Container[_ <: Element], child: Any) extends ContainerEvent
+case class ChildRemovedEvent(parent: Container[_], child: Any) extends ContainerEvent

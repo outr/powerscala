@@ -5,20 +5,20 @@ package org.powerscala.hierarchy
  *
  * @author Matt Hicks <matt@outr.com>
  */
-trait ParentLike {
-  protected def hierarchicalChildren: Seq[Any]
+trait ParentLike[C] {
+  protected def hierarchicalChildren: Seq[C]
 }
 
 object ParentLike {
-  def childrenOf(parent: ParentLike) = parent.hierarchicalChildren
+  def childrenOf(parent: ParentLike[_]) = parent.hierarchicalChildren
 
   def selfAndDescendants(entry: Any): Iterator[Any] = entry match {
-    case parent: ParentLike => Iterator(entry) ++ parent.hierarchicalChildren.iterator.flatMap(selfAndDescendants _)
+    case parent: ParentLike[_] => Iterator(entry) ++ parent.hierarchicalChildren.iterator.flatMap(selfAndDescendants _)
     case _ => Iterator(entry)
   }
 
   def descendants(entry: Any): Iterator[Any] = entry match {
-    case parent: ParentLike => parent.hierarchicalChildren.iterator.flatMap(selfAndDescendants _)
+    case parent: ParentLike[_] => parent.hierarchicalChildren.iterator.flatMap(selfAndDescendants _)
     case _ => Iterator.empty
   }
 }

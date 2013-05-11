@@ -1,6 +1,6 @@
 package org.powerscala.hierarchy
 
-import event.FileChangeEvent
+import org.powerscala.hierarchy.event.{FileChangeProcessor, FileChangeEvent}
 import java.nio.file._
 import StandardWatchEventKinds._
 import org.powerscala.concurrent.Executor
@@ -18,6 +18,8 @@ import java.util.concurrent.atomic
  * @author Matt Hicks <mhicks@outr.com>
  */
 class DirectoryWatcher(val path: Path) extends Listenable {
+  def fileChange = FileChangeProcessor
+
   private val keepAlive = new AtomicBoolean(true)
   val watcher = FileSystems.getDefault.newWatchService()
   private val _started = new atomic.AtomicBoolean(false)
@@ -43,7 +45,7 @@ class DirectoryWatcher(val path: Path) extends Listenable {
             case ENTRY_DELETE => FileChange.Deleted
           }
           event.context() match {
-            case filename: Path => fire(new FileChangeEvent(filename.toFile, change))
+            case filename: Path => fileChange.fire(FileChangeEvent(filename.toFile, change), this)
           }
         }
       }

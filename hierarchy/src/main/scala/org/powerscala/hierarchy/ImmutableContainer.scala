@@ -37,9 +37,9 @@ package org.powerscala.hierarchy
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class ImmutableContainer[T <: Element](val contents: Seq[T]) extends Container[T] {
+class ImmutableContainer[T](val contents: Seq[T]) extends Container[T] {
   contents.foreach {
-    case element: Element => Element.assignParent(element, this)
+    case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, this)
     case _ =>
   }
 }

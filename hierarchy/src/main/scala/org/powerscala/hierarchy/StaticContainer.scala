@@ -41,7 +41,7 @@ import org.powerscala.reflect._
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class StaticContainer[T <: Element](implicit manifest: Manifest[T]) extends MutableContainer[T] with ExtendedDelayedInit {
+class StaticContainer[T](implicit manifest: Manifest[T]) extends MutableContainer[T] with ExtendedDelayedInit {
   override def postInit() = {
     super.postInit()
     val children = loadElements(getClass.methods, Nil).reverse
