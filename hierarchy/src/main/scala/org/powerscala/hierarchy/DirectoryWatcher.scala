@@ -18,7 +18,7 @@ import java.util.concurrent.atomic
  * @author Matt Hicks <mhicks@outr.com>
  */
 class DirectoryWatcher(val path: Path) extends Listenable {
-  def fileChange = FileChangeProcessor
+  val fileChange = new FileChangeProcessor
 
   private val keepAlive = new AtomicBoolean(true)
   val watcher = FileSystems.getDefault.newWatchService()
@@ -45,7 +45,7 @@ class DirectoryWatcher(val path: Path) extends Listenable {
             case ENTRY_DELETE => FileChange.Deleted
           }
           event.context() match {
-            case filename: Path => fileChange.fire(FileChangeEvent(filename.toFile, change), this)
+            case filename: Path => fileChange.fire(FileChangeEvent(filename.toFile, change))
           }
         }
       }

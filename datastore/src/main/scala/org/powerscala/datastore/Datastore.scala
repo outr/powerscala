@@ -1,19 +1,19 @@
 package org.powerscala.datastore
 
 import org.powerscala.event.Listenable
-import org.powerscala.hierarchy.Child
-import org.powerscala.bus.Bus
 import org.powerscala.datastore.query.Field
 import org.powerscala.reflect.EnhancedClass
 import org.powerscala.LocalStack
+import org.powerscala.datastore.event.{DatastoreDeleteProcessor, DatastorePersistProcessor}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Datastore extends Listenable with Child {
-  override def bus = Bus()
-
+trait Datastore extends Listenable {
   private val sessions = new ThreadLocal[DatastoreSession]
+
+  val persists = new DatastorePersistProcessor
+  val deletes = new DatastoreDeleteProcessor
 
   /**
    * Indexes that need to be defined for this Datastore.

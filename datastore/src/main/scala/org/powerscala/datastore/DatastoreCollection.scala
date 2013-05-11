@@ -1,28 +1,31 @@
 package org.powerscala.datastore
 
-import event.{DatastoreDelete, DatastorePersist}
+import org.powerscala.datastore.event.{DatastoreDeleteProcessor, DatastorePersistProcessor, DatastoreDelete, DatastorePersist}
 import java.util
 import org.powerscala.event.Listenable
 import org.powerscala.reflect._
 import query._
-import org.powerscala.hierarchy.Child
 import query.DatastoreQuery
 import query.FieldFilter
 import util.UUID
 import scala.Some
 import collection.mutable.ListBuffer
 import org.powerscala.log.Logging
+import org.powerscala.hierarchy.ChildLike
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable with Child with Logging {
+trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable with ChildLike[DatastoreSession] with Logging {
   def name: String
   def session: DatastoreSession
   def parent = session
   def manifest: Manifest[T]
 
-  override def bus = session.bus
+  val persists = new DatastorePersistProcessor
+  val deletes = new DatastoreDeleteProcessor
+
+  protected def hierarchicalParent = session
 
   protected var ids = Set.empty[util.UUID]
 
@@ -70,7 +73,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
         case false => persistNew(ref)
       }
       ids += ref.id
-      fire(DatastorePersist(this, ref))
+      persists.fire(DatastorePersist(this, ref))
     }
   }
 
@@ -79,7 +82,7 @@ trait DatastoreCollection[T <: Identifiable] extends Iterable[T] with Listenable
       case ref => {
         deleteInternal(ref)
         ids -= ref.id
-        fire(DatastoreDelete(this, ref))
+        deletes.fire(DatastoreDelete(this, ref))
       }
     }
   }

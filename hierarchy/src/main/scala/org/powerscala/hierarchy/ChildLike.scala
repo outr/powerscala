@@ -14,7 +14,7 @@ object ChildLike {
 
   def selfAndAncestors(entry: Any): Iterator[Any] = entry match {
     case child: ChildLike[_] => Iterator(entry) ++ selfAndAncestors(child.hierarchicalParent)
-    case _ => Iterator.empty
+    case _ => Iterator(entry)
   }
 
   def ancestors(entry: Any): Iterator[Any] = entry match {

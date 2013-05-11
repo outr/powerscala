@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.Precision
 import query.{Queryable, Field}
 import java.util.UUID
+import org.powerscala.hierarchy.event.Descendants
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -118,26 +119,52 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
     }
     "validate events occurring at the Datastore level" in {
       c1.parent should equal(session)
-      session.parent should equal(datastore)
-      var collectionEvents = 0
-      var sessionEvents = 0
-      var datastoreEvents = 0
-      val collectionListener = c1.listeners.synchronous {
-        case event => collectionEvents += 1
+      session.datastore should equal(datastore)
+      var collectionPersistEvents = 0
+      var collectionDeleteEvents = 0
+      var sessionPersistEvents = 0
+      var sessionDeleteEvents = 0
+      var datastorePersistEvents = 0
+      var datastoreDeleteEvents = 0
+      val collectionPersistListener = c1.persists.on {
+        case event => collectionPersistEvents += 1
       }
-      val sessionListener = session.listeners.filter.child.synchronous {
-        case event => sessionEvents += 1
+      val collectionDeleteListener = c1.deletes.on {
+        case event => collectionDeleteEvents += 1
       }
-      val datastoreListener = datastore.listeners.filter.descendant().synchronous {
-        case event => datastoreEvents += 1
+      val sessionPersistListener = session.persists.listen(Descendants) {
+        case event => sessionPersistEvents += 1
       }
-      c1.persist(Test1("Testing listener"))
-      collectionEvents should equal(1)
-      sessionEvents should equal(1)
-      datastoreEvents should equal(1)
-      c1.listeners -= collectionListener
-      session.listeners -= sessionListener
-      datastore.listeners -= datastoreListener
+      val sessionDeleteListener = session.deletes.listen(Descendants) {
+        case event => sessionDeleteEvents += 1
+      }
+      val datastorePersistListener = datastore.persists.listen(Descendants) {
+        case event => datastorePersistEvents += 1
+      }
+      val datastoreDeleteListener = datastore.deletes.listen(Descendants) {
+        case event => datastoreDeleteEvents += 1
+      }
+      val t = Test1("Testing listener")
+      c1.persist(t)
+      collectionPersistEvents should equal(1)
+      collectionDeleteEvents should equal(0)
+      sessionPersistEvents should equal(1)
+      sessionDeleteEvents should equal(0)
+      datastorePersistEvents should equal(1)
+      datastoreDeleteEvents should equal(0)
+      c1.delete(t)
+      collectionPersistEvents should equal(1)
+      collectionDeleteEvents should equal(1)
+      sessionPersistEvents should equal(1)
+      sessionDeleteEvents should equal(1)
+      datastorePersistEvents should equal(1)
+      datastoreDeleteEvents should equal(1)
+      c1.listeners -= collectionPersistListener
+      c1.listeners -= collectionDeleteListener
+      session.listeners -= sessionPersistListener
+      session.listeners -= sessionDeleteListener
+      datastore.listeners -= datastorePersistListener
+      datastore.listeners -= datastoreDeleteListener
     }
     "properly differentiate between class types via query" in {
       val results1 = c1.query.filter(Test1.name equal "Three").toList

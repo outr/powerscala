@@ -94,7 +94,7 @@ class BindingSpec extends WordSpec with ShouldMatchers {
   }
 }
 
-class BindTest[T] extends Bindable[T] {
+class BindTest[T](implicit manifest: Manifest[T]) extends Bindable[T] {
   val change = new UnitProcessor[Change[T]]
   private var _value: T = _
 
@@ -103,7 +103,7 @@ class BindTest[T] extends Bindable[T] {
   def value_=(_value: T) = {
     val oldValue = this._value
     this._value = _value
-    change.fire(Change(oldValue, _value), this)
+    change.fire(Change(oldValue, _value))
   }
 
   def apply(value: T) = this.value = value

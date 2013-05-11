@@ -1,12 +1,11 @@
 package org.powerscala.datastore.event
 
-import org.powerscala.event.Event
 import org.powerscala.datastore.{DatastoreCollection, Identifiable}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreEvent[T <: Identifiable] extends Event {
+trait DatastoreEvent[T <: Identifiable] {
   def obj: T
 
   def collection: DatastoreCollection[T]

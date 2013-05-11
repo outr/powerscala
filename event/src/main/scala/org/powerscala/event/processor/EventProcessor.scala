@@ -3,15 +3,18 @@ package org.powerscala.event.processor
 import scala.annotation.tailrec
 import org.powerscala.event._
 import org.powerscala.event.FunctionalListener
+import org.powerscala.reflect.EnhancedClass
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 trait EventProcessor[E, V, R] {
+  def listenable: Listenable
+  def eventManifest: Manifest[E]
   protected def handleListenerResponse(value: V, state: EventState[E]): Unit
   protected def responseFor(state: EventState[E]): R
 
-  def add(listenable: Listenable, modes: ListenMode*)(f: E => V) = {
+  def listen(modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
     val modesList = if (modes.isEmpty) {
       EventProcessor.DefaultModes
     } else {
@@ -23,9 +26,11 @@ trait EventProcessor[E, V, R] {
     wrapper
   }
 
-  def remove(listenable: Listenable)(wrapper: ListenerWrapper[E, V, R]) = listenable.listeners -= wrapper
+  def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
 
-  def fire(event: E, listenable: Listenable, mode: ListenMode = ListenMode.Standard): R = {
+  def remove(wrapper: ListenerWrapper[E, V, R]) = listenable.listeners -= wrapper
+
+  def fire(event: E, mode: ListenMode = ListenMode.Standard): R = {
     val state = new EventState[E](event, listenable, EventState.current)
     EventState.current = state
     try {
@@ -63,13 +68,19 @@ trait EventProcessor[E, V, R] {
   private def fireRecursive(state: EventState[E], mode: ListenMode, wrappers: List[ListenerWrapper[_, _, _]]): Unit = {
     if (wrappers.nonEmpty && !state.isStopPropagation) {
       val wrapper = wrappers.head
-      if (wrapper.processor == this && wrapper.modes.contains(mode)) {
+      if (isWrapperValid(state, wrapper) && wrapper.modes.contains(mode)) {
         val listener = wrapper.listener.asInstanceOf[Listener[E, V]]
         val value = listener.receive(state.event)
         handleListenerResponse(value, state)
       }
       fireRecursive(state, mode, wrappers.tail)
     }
+  }
+
+  protected def isWrapperValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = {
+    val listenerEventClass = EnhancedClass.convertClass(wrapper.processor.eventManifest.runtimeClass)
+    val eventClass = EnhancedClass.convertClass(state.event.getClass)
+    listenerEventClass == eventClass
   }
 }
 

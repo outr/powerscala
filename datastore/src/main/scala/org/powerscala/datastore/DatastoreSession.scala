@@ -1,17 +1,19 @@
 package org.powerscala.datastore
 
 import org.powerscala.event.Listenable
-import org.powerscala.hierarchy.Child
-
+import org.powerscala.hierarchy.ChildLike
+import org.powerscala.datastore.event.{DatastoreDeleteProcessor, DatastorePersistProcessor}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait DatastoreSession extends Listenable with Child {
+trait DatastoreSession extends Listenable with ChildLike[Datastore] {
   def datastore: Datastore
-  def parent = datastore
 
-  override def bus = datastore.bus
+  protected def hierarchicalParent = datastore
+
+  val persists = new DatastorePersistProcessor
+  val deletes = new DatastoreDeleteProcessor
 
   def apply[T <: Identifiable](implicit manifest: Manifest[T]) = collection[T](null)(manifest)
 

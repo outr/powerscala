@@ -24,7 +24,7 @@ class AbstractMutableContainer[E] extends Container[E] {
       case _ =>
     }
 
-    childAdded.fire(ChildAddedEvent(this, child), this)
+    childAdded.fire(ChildAddedEvent(this, child))
   }
 
   protected def insertChildren(index: Int, children: E*) = synchronized {
@@ -38,13 +38,13 @@ class AbstractMutableContainer[E] extends Container[E] {
           case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, this)
           case _ =>
         }
-        childAdded.fire(ChildAddedEvent(this, child), this)
+        childAdded.fire(ChildAddedEvent(this, child))
       }
     }
   }
 
   protected def removeChild(child: E) = synchronized {
-    childRemoved.fire(ChildRemovedEvent(this, child), this) // Fire before so index and hierarchy remains during the event
+    childRemoved.fire(ChildRemovedEvent(this, child)) // Fire before so index and hierarchy remains during the event
 
     buffer -= child
 

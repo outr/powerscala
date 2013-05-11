@@ -48,6 +48,6 @@ trait Container[E] extends ParentLike[E] with Listenable {
 
   protected def hierarchicalChildren = contents
 
-  def childAdded = ChildAddedProcessor
-  def childRemoved = ChildRemovedProcessor
+  val childAdded = new ChildAddedProcessor
+  val childRemoved = new ChildRemovedProcessor
 }

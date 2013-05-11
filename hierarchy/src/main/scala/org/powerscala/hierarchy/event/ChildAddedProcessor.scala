@@ -1,11 +1,8 @@
 package org.powerscala.hierarchy.event
 
-import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.event.Listenable
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object ChildAddedProcessor
-  extends UnitProcessor[ChildAddedEvent]
-  with AncestorProcessor[ChildAddedEvent, Unit, Unit]
-  with DescendantProcessor[ChildAddedEvent, Unit, Unit]
+class ChildAddedProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[ChildAddedEvent]

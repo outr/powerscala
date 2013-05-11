@@ -1,6 +1,6 @@
 package org.powerscala.event.processor
 
-import org.powerscala.event.EventState
+import org.powerscala.event.{Listenable, EventState}
 
 /**
  * ListProcessor expects an Option[R] from each listener and builds a list from Some[R] responses. The combined List[R]
@@ -8,7 +8,7 @@ import org.powerscala.event.EventState
  *
  * @author Matt Hicks <matt@outr.com>
  */
-class ListProcessor[E, R] extends EventProcessor[E, Option[R], List[R]] {
+class ListProcessor[E, R](implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Option[R], List[R]] {
   val token = "listResponse"
 
   protected def handleListenerResponse(value: Option[R], state: EventState[E]) = value match {

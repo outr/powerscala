@@ -23,7 +23,7 @@ trait AncestorProcessor[E, V, R] extends EventProcessor[E, V, R] {
       // Process up to the ancestry tree
       TypeFilteredIterator[Listenable](ChildLike.ancestors(listenable)).foreach {
         case parentListenable => if (!state.isStopPropagation && AncestorProcessor.shouldProcess) {
-          fireInternal(state, Descendants, listenable)
+          fireInternal(state, Descendants, parentListenable)
         }
       }
     }

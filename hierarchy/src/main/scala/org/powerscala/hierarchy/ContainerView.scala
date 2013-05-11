@@ -30,21 +30,21 @@ class ContainerView[T](val container: Container[_],
   private var queue = List.empty[T]
   private var filtered = List.empty[T]
 
-  def childAdded = ChildAddedProcessor
-  def childRemoved = ChildRemovedProcessor
+  val childAdded = new ChildAddedProcessor
+  val childRemoved = new ChildRemovedProcessor
 
   refresh()
 
   // Add listeners if dynamic is enabled
   if (dynamic) {
-    container.childAdded.add(container, ListenMode.Standard, Descendants) {
+    container.childAdded.listen(ListenMode.Standard, Descendants) {
       case added => synchronized {
         validateChild(added.child.asInstanceOf[AnyRef])
         refreshFilter()
         refreshSort()
       }
     }
-    container.childRemoved.add(container, ListenMode.Standard, Descendants) {
+    container.childRemoved.listen(ListenMode.Standard, Descendants) {
       case removed => synchronized {
         invalidateChild(removed.child.asInstanceOf[AnyRef])
         refreshFilter()
@@ -62,7 +62,7 @@ class ContainerView[T](val container: Container[_],
     foreach(f)
     // Apply to everything going forward
 
-    childAdded.add(this) {
+    childAdded.on {
       case evt => f(evt.child.asInstanceOf[T])
     }
   }
@@ -135,7 +135,7 @@ class ContainerView[T](val container: Container[_],
       val c = child.asInstanceOf[T]
       if (filterIn == null || filterIn(c)) {
         queue = (c :: queue.reverse).reverse
-        childAdded.fire(ChildAddedEvent(container, c), this)
+        childAdded.fire(ChildAddedEvent(container, c))
       } else {
         filtered = c :: filtered
       }
@@ -154,7 +154,7 @@ class ContainerView[T](val container: Container[_],
     val f = (c: T) => c == child
     if (queue.contains(child)) {
       queue = queue.filterNot(f)
-      childRemoved.fire(ChildRemovedEvent(container, child), this)
+      childRemoved.fire(ChildRemovedEvent(container, child))
     } else {
       filtered = filtered.filterNot(f)
     }
@@ -184,7 +184,7 @@ class ContainerView[T](val container: Container[_],
       if (filterIn(item)) {     // Include it back into the queue
         queue = item :: queue
         filtered = filtered.filterNot(f => f == item)
-        childAdded.fire(ChildAddedEvent(container, item), this)
+        childAdded.fire(ChildAddedEvent(container, item))
       }
       validateExcluded(excluded.tail)
     }
@@ -200,7 +200,7 @@ class ContainerView[T](val container: Container[_],
       if (!filterIn(item)) {      // Exclude it from the queue
         queue = queue.filterNot(i => i == item)
         filtered = item :: filtered
-        childRemoved.fire(ChildRemovedEvent(container, item), this)
+        childRemoved.fire(ChildRemovedEvent(container, item))
       }
       validateIncluded(included.tail)
     }

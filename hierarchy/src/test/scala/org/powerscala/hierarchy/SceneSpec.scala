@@ -63,10 +63,10 @@ class SceneSpec extends WordSpec with ShouldMatchers {
     val container = new AbstractMutableContainer[StringElement]() with MutableContainer[StringElement]
     var added: ChildAddedEvent = null
     var removed: ChildRemovedEvent = null
-    container.childAdded.add(container) {
+    container.childAdded.on {
       case evt => added = evt
     }
-    container.childRemoved.add(container) {
+    container.childRemoved.on {
       case evt => removed = evt
     }
     "created" should {

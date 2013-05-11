@@ -30,7 +30,7 @@ case class TypeFilteredIterator[T](iterator: Iterator[_ >: T])(implicit manifest
     None
   } else {
     val next = iterator.next()
-    if (manifest.runtimeClass.isAssignableFrom(next.getClass)) {
+    if (next != null && manifest.runtimeClass.isAssignableFrom(next.getClass)) {
       Some(next.asInstanceOf[T])
     } else {
       findNext()

@@ -6,5 +6,7 @@ package org.powerscala.event
 class ListenMode
 
 object ListenMode {
-  val Standard = new ListenMode
+  def Standard = StandardListenMode
 }
+
+object StandardListenMode extends ListenMode
