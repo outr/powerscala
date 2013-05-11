@@ -6,7 +6,6 @@ import org.powerscala.Storage
  * @author Matt Hicks <matt@outr.com>
  */
 class EventState[E] protected[event](val event: E,
-                                      val mode: ListenMode,
                                       val listenable: Listenable,
                                       val causedBy: EventState[_]) extends Storage[Any] {
   def isStopPropagation = getOrElse[Boolean]("stopPropagation", false)

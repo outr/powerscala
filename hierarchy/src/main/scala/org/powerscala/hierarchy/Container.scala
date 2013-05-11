@@ -33,6 +33,7 @@
 package org.powerscala.hierarchy
 
 import org.powerscala.event.Listenable
+import org.powerscala.hierarchy.event.{ChildRemovedProcessor, ChildAddedProcessor}
 
 /**
  * Container maintains a collection of children T.
@@ -46,4 +47,7 @@ trait Container[E] extends ParentLike[E] with Listenable {
   def contents: Seq[E]
 
   protected def hierarchicalChildren = contents
+
+  def childAdded = ChildAddedProcessor
+  def childRemoved = ChildRemovedProcessor
 }

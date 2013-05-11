@@ -19,5 +19,6 @@ object ChildLike {
 
   def ancestors(entry: Any): Iterator[Any] = entry match {
     case child: ChildLike[_] => selfAndAncestors(child.hierarchicalParent)
+    case _ => Iterator.empty
   }
 }

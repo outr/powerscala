@@ -1,6 +1,6 @@
 package org.powerscala.hierarchy
 
-import org.powerscala.hierarchy.event.{ChildRemovedProcessor, ChildAddedProcessor, ChildRemovedEvent, ChildAddedEvent}
+import org.powerscala.hierarchy.event.{ChildRemovedEvent, ChildAddedEvent}
 import collection.mutable.ListBuffer
 import annotation.tailrec
 
@@ -9,9 +9,6 @@ import annotation.tailrec
  */
 class AbstractMutableContainer[E] extends Container[E] {
   protected val buffer = new ListBuffer[E]
-
-  def childAdded = ChildAddedProcessor
-  def childRemoved = ChildRemovedProcessor
 
   def contents: Seq[E] = buffer
 
