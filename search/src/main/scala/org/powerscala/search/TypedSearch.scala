@@ -28,7 +28,7 @@ trait TypedSearch[T] {
 
   def query() = search.process {
     case searcher => {
-      val parser = new QueryParser(Version.LUCENE_42, "", search.analyzer)
+      val parser = new QueryParser(Version.LUCENE_43, "", search.analyzer)
       val q = parser.parse("")
 //      q.
 //      searcher.search()

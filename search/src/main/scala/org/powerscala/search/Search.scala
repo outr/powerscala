@@ -13,11 +13,11 @@ import org.apache.lucene.document.Document
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(path: File,
-             val analyzer: Analyzer = new StandardAnalyzer(Version.LUCENE_42),
+             val analyzer: Analyzer = new StandardAnalyzer(Version.LUCENE_43),
              refreshRate: Double = 5.0,
              maximumDelay: Double = 0.1) {
   private val directory = FSDirectory.open(path, new NativeFSLockFactory())
-  private val config = new IndexWriterConfig(Version.LUCENE_42, analyzer)
+  private val config = new IndexWriterConfig(Version.LUCENE_43, analyzer)
   private val writer = new IndexWriter(directory, config)
 
   private val trackingIndexWriter = new NRTManager.TrackingIndexWriter(writer)

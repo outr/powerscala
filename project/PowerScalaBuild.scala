@@ -5,7 +5,7 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.5.3-SNAPSHOT",
+    version := "1.6.0-SNAPSHOT",
     organization := "org.powerscala",
     scalaVersion := "2.10.1",
     libraryDependencies ++= Seq(
@@ -77,9 +77,9 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "4.2.1"
+  val luceneVersion = "4.3.0"
 
-  val asm = "org.ow2.asm" % "asm-all" % "4.0"
+  val asm = "org.ow2.asm" % "asm-all" % "4.1"
   val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.1"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
