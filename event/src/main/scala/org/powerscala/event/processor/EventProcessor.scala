@@ -6,11 +6,12 @@ import org.powerscala.event.FunctionalListener
 import org.powerscala.reflect.EnhancedClass
 
 import language.existentials
+import org.powerscala.log.Logging
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait EventProcessor[E, V, R] {
+trait EventProcessor[E, V, R] extends Logging {
   def listenable: Listenable
   def eventManifest: Manifest[E]
   protected def handleListenerResponse(value: V, state: EventState[E]): Unit
@@ -70,7 +71,7 @@ trait EventProcessor[E, V, R] {
   private def fireRecursive(state: EventState[E], mode: ListenMode, wrappers: List[ListenerWrapper[_, _, _]]): Unit = {
     if (wrappers.nonEmpty && !state.isStopPropagation) {
       val wrapper = wrappers.head
-      if (isWrapperValid(state, wrapper) && wrapper.modes.contains(mode)) {
+      if (isWrapperValid(state, wrapper) && isModeValid(wrapper, mode)) {
         val listener = wrapper.listener.asInstanceOf[Listener[E, V]]
         val value = listener.receive(state.event)
         handleListenerResponse(value, state)
@@ -79,10 +80,22 @@ trait EventProcessor[E, V, R] {
     }
   }
 
+  protected def isModeValid(wrapper: ListenerWrapper[_, _, _], mode: ListenMode) = {
+    val valid = wrapper.modes.contains(mode)
+    if (!valid) {
+      debug(s"isModeValid - Modes: ${wrapper.modes}, Mode: ${mode}")
+    }
+    valid
+  }
+
   protected def isWrapperValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = {
     val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.processor.eventManifest.runtimeClass)
     val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
-    listenerEventClass.isAssignableFrom(eventClass)
+    val valid = listenerEventClass.isAssignableFrom(eventClass)
+    if (!valid) {
+      debug(s"isWrapperValid: $listenerEventClass not assignable from $eventClass")
+    }
+    valid
   }
 }
 
