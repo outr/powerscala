@@ -59,8 +59,6 @@ object PowerScalaBuild extends Build {
     .dependsOn(core)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
-//  lazy val convert = Project("convert", file("convert"), settings = createSettings("powerscala-convert"))
-//    .dependsOn(core)
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
     .dependsOn(core, concurrent)
   lazy val hierarchy = Project("hierarchy", file("hierarchy"), settings = createSettings("powerscala-hierarchy"))

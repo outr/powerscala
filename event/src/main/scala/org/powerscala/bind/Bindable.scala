@@ -1,13 +1,13 @@
 package org.powerscala.bind
 
-import org.powerscala.event.processor.UnitProcessor
+import org.powerscala.event.processor.EventProcessor
 import org.powerscala.event.{ListenerWrapper, Listenable, Change}
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 trait Bindable[T] extends ((T) => Unit) with Listenable {
-  def change: UnitProcessor[Change[T]]
+  def change: EventProcessor[_ <: Change[T], Unit, Unit]
 
   def bind(bindable: Bindable[T]) = {
     bindable.change.on {
@@ -21,5 +21,5 @@ trait Bindable[T] extends ((T) => Unit) with Listenable {
     }
   }
 
-  def unbind(listener: ListenerWrapper[Change[_], Unit, Unit]) = listeners -= listener
+  def unbind(listener: ListenerWrapper[Change[_], Unit, Unit]) = listener.processor.listenable.listeners -= listener
 }

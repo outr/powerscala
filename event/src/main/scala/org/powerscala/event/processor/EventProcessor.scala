@@ -5,6 +5,8 @@ import org.powerscala.event._
 import org.powerscala.event.FunctionalListener
 import org.powerscala.reflect.EnhancedClass
 
+import language.existentials
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -78,9 +80,9 @@ trait EventProcessor[E, V, R] {
   }
 
   protected def isWrapperValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = {
-    val listenerEventClass = EnhancedClass.convertClass(wrapper.processor.eventManifest.runtimeClass)
-    val eventClass = EnhancedClass.convertClass(state.event.getClass)
-    listenerEventClass == eventClass
+    val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.processor.eventManifest.runtimeClass)
+    val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
+    listenerEventClass.isAssignableFrom(eventClass)
   }
 }
 

@@ -3,4 +3,13 @@ package org.powerscala.event
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class Change[T](oldValue: T, newValue: T)
+trait Change[T] {
+  def oldValue: T
+  def newValue: T
+}
+
+object Change {
+  def apply[T](oldValue: T, newValue: T) = SimpleChange(oldValue, newValue)
+}
+
+case class SimpleChange[T](oldValue: T, newValue: T) extends Change[T]

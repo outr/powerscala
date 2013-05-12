@@ -8,6 +8,8 @@ import org.reflections.Reflections
 import scala.collection.JavaConversions._
 import annotation.tailrec
 
+import language.existentials
+
 /**
  * Wraps a Class to provide more powerful functionality.
  *
@@ -327,6 +329,8 @@ object EnhancedClass {
     case "java.lang.Boolean" => "Boolean"
     case "byte" => "Byte"
     case "java.lang.Byte" => "Byte"
+    case "short" => "Short"
+    case "java.lang.Short" => "Short"
     case "int" => "Int"
     case "java.lang.Integer" => "Int"
     case "long" => "Long"
@@ -340,5 +344,25 @@ object EnhancedClass {
     case "[I" => "Array[Int]"
     case "scala.collection.immutable.Nil$" => "List"
     case s => s
+  }
+
+  def convertPrimitives(c: Class[_]) = if (c == classOf[Boolean]) {
+    classOf[java.lang.Boolean]
+  } else if (c == classOf[Byte]) {
+    classOf[java.lang.Byte]
+  } else if (c == classOf[Short]) {
+    classOf[java.lang.Short]
+  } else if (c == classOf[Char]) {
+    classOf[java.lang.Character]
+  } else if (c == classOf[Int]) {
+    classOf[java.lang.Integer]
+  } else if (c == classOf[Long]) {
+    classOf[java.lang.Long]
+  } else if (c == classOf[Float]) {
+    classOf[java.lang.Float]
+  } else if (c == classOf[Double]) {
+    classOf[java.lang.Double]
+  } else {
+    c
   }
 }

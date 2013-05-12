@@ -5,9 +5,15 @@ import org.powerscala.Storage
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class EventState[E] protected[event](val event: E,
-                                      val listenable: Listenable,
-                                      val causedBy: EventState[_]) extends Storage[Any] {
+class EventState[E] protected[event](val listenable: Listenable,
+                                     val causedBy: EventState[_]) extends Storage[Any] {
+  protected[event] def this(event: E, listenable: Listenable, causedBy: EventState[_]) = {
+    this(listenable, causedBy)
+    this.event = event
+  }
+
+  def event = apply[E]("event")
+  def event_=(evt: E) = update("event", evt)
   def isStopPropagation = getOrElse[Boolean]("stopPropagation", false)
   def stopPropagation() = update("stopPropagation", true)
 }
