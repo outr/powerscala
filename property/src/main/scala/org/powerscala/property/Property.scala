@@ -6,24 +6,24 @@ import org.powerscala.property.event.{PropertyChangeEvent, PropertyRead}
 import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.ChildLike
 import org.powerscala.bind.Bindable
-import org.powerscala.reflect._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Property[T](backing: Backing[T] = new VariableBacking[T])
-                 (implicit val parent: Listenable, manifest: Manifest[T])
-      extends ((T) => Unit)
-      with (() => T)
+class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Option[T] = None)
+                 (implicit val parent: Listenable, val manifest: Manifest[T])
+      extends PropertyLike[T]
       with Listenable
       with Bindable[T]
       with ChildLike[Listenable] {
-  // Initialize for default value
-  backing.setValue(manifest.runtimeClass.defaultForType[T])
-
   val read = new PropertyReadProcessor()(this)
   val changing = new PropertyChangingProcessor[T]()(this, manifest)
   val change = new PropertyChangeProcessor[T]()(this, Manifest.classType[PropertyChangeEvent[T]](classOf[PropertyChangeEvent[T]]))
+
+  default match {
+    case Some(value) => this := value
+    case None => // No default
+  }
 
   protected def hierarchicalParent = parent
 
@@ -39,8 +39,6 @@ class Property[T](backing: Backing[T] = new VariableBacking[T])
     }
   }
 
-  def :=(value: T) = apply(value)
-
   protected def propertyRead() = {
     read.fire(PropertyRead)
   }
@@ -55,6 +53,8 @@ class Property[T](backing: Backing[T] = new VariableBacking[T])
 }
 
 object Property {
-  def apply[T](backing: Backing[T] = new VariableBacking[T])
-              (implicit parent: Listenable = null, manifest: Manifest[T]) = new Property[T](backing)
+  def apply[T](backing: Backing[T] = new VariableBacking[T], default: Option[T] = None)
+              (implicit parent: Listenable = null, manifest: Manifest[T]) = new Property[T](backing, default)
+
+  def fireChanged[T](property: Property[T]) = property.propertyChange(property.value)
 }

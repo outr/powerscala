@@ -53,6 +53,7 @@ class EnumEntrySpec extends WordSpec with ShouldMatchers {
   }
   "Currency" should {
     "iterate over very fast" in {
+      Currency.values.toList      // Pre-access
       val time = System.nanoTime()
       val values = Currency.values.toList
       values.length should equal(Currency.values.length)

@@ -2,7 +2,6 @@ package org.powerscala.event.processor
 
 import scala.annotation.tailrec
 import org.powerscala.event._
-import org.powerscala.event.FunctionalListener
 import org.powerscala.reflect.EnhancedClass
 
 import language.existentials
@@ -17,16 +16,12 @@ trait EventProcessor[E, V, R] extends Logging {
   protected def handleListenerResponse(value: V, state: EventState[E]): Unit
   protected def responseFor(state: EventState[E]): R
 
+  if (listenable == null) {
+    throw new NullPointerException("Listenable cannot be null!")
+  }
+
   def listen(modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
-    val modesList = if (modes.isEmpty) {
-      EventProcessor.DefaultModes
-    } else {
-      modes.toList
-    }
-    val listener = FunctionalListener(f)
-    val wrapper = ListenerWrapper[E, V, R](modesList, this, listener)
-    listenable.listeners += wrapper
-    wrapper
+    listenable.listen(modes: _*)(f)(eventManifest)
   }
 
   def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
@@ -89,7 +84,7 @@ trait EventProcessor[E, V, R] extends Logging {
   }
 
   protected def isWrapperValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = {
-    val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.processor.eventManifest.runtimeClass)
+    val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.eventManifest.runtimeClass)
     val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
     val valid = listenerEventClass.isAssignableFrom(eventClass)
     if (!valid) {
