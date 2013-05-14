@@ -7,6 +7,8 @@ import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.ChildLike
 import org.powerscala.bind.Bindable
 
+import org.powerscala.reflect._
+
 /**
  * @author Matt Hicks <matt@outr.com>
  */
@@ -22,7 +24,7 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Opt
 
   default match {
     case Some(value) => this := value
-    case None => // No default
+    case None => this := manifest.runtimeClass.defaultForType[T] // No default - use type default
   }
 
   protected def hierarchicalParent = parent
@@ -34,10 +36,12 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Opt
 
   def apply(value: T) = {
     propertyChanging(value) match {
-      case Some(newValue) => propertyChange(newValue)
-      case None => // Don't change the value
+      case Some(newValue) if (isChange(newValue)) => propertyChange(newValue)
+      case _ => // Don't change the value
     }
   }
+
+  protected def isChange(newValue: T) = newValue != value
 
   protected def propertyRead() = {
     read.fire(PropertyRead)

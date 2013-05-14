@@ -5,7 +5,7 @@ import org.powerscala.event.{Listenable, EventState}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class OptionProcessor[E, R](implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Option[R], Option[R]] {
+class OptionProcessor[E, R](val name: String)(implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Option[R], Option[R]] {
   protected def handleListenerResponse(value: Option[R], state: EventState[E]) = if (value.nonEmpty) {
     state.update("optionalResponse", value)
     state.stopPropagation()

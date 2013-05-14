@@ -9,7 +9,7 @@ abstract class EnumEntry {
   /**
    * Enumerated for this EnumEntry.
    */
-  lazy val parent = companion(getClass)
+  lazy val parent = getClass.findCompanionOfType[Enumerated[EnumEntry]].getOrElse(throw new NullPointerException(s"Unable to find companion for $getClass"))
   /**
    * Name for this EnumEntry.
    */
@@ -24,12 +24,6 @@ abstract class EnumEntry {
   lazy val label = CaseValue.generateLabel(name)
 
   parent += this
-
-  private def companion(c: Class[_]): Enumerated[EnumEntry] = c.instance match {
-    case Some(companion) => companion.asInstanceOf[Enumerated[EnumEntry]]
-    case None if (c.getSuperclass == null) => throw new NullPointerException(s"No companion object found for $getClass")
-    case None => companion(c.getSuperclass)
-  }
 
   override def toString = s"${parent.name}.$name"
 }

@@ -5,7 +5,7 @@ import org.powerscala.event.{Listenable, Intercept, EventState}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class InterceptProcessor[E](implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Intercept, Intercept] {
+class InterceptProcessor[E](val name: String)(implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Intercept, Intercept] {
   protected def handleListenerResponse(value: Intercept, state: EventState[E]) = if (value == Intercept.Stop) {
     state.stopPropagation()
   }

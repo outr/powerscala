@@ -141,9 +141,9 @@ class ListenableSpec extends WordSpec with ShouldMatchers {
 }
 
 class TestListenable extends Listenable {
-  val basic = new UnitProcessor[String]
-  val strings = new OptionProcessor[String, String]
-  val intercept = new InterceptProcessor[Int]
-  val list = new ListProcessor[String, String]
-  val change = new UnitProcessor[Change[Int]]
+  val basic = new UnitProcessor[String]("basic")
+  val strings = new OptionProcessor[String, String]("strings")
+  val intercept = new InterceptProcessor[Int]("intercept")
+  val list = new ListProcessor[String, String]("list")
+  val change = new UnitProcessor[Change[Int]]("change")
 }

@@ -11,6 +11,7 @@ import org.powerscala.log.Logging
  * @author Matt Hicks <matt@outr.com>
  */
 trait EventProcessor[E, V, R] extends Logging {
+  def name: String
   def listenable: Listenable
   def eventManifest: Manifest[E]
   protected def handleListenerResponse(value: V, state: EventState[E]): Unit
@@ -21,7 +22,7 @@ trait EventProcessor[E, V, R] extends Logging {
   }
 
   def listen(modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
-    listenable.listen(modes: _*)(f)(eventManifest)
+    listenable.listen(name, modes: _*)(f)(eventManifest)
   }
 
   def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
@@ -66,7 +67,7 @@ trait EventProcessor[E, V, R] extends Logging {
   private def fireRecursive(state: EventState[E], mode: ListenMode, wrappers: List[ListenerWrapper[_, _, _]]): Unit = {
     if (wrappers.nonEmpty && !state.isStopPropagation) {
       val wrapper = wrappers.head
-      if (isWrapperValid(state, wrapper) && isModeValid(wrapper, mode)) {
+      if (isNameValid(wrapper) && isWrapperTypeValid(state, wrapper) && isModeValid(wrapper, mode)) {
         val listener = wrapper.listener.asInstanceOf[Listener[E, V]]
         val value = listener.receive(state.event)
         handleListenerResponse(value, state)
@@ -78,12 +79,20 @@ trait EventProcessor[E, V, R] extends Logging {
   protected def isModeValid(wrapper: ListenerWrapper[_, _, _], mode: ListenMode) = {
     val valid = wrapper.modes.contains(mode)
     if (!valid) {
-      debug(s"isModeValid - Modes: ${wrapper.modes}, Mode: ${mode}")
+      debug(s"isModeValid - Modes: ${wrapper.modes}, Mode: $mode")
     }
     valid
   }
 
-  protected def isWrapperValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = {
+  protected def isNameValid(wrapper: ListenerWrapper[_, _, _]) = {
+    val valid = wrapper.name == name
+    if (!valid) {
+      debug(s"isNameValid - ProcessorName: $name / WrapperName: ${wrapper.name}")
+    }
+    valid
+  }
+
+  protected def isWrapperTypeValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = if (state.event != null) {
     val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.eventManifest.runtimeClass)
     val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
     val valid = listenerEventClass.isAssignableFrom(eventClass)
@@ -91,6 +100,8 @@ trait EventProcessor[E, V, R] extends Logging {
       debug(s"isWrapperValid: $listenerEventClass not assignable from $eventClass")
     }
     valid
+  } else {
+    true    // We can't validate by class
   }
 }
 

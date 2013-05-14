@@ -86,6 +86,33 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   }
 
   /**
+   * Determines all super class and interfaces for this class and returns them in an ordered list working backwards from
+   * this class up the tree.
+   */
+  def parents = {
+    var list = List.empty[Class[_]]
+    def addParentsOf(clazz: Class[_]): Unit = {
+      val parent = clazz.getSuperclass
+      var temporal = List.empty[Class[_]]
+      if (parent != null && !list.contains(parent)) {
+        temporal = parent :: temporal
+      }
+      clazz.getInterfaces.foreach {
+        case i => if (!list.contains(i)) {
+          temporal = i :: temporal
+        }
+      }
+      list = temporal ::: list
+      temporal.foreach {
+        case c => addParentsOf(c)
+      }
+    }
+
+    addParentsOf(javaClass)
+    list.reverse
+  }
+
+  /**
    * True if this is a companion object.
    */
   lazy val isCompanion = javaClass.getName.endsWith("$") && javaClass.getFields.find(f => f.getName == "MODULE$").nonEmpty
@@ -99,6 +126,25 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    * True if this is a transient class
    */
   def isTransient = Modifier.isTransient(javaClass.getModifiers)
+
+  /**
+   * Iterates up the class hierarchy to find a companion of the specified type.
+   *
+   * @param manifest of type T
+   * @tparam T the class of the companion
+   * @return Option[T]
+   */
+  def findCompanionOfType[T](implicit manifest: Manifest[T]) = if (hasCompanion[T](manifest)) {
+    Some(instance.get.asInstanceOf[T])
+  } else {
+    val classes = parents
+    classes.find(c => c.hasCompanion[T](manifest)).map(c => c.instance.get.asInstanceOf[T])
+  }
+
+  def hasCompanion[T](implicit manifest: Manifest[T]) = companion match {
+    case Some(c) => c.hasType(manifest.runtimeClass)
+    case None => false
+  }
 
   /**
    * The companion class to this class if it exists. If this is the companion class it will return itself.

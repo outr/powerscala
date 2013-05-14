@@ -10,23 +10,23 @@ trait Listenable {
 
   val listeners = new Listeners
 
-  def listen[E, V, R](modes: ListenMode*)(f: E => V)(implicit eventManifest: Manifest[E]): ListenerWrapper[E, V, R] = {
+  def listen[E, V, R](name: String, modes: ListenMode*)(f: E => V)(implicit eventManifest: Manifest[E]): ListenerWrapper[E, V, R] = {
     val modesList = if (modes.isEmpty) {
       EventProcessor.DefaultModes
     } else {
       modes.toList
     }
     val listener = FunctionalListener(f)
-    val wrapper = ListenerWrapper[E, V, R](modesList, listener)
+    val wrapper = ListenerWrapper[E, V, R](name, modesList, listener)
     listeners += wrapper
     wrapper
   }
 }
 
 object Listenable {
-  def listenTo[E, V, R](listenables: Listenable*)(modes: ListenMode*)(f: E => V)(implicit eventManifest: Manifest[E]) = {
+  def listenTo[E, V, R](name: String, listenables: Listenable*)(modes: ListenMode*)(f: E => V)(implicit eventManifest: Manifest[E]) = {
     listenables.foreach {
-      case listenable => listenable.listen[E, V, R](modes: _*)(f)
+      case listenable => listenable.listen[E, V, R](name, modes: _*)(f)
     }
   }
 }

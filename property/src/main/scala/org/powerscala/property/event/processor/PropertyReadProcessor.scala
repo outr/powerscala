@@ -7,4 +7,4 @@ import org.powerscala.property.event.PropertyRead
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class PropertyReadProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[PropertyRead]
+class PropertyReadProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[PropertyRead]("read")

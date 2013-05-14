@@ -8,4 +8,4 @@ import org.powerscala.property.event.PropertyChangeEvent
  * @author Matt Hicks <matt@outr.com>
  */
 class PropertyChangeProcessor[T](implicit listenable: Listenable, eventManifest: Manifest[PropertyChangeEvent[T]])
-      extends StandardHierarchyEventProcessor[PropertyChangeEvent[T]]
+      extends StandardHierarchyEventProcessor[PropertyChangeEvent[T]]("change")

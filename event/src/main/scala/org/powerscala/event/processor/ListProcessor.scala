@@ -8,7 +8,7 @@ import org.powerscala.event.{Listenable, EventState}
  *
  * @author Matt Hicks <matt@outr.com>
  */
-class ListProcessor[E, R](implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Option[R], List[R]] {
+class ListProcessor[E, R](val name: String)(implicit val listenable: Listenable, val eventManifest: Manifest[E]) extends EventProcessor[E, Option[R], List[R]] {
   val token = "listResponse"
 
   protected def handleListenerResponse(value: Option[R], state: EventState[E]) = value match {

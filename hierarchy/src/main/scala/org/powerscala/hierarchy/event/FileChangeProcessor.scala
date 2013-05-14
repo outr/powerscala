@@ -6,4 +6,4 @@ import org.powerscala.event.Listenable
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class FileChangeProcessor(implicit listenable: Listenable) extends UnitProcessor[FileChangeEvent]
+class FileChangeProcessor(implicit listenable: Listenable) extends UnitProcessor[FileChangeEvent]("fileChange")

@@ -7,4 +7,4 @@ import org.powerscala.event.Listenable
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class DatastoreDeleteProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[DatastoreDelete[_ <: Identifiable]]
+class DatastoreDeleteProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[DatastoreDelete[_ <: Identifiable]]("delete")

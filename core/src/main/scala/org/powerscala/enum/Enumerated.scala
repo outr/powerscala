@@ -16,8 +16,16 @@ trait Enumerated[E <: EnumEntry] {
   private lazy val enumFields = getClass.fields.collect {
     case f if (!f.isStatic && f.hasType(getClass.nonCompanion.javaClass)) => f
   }
-  private lazy val nameMap = enumFields.map(f => f.name -> f[E](this)).toMap
+  private lazy val nameMap = enumFields.map(field2Entry _).toMap
   private lazy val valueMap = nameMap.map(t => t._2 -> t._1)
+
+  private def field2Entry(f: EnhancedField) = {
+    val name = f.name
+    val value = f[E](this)
+    if (value == null) throw new RuntimeException("Enumerated requesting names before all EnumEntries have initialized!")
+    name -> value
+  }
+
   /**
    * The name of this Enumerated.
    */
@@ -63,11 +71,10 @@ trait Enumerated[E <: EnumEntry] {
   def random = apply(Enumerated.r.nextInt(length))
 
   protected[enum] def +=(enum: E) = synchronized {
-    if (initialized) throw new RuntimeException("Enumerated was initialized before attempting to add enum!")
     enums = enum :: enums
   }
 
-  protected[enum] def enumName(enum: EnumEntry) = valueMap(enum.asInstanceOf[E])
+  protected[enum] def enumName(enum: EnumEntry) = valueMap.getOrElse(enum.asInstanceOf[E], null)
   protected[enum] def enumOrdinal(enum: EnumEntry) = values.indexOf(enum)
 }
 
