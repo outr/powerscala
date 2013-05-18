@@ -10,7 +10,10 @@ trait ChildLike[P] {
 }
 
 object ChildLike {
-  def parentOf(child: ChildLike[_]) = child.hierarchicalParent
+  def parentOf(c: Any) = c match {
+    case child: ChildLike[_] => child.hierarchicalParent
+    case _ => null
+  }
 
   def selfAndAncestors(entry: Any): Iterator[Any] = entry match {
     case child: ChildLike[_] => Iterator(entry) ++ selfAndAncestors(child.hierarchicalParent)

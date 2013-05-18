@@ -91,13 +91,24 @@ object Time extends Enumerated[Time] {
    * Use the block(name) method to define segments of application context during the invocation of the function.
    */
   def report(f: => Any): Report = {
-    val report = new Report(System.nanoTime())
-    reports.set(report)
+    val report = reportStart()
     try {
       f
     } finally {
-      reports.set(null)
+      reportFinish()
     }
+    report
+  }
+
+  def reportStart() = {
+    val report = new Report(System.nanoTime())
+    reports.set(report)
+    report
+  }
+
+  def reportFinish() = {
+    val report = reports.get()
+    reports.set(null)
     report
   }
 
@@ -286,7 +297,7 @@ class Report(_start: Long) {
   protected var blocks = ListBuffer.empty[(String, Long)]
   protected var absolute = ListBuffer.empty[(String, Long)]
 
-  protected[concurrent] def apply(name: String) = {
+  def apply(name: String) = {
     val current = System.nanoTime()
     blocks
     blocks += name -> (current - _last)

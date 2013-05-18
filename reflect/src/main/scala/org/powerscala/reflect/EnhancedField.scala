@@ -23,6 +23,18 @@ class EnhancedField protected[reflect](val parent: EnhancedClass, val declaring:
    */
   def isStatic = Modifier.isStatic(javaField.getModifiers)
 
+  private lazy val computeLazyMethod = parent.methodByName(s"$name$$lzycompute")
+
+  /**
+   * True if this field is lazy.
+   */
+  def isLazy = computeLazyMethod.isDefined
+
+  def computeLazy(instance: AnyRef): Unit = computeLazyMethod match {
+    case Some(m) => m[Any](instance)
+    case None => // Not lazy, nothing to compute
+  }
+
   /**
    * The type of the field.
    */
@@ -32,11 +44,16 @@ class EnhancedField protected[reflect](val parent: EnhancedClass, val declaring:
    * Retrieves the value for this field from the supplied instance.
    *
    * @param instance to extract the field value from.
+   * @param computeIfLazy as the name suggests will compute the lazy value before retrieving if this field is lazy.
+   *                      Defaults to false.
    * @tparam T the return type of this field.
    * @return the value of the field as T.
    */
-  def apply[T](instance: Any) = {
+  def apply[T](instance: AnyRef, computeIfLazy: Boolean = false) = {
     javaField.setAccessible(true)     // Make sure it's accessible
+    if (computeIfLazy) {
+      computeLazy(instance)
+    }
     javaField.get(instance).asInstanceOf[T]
   }
 

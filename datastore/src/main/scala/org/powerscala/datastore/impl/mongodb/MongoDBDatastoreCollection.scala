@@ -26,6 +26,14 @@ class MongoDBDatastoreCollection[T <: Identifiable](val session: MongoDBDatastor
     collection.update(query, update, upsert, multi)
   }
 
+  def renameField(currentName: String, newName: String) = {
+    val query = new BasicDBObject(currentName, new BasicDBObject("$exists", true))
+    val update = new BasicDBObject("$rename", new BasicDBObject(currentName, newName))
+    val upsert = false
+    val multi = true
+    collection.update(query, update, upsert, multi)
+  }
+
   protected def persistNew(ref: T) = collection.insert(DataObjectConverter.toDBObject(ref, this))
 
   protected def persistModified(ref: T) = {

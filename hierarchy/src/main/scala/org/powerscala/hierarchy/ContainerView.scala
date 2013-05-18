@@ -142,7 +142,7 @@ class ContainerView[T](val container: Container[_],
     }
 
     child match {   // If the child is a container, we need to add its children as well
-      case container: Container[_] => validateRecursive(container.contents)
+      case container: ParentLike[_] => validateRecursive(ParentLike.childrenOf(container))
       case _ =>
     }
   }

@@ -75,6 +75,11 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   def methodByName(name: String) = methods.find(m => m.name == name)
 
   /**
+   * Finds the first field match for the name supplied.
+   */
+  def fieldByName(name: String) = fields.find(f => f.name == name)
+
+  /**
    * Singleton instance on the associated companion object. This can be called on the object or class to get the
    * instance for the companion object.
    */
@@ -89,7 +94,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    * Determines all super class and interfaces for this class and returns them in an ordered list working backwards from
    * this class up the tree.
    */
-  def parents = {
+  lazy val parents = {
     var list = List.empty[Class[_]]
     def addParentsOf(clazz: Class[_]): Unit = {
       val parent = clazz.getSuperclass

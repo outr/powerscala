@@ -3,7 +3,7 @@ package org.powerscala.hierarchy.event
 import org.powerscala.event.processor.EventProcessor
 import org.powerscala.event.{ListenMode, Listenable, EventState}
 import org.powerscala.hierarchy.ChildLike
-import org.powerscala.TypeFilteredIterator
+import scala.annotation.tailrec
 
 /**
  * AncestorProcessor processes up the ancestry tree through parents firing events in DescentOf mode.
@@ -21,12 +21,18 @@ trait AncestorProcessor[E, V, R] extends EventProcessor[E, V, R] {
 
     if (mode == ListenMode.Standard && processAncestors) {      // Only process ancestors on standard processing
       // Process up to the ancestry tree
-      TypeFilteredIterator[Listenable](ChildLike.ancestors(listenable)).foreach {
-        case parentListenable => if (!state.isStopPropagation && AncestorProcessor.shouldProcess) {
-          fireInternal(state, Descendants, parentListenable)
-        }
-      }
+      fireUp(state, ChildLike.parentOf(listenable))
     }
+  }
+
+  @tailrec
+  private def fireUp(state: EventState[E], element: Any): Unit = element match {
+    case null => // Ran out
+    case listenable: Listenable => {
+      fireInternal(state, Descendants, listenable)
+      fireUp(state, ChildLike.parentOf(element))
+    }
+    case _ => fireUp(state, ChildLike.parentOf(element))
   }
 }
 
