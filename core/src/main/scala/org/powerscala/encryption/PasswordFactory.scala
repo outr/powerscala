@@ -4,6 +4,7 @@ import javax.crypto.SecretKeyFactory
 import java.security.SecureRandom
 import javax.crypto.spec.PBEKeySpec
 import java.util
+import scala.util.Random
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -28,5 +29,11 @@ object PasswordFactory {
     val salt = new Array[Byte](8)
     random.nextBytes(salt)
     salt
+  }
+
+  def generatePassword(chars: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789",
+                       digits: Int = 8) = {
+    val r = new Random()
+    (0 until digits).map(index => chars.charAt(r.nextInt(chars.length))).mkString
   }
 }
