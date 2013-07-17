@@ -17,15 +17,16 @@ import java.util.concurrent.atomic
  *
  * @author Matt Hicks <mhicks@outr.com>
  */
-class DirectoryWatcher(val path: Path) extends Listenable {
+class DirectoryWatcher(val directory: Path, recursive: Boolean) extends Listenable {
   val fileChange = new FileChangeProcessor
 
   private val keepAlive = new AtomicBoolean(true)
   val watcher = FileSystems.getDefault.newWatchService()
   private val _started = new atomic.AtomicBoolean(false)
+  private var keys = Map.empty[WatchKey, Path]
   def started = _started.get()
 
-  path.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE)
+  registerDirectory(directory)
 
   def start() = if (_started.compareAndSet(false, true)) {
     Executor.invoke {
@@ -33,10 +34,22 @@ class DirectoryWatcher(val path: Path) extends Listenable {
     }
   }
 
+  def registerDirectory(dir: Path): Unit = {
+    val key = dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE)
+    keys += key -> dir
+    if (recursive) {
+      dir.toFile.listFiles().foreach {
+        case d if d.isDirectory => registerDirectory(d.toPath)
+        case _ => // Ignore files
+      }
+    }
+  }
+
   @tailrec
   private def take(): Unit = {
     if (keepAlive.get()) {
       val key = watcher.take()
+      val dir = keys(key)
       key.pollEvents().foreach {
         case event: WatchEvent[_] => {
           val change = event.kind() match {
@@ -45,7 +58,15 @@ class DirectoryWatcher(val path: Path) extends Listenable {
             case ENTRY_DELETE => FileChange.Deleted
           }
           event.context() match {
-            case filename: Path => fileChange.fire(FileChangeEvent(filename.toFile, change))
+            case filename: Path => {
+              val child = dir.resolve(filename)
+
+              val file = child.toAbsolutePath.toFile
+              fileChange.fire(FileChangeEvent(file, change))
+              if (recursive && change == FileChange.Created && file.isDirectory) {
+                registerDirectory(child)   // Register the newly created directory
+              }
+            }
           }
         }
       }

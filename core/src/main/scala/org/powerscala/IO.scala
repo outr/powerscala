@@ -29,17 +29,28 @@ object IO {
     }
   }
 
-  def copy(read: File, write: File) = {
-    val input = new FileInputStream(read)
-    val output = new FileOutputStream(write)
-    try {
-      stream(input, output)
-    } catch {
-      case t: Throwable => {
-        output.flush()
-        output.close()
-        input.close()
-        throw t
+  def copy(read: File, write: File): Unit = {
+    val parent = write.getParentFile
+    if (parent != null) {
+      parent.mkdirs()
+    }
+    if (read.isDirectory) {   // Copy a directory
+      write.mkdirs()
+      read.listFiles().foreach {
+        case f => copy(f, new File(write, f.getName))
+      }
+    } else {
+      val input = new FileInputStream(read)
+      val output = new FileOutputStream(write)
+      try {
+        stream(input, output)
+      } catch {
+        case t: Throwable => {
+          output.flush()
+          output.close()
+          input.close()
+          throw t
+        }
       }
     }
   }
