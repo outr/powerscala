@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import sbtunidoc.Plugin._
 
 import Dependencies._
 
@@ -22,34 +23,33 @@ object PowerScalaBuild extends Build {
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     publishArtifact in Test := false,
-    pomExtra := (
-      <url>http://powerscala.org</url>
-        <licenses>
-          <license>
-            <name>BSD-style</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
-            <distribution>repo</distribution>
-          </license>
-        </licenses>
-        <scm>
-          <developerConnection>scm:https://github.com/darkfrog26/powerscala.git</developerConnection>
-          <connection>scm:https://github.com/darkfrog26/powerscala.git</connection>
-          <url>https://github.com/darkfrog26/powerscala</url>
-        </scm>
-        <developers>
-          <developer>
-            <id>darkfrog</id>
-            <name>Matt Hicks</name>
-            <url>http://matthicks.com</url>
-          </developer>
-        </developers>)
+    pomExtra := <url>http://powerscala.org</url>
+      <licenses>
+        <license>
+          <name>BSD-style</name>
+          <url>http://www.opensource.org/licenses/bsd-license.php</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <developerConnection>scm:https://github.com/darkfrog26/powerscala.git</developerConnection>
+        <connection>scm:https://github.com/darkfrog26/powerscala.git</connection>
+        <url>https://github.com/darkfrog26/powerscala</url>
+      </scm>
+      <developers>
+        <developer>
+          <id>darkfrog</id>
+          <name>Matt Hicks</name>
+          <url>http://matthicks.com</url>
+        </developer>
+      </developers>
   )
 
   private def createSettings(_name: String) = baseSettings ++ Seq(name := _name)
 
-  lazy val root = Project("root", file("."), settings = createSettings("powerscala-root"))
+  lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property)
+    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, slf4j, reflections))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
