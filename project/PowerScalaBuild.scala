@@ -83,7 +83,7 @@ object Dependencies {
   val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.1"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
-  val reflections = "org.reflections" % "reflections" % "0.9.8"
+  val reflections = "org.reflections" % "reflections" % "0.9.9-RC1"
   val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.1.2"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
