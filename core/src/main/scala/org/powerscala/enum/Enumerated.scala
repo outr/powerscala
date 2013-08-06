@@ -54,7 +54,7 @@ trait Enumerated[E <: EnumEntry] {
   def apply(name: String, caseSensitive: Boolean) = if (caseSensitive) {
     nameMap(name)
   } else {
-    values.find(e => name.equalsIgnoreCase(e.name)).getOrElse(null.asInstanceOf[E])
+    values.find(e => e.name.equalsIgnoreCase(name)).getOrElse(null.asInstanceOf[E])
   }
 
   /**

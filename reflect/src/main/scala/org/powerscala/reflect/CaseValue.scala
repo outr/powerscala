@@ -7,24 +7,24 @@ import java.lang.reflect.Modifier
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-case class CaseValue(name: String, valueType: EnhancedClass, clazz: EnhancedClass) {
-  lazy val getter = clazz.method(name)
-  lazy val setter = clazz.methods.find(m => m.name == "%s_$eq".format(name))
+case class CaseValue(name: String, valueType: EnhancedClass, parentClass: EnhancedClass) {
+  lazy val getter = parentClass.method(name)
+  lazy val setter = parentClass.methods.find(m => m.name == "%s_$eq".format(name))
 
-  private lazy val field = clazz.javaClass.getDeclaredField(name)
+  private lazy val field = parentClass.javaClass.getDeclaredField(name)
 
   def isMutable = setter != None
 
   def isTransient = Modifier.isTransient(field.getModifiers)
 
-  def apply[T](instance: AnyRef) = getter.getOrElse(throw new RuntimeException("Unable to get getter for %s.%s".format(clazz, name))).invoke[T](instance)
+  def apply[T](instance: AnyRef) = getter.getOrElse(throw new RuntimeException("Unable to get getter for %s.%s".format(parentClass, name))).invoke[T](instance)
 
-  def update(instance: AnyRef, value: Any) = setter.getOrElse(throw new RuntimeException("Unable to get setter for %s.%s".format(clazz, name))).invoke[Any](instance, value)
+  def update(instance: AnyRef, value: Any) = setter.getOrElse(throw new RuntimeException("Unable to get setter for %s.%s".format(parentClass, name))).invoke[Any](instance, value)
 
   /**
    * Copies <code>instance</code> setting the new value supplied for this CaseValue
    */
-  def copy[T](instance: T, value: Any) = clazz.copy[T](instance, Map(name -> value))
+  def copy[T](instance: T, value: Any) = parentClass.copy[T](instance, Map(name -> value))
 
   /**
    * Generates a human readable label for this CaseValue's name
