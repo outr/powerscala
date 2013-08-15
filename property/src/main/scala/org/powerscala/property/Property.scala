@@ -34,9 +34,13 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Opt
     backing.getValue
   }
 
-  def apply(value: T) = {
+  def apply(value: T): Unit = apply(value, suppressEvent = false)
+
+  def apply(value: T, suppressEvent: Boolean): Unit = if (suppressEvent) {
+    backing.setValue(value)
+  } else {
     propertyChanging(value) match {
-      case Some(newValue) if (isChange(newValue)) => propertyChange(newValue)
+      case Some(newValue) if isChange(newValue) => propertyChange(newValue)
       case _ => // Don't change the value
     }
   }

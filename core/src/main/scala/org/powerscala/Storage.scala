@@ -24,8 +24,9 @@ object Storage {
   def getOrSet[T](obj: Any, key: String, value: => T) = get[T](obj, key) match {
     case Some(v) => v
     case None => {
-      set(obj, key, value)
-      value
+      val t: T = value
+      set(obj, key, t)
+      t
     }
   }
   def getAndSet[T](obj: Any, key: String, value: T) = {
