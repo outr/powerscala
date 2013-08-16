@@ -204,6 +204,15 @@ object Color extends Enumerated[Color] {
 
   val Clear = immutable(0x00ffffff)
 
+  override def apply(name: String, caseSensitive: Boolean) = super.apply(name, caseSensitive) match {
+    case null => try {
+      immutable(name)
+    } catch {
+      case t: Throwable => Color.Black
+    }
+    case c => c
+  }
+
   def immutable(value: Long): ImmutableColor = {
     val alpha = (value >> 24 & 0xff) / 255.0
     val red = (value >> 16 & 0xff) / 255.0
