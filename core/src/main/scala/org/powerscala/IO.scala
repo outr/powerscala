@@ -82,6 +82,15 @@ object IO {
     }
   }
 
+  def copy(input: InputStream) = {
+    val source = Source.fromInputStream(input)
+    try {
+      source.mkString
+    } finally {
+      source.close()
+    }
+  }
+
   def delete(file: File) = {
     if (file.isDirectory) {
       deleteFiles(file.listFiles().toList)
