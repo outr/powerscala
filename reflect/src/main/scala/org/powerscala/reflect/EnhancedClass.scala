@@ -277,7 +277,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * Method used to create case class instances or None if this is not a case class.
    */
-  lazy val createMethod = companion.map(c => c.method("apply", caseValues.map(cv => cv.name -> cv.valueType)).getOrElse(null))
+  lazy val createMethod = companion.map(c => c.method("apply", caseValues.map(cv => cv.name -> cv.valueType))).flatten
 
   /**
    * Reflective invocation of the generated apply method on a companion to this case class.
@@ -286,8 +286,9 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    */
   def create[T](args: Map[String, Any]): T = {
     val companionClass = companion.getOrElse(throw new NullPointerException("No companion class for %s".format(this)))
-    val applyMethod = createMethod.getOrElse(throw new NullPointerException("No apply method for args %s".format(caseValues)))
-    applyMethod[T](companionClass.instance.getOrElse(throw new NullPointerException("No companion instance found for %s".format(this))), args)
+    val applyMethod = createMethod.getOrElse(throw new NullPointerException(s"No apply method for class $this with args $caseValues"))
+    val instance = companionClass.instance.getOrElse(throw new NullPointerException("No companion instance found for %s".format(this)))
+    applyMethod[T](instance, args)
   }
 
   // Only called internally to avoid receiving methods not for this class

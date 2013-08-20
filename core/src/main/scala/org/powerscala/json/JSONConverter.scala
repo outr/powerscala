@@ -8,6 +8,12 @@ import util.parsing.json.JSONObject
  * @author Matt Hicks <matt@outr.com>
  */
 object JSONConverter {
+  private var typeMap = Map.empty[String, EnhancedClass]
+
+  def registerType(hierarchicalName: String, clazz: EnhancedClass) = synchronized {
+    typeMap += hierarchicalName -> clazz
+  }
+
   val formatter: Any => String = (value: Any) => value match {
     case null => "null"
     case s : String => "\"" + JSONFormat.quoteString(s) + "\""
@@ -35,27 +41,42 @@ object JSONConverter {
     }
   }
 
-  def parseJSON[T](json: Any)(implicit manifest: Manifest[T]): T = json match {
+  def parseJSON[T](json: Any, hierarchicalName: String = "")(implicit manifest: Manifest[T]): T = json match {
     case map: Map[_, _] => {
       var args = map.asInstanceOf[Map[String, Any]]
       val c: EnhancedClass = if (args.contains("class")) {
         Class.forName(args("class").asInstanceOf[String])
       } else if (args.contains("clazz")) {
         Class.forName(args("clazz").asInstanceOf[String])
-      } else {
+      } else if (manifest != null) {
         manifest.runtimeClass
+      } else {
+        typeMap.get(hierarchicalName) match {
+          case Some(clazz) => clazz
+          case None => throw new RuntimeException(s"No hierarchical class association for: $hierarchicalName - $map")
+        }
       }
       c.caseValues.foreach {
         case cv => if (cv.valueType.isCase && args.contains(cv.name)) {
-          args += cv.name -> parseJSON[Any](args(cv.name))(Manifest.classType[Any](cv.valueType.javaClass))
+          args += cv.name -> parseJSON[Any](args(cv.name), s"${c.name}.${cv.name}")(Manifest.classType[Any](cv.valueType.javaClass))
         } else if (cv.valueType == classOf[List[_]]) {
-          args += cv.name -> parseJSON[Any](args(cv.name))(Manifest.classType[Any](classOf[List[_]]))
+          args += cv.name -> parseJSON[Any](args(cv.name), s"${c.name}.${cv.name}")(Manifest.classType[Any](classOf[List[_]]))
+        } else if (cv.valueType == classOf[Map[_, _]]) {
+          val mapped = args(cv.name).asInstanceOf[Map[_, _]].map {
+            case (key, value) => {
+              val updatedKey = parseJSON[Any](key, s"${c.name}.${cv.name}.key")(null)
+              val updatedValue = parseJSON[Any](value, s"${c.name}.${cv.name}.value")(null)
+              updatedKey -> updatedValue
+            }
+          }
+          args += cv.name -> mapped
         }
       }
       c.create[T](args)
     }
     case list: List[_] => {
-      list.map(v => parseJSON[Any](v)(null)).asInstanceOf[T]
+      val clazz = typeMap.getOrElse(hierarchicalName, throw new RuntimeException(s"No hierarchical class association for: $hierarchicalName - $list"))
+      list.map(v => parseJSON[Any](v)(Manifest.classType[Any](clazz.javaClass))).asInstanceOf[T]
     }
     case _ => json.asInstanceOf[T]
 //    case _ => throw new RuntimeException("Unsupported: %s (%s)".format(json, manifest))
@@ -84,7 +105,7 @@ object JSONConverter {
     } else if (value.asInstanceOf[AnyRef].getClass.isCase) {
       val c: EnhancedClass = value.asInstanceOf[AnyRef].getClass
       val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap match {
-        case m if (specifyClassName) => m + ("class" -> c.javaClass.getName)
+        case m if specifyClassName => m + ("class" -> c.javaClass.getName)
         case m => m
       }
       JSONObject(map)
