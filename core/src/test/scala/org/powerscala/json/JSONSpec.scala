@@ -7,6 +7,9 @@ import org.scalatest.matchers.ShouldMatchers
  * @author Matt Hicks <mhicks@outr.com>
  */
 class JSONSpec extends WordSpec with ShouldMatchers {
+  JSONConverter.registerType("org.powerscala.json.TestJSON1.values", classOf[Int])
+  JSONConverter.registerType("org.powerscala.json.TestJSON2.values", classOf[String])
+
   val t1 = TestJSON1("Test1", List(1, 2, 3))
   lazy val o1 = generate(t1)
   lazy val o1b = generate(t1, specifyClassName = false)

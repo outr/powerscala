@@ -179,7 +179,7 @@ object EnhancedMethod {
   val converter = new LocalStack[(String, Any, EnhancedClass) => Any]
 
   def convertTo(name: String, value: Any, resultType: EnhancedClass) = resultType.name match {
-    case _ if (resultType.isCastable(value)) => value   // No conversion necessary
+    case _ if resultType.isCastable(value) => value   // No conversion necessary
     case "[D" => value match {
       case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
     }
@@ -224,7 +224,7 @@ object EnhancedMethod {
     case "java.io.File" => value match {
       case s: String => new File(s)
     }
-    case _ if (converter.nonEmpty) => converter()(name, value, resultType)
+    case _ if converter.nonEmpty => converter()(name, value, resultType)
     // TODO: add more type conversions
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }

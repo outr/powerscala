@@ -75,11 +75,18 @@ object JSONConverter {
       c.create[T](args)
     }
     case list: List[_] => {
-      val clazz = typeMap.getOrElse(hierarchicalName, throw new RuntimeException(s"No hierarchical class association for: $hierarchicalName - $list"))
-      list.map(v => parseJSON[Any](v)(Manifest.classType[Any](clazz.javaClass))).asInstanceOf[T]
+//      val clazz = typeMap.getOrElse(hierarchicalName, throw new RuntimeException(s"No hierarchical class association for: $hierarchicalName - $list"))
+      list.map(v => parseJSON[Any](v, hierarchicalName)(null)).asInstanceOf[T]
     }
-    case _ => json.asInstanceOf[T]
-//    case _ => throw new RuntimeException("Unsupported: %s (%s)".format(json, manifest))
+//    case _ => json.asInstanceOf[T]
+    case _ => {
+      val c: EnhancedClass = typeMap.get(hierarchicalName) match {
+        case Some(clazz) => clazz
+        case None => throw new RuntimeException(s"No hierarchical class association for: $hierarchicalName - $json")
+      }
+      EnhancedMethod.convertTo(hierarchicalName, json, c).asInstanceOf[T]
+//      throw new RuntimeException("Unsupported: %s (%s)".format(json, manifest))
+    }
   }
 
   def generate(value: Any, specifyClassName: Boolean = true): String = value match {
