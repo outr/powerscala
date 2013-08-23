@@ -44,6 +44,8 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(name: String): E = apply(name, caseSensitive = false)
 
+  def get(name: String): Option[E] = Option(apply(name))
+
   /**
    * Retrieve the EnumEntry by name.
    *
@@ -64,6 +66,8 @@ trait Enumerated[E <: EnumEntry] {
    * @return EnumEntry or IndexOutOfBoundsException
    */
   def apply(index: Int) = values(index)
+
+  def unapply(s: String) = get(name)
 
   /**
    * Retrieves a random enum.
