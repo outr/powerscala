@@ -45,6 +45,10 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Opt
     }
   }
 
+  def get = Option(apply())
+
+  def and(other: Property[T]) = new PropertyGroup(List(other, this))
+
   protected def isChange(newValue: T) = newValue != value
 
   protected def propertyRead() = {

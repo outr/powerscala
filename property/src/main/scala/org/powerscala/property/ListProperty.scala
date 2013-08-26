@@ -9,4 +9,5 @@ trait ListProperty[T] extends Property[List[T]] {
   def isEmpty = value.isEmpty
   def nonEmpty = value.nonEmpty
   def ++=(seq: Seq[T]) = this := (seq.toList.reverse ::: value.reverse).reverse
+  def contains(t: T) = value.contains(t)
 }

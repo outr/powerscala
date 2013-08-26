@@ -25,6 +25,10 @@ trait EventProcessor[E, V, R] extends Logging {
     listenable.listen(name, modes: _*)(f)(eventManifest)
   }
 
+  def and[NE >: E, NV >: V, NR >: R](processor: EventProcessor[NE, NV, NR]): ProcessorGroup[NE, NV, NR] = {
+    new ProcessorGroup(List(processor, this.asInstanceOf[EventProcessor[NE, NV, NR]]))
+  }
+
   def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
 
   def remove(wrapper: ListenerWrapper[E, V, R]) = listenable.listeners -= wrapper
