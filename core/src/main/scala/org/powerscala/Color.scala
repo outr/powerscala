@@ -204,13 +204,20 @@ object Color extends Enumerated[Color] {
 
   val Clear = immutable(0x00ffffff)
 
+  // rgb(147, 112, 219)
+
+  private val RGBIntRegex = """rgb\((\d*), (\d*), (\d*)\)""".r
+
   override def apply(name: String, caseSensitive: Boolean) = super.apply(name, caseSensitive) match {
-    case null => try {
-      immutable(name)
-    } catch {
-      case t: Throwable => Color.Black
+    case null => name match {
+      case null => null
+      case RGBIntRegex(red, green, blue) => immutable(red.toInt, green.toInt, blue.toInt, 255)    // RGB
+      case _ => try {
+        immutable(name)
+      } catch{
+        case t: Throwable => null
+      }
     }
-    case c => c
   }
 
   def immutable(value: Long): ImmutableColor = {
