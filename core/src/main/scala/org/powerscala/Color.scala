@@ -204,20 +204,42 @@ object Color extends Enumerated[Color] {
 
   val Clear = immutable(0x00ffffff)
 
-  // rgb(147, 112, 219)
-
   private val RGBIntRegex = """rgb\((\d*), (\d*), (\d*)\)""".r
+  private val HSVIntRegex = """hsv\((\d*), (\d*)%?, (\d*)%?\)""".r
 
   override def apply(name: String, caseSensitive: Boolean) = super.apply(name, caseSensitive) match {
     case null => name match {
       case null => null
       case RGBIntRegex(red, green, blue) => immutable(red.toInt, green.toInt, blue.toInt, 255)    // RGB
+      case HSVIntRegex(hue, saturation, value) => hsv(hue.toDouble, saturation.toDouble / 100.0, value.toDouble / 100.0)    // HSV
       case _ => try {
         immutable(name)
       } catch{
         case t: Throwable => null
       }
     }
+    case color => color
+  }
+
+  /**
+   * Creates an immutable Color based on the HSV
+   *
+   * @param hue the hue (value from 0.0 to 360.0)
+   * @param saturation the saturation (value from 0.0 to 1.0)
+   * @param value the value (value from 0.0 to 1.0)
+   */
+  def hsv(hue: Double, saturation: Double, value: Double): ImmutableColor = {
+    val c  = saturation * value
+    val h1 = hue / 60.0
+    val x  = c*(1.0 - ((h1 % 2) - 1.0).abs)
+    val (r, g, b) = if (h1 < 1.0) (c, x, 0.0)
+    else if (h1 < 2.0) (x, c, 0.0)
+    else if (h1 < 3.0) (0.0, c, x)
+    else if (h1 < 4.0) (0.0, x, c)
+    else if (h1 < 5.0) (x, 0.0, c)
+    else  /*h1 < 6.0*/ (c, 0.0, x)
+    val m = value - c
+    immutable(r + m, g + m, b + m)
   }
 
   def immutable(value: Long): ImmutableColor = {

@@ -12,12 +12,14 @@ trait Storage[V] {
   def getOrElse[T <: V](key: String, value: => T) = Storage.getOrElse[T](this, key, value)
   def apply[T <: V](key: String) = Storage[T](this, key)
   def update(key: String, value: Any) = Storage.set(this, key, value)
+  def map = Storage.map(this)
 }
 
 object Storage {
-  private val map = new mutable.WeakHashMap[Any, Map[String, Any]]
+  private val _map = new mutable.WeakHashMap[Any, Map[String, Any]]
 
-  def get[T](obj: Any, key: String) = map.get(obj) match {
+  def map(obj: Any) = _map.getOrElse(obj, Map.empty[String, Any])
+  def get[T](obj: Any, key: String) = _map.get(obj) match {
     case Some(m) => m.get(key).asInstanceOf[Option[T]]
     case None => None
   }
@@ -40,10 +42,10 @@ object Storage {
   }
   def apply[T](obj: Any, key: String) = get[T](obj, key).getOrElse(throw new NullPointerException(s"Unable to find $key"))
   def set(obj: Any, key: String, value: Any) = synchronized {
-    val current = map.get(obj) match {
+    val current = _map.get(obj) match {
       case Some(m) => m
       case None => Map.empty[String, Any]
     }
-    map.put(obj, current + (key -> value))
+    _map.put(obj, current + (key -> value))
   }
 }
