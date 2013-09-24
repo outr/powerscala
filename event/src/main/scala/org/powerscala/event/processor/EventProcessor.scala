@@ -31,6 +31,45 @@ trait EventProcessor[E, V, R] extends Logging {
 
   def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
 
+  /**
+   * Invokes the function upon each event until it returns Some[V] and then removes the listener from receiving any
+   * other invocations.
+   *
+   * @param default the default value to send if None is returned by the function.
+   * @param f the function to invoke upon event.
+   * @return ListenerWrapper[E, V, R]
+   */
+  def onceConditional(default: V)(f: E => Option[V]): ListenerWrapper[E, V, R] = {
+    var wrapper: ListenerWrapper[E, V, R] = null
+    val function = (e: E) => f(e) match {
+      case Some(v) => {
+        listenable.listeners -= wrapper
+        v
+      }
+      case None => default
+    }
+    wrapper = listen()(function)
+
+    wrapper
+  }
+
+  /**
+   * Works similarly to <code>on</code> but after the first event is received the listener is removed.
+   *
+   * @param f the function to invoke upon event.
+   * @return listener
+   */
+  def once(f: E => V): ListenerWrapper[E, V, R] = {
+    var wrapper: ListenerWrapper[E, V, R] = null
+    val function = (e: E) => {
+      listenable.listeners -= wrapper
+      f(e)
+    }
+    wrapper = listen()(function)
+
+    wrapper
+  }
+
   def remove(wrapper: ListenerWrapper[E, V, R]) = listenable.listeners -= wrapper
 
   def fire(event: E, mode: ListenMode = ListenMode.Standard): R = {
