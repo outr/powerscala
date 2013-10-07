@@ -72,7 +72,7 @@ object PowerScalaBuild extends Build {
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
-    .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ ))
+    .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % ))
     .dependsOn(reflect)
 }
 

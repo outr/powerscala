@@ -11,7 +11,7 @@ trait Color extends EnumEntry {
   def blue: Double
   def alpha: Double
 
-  object hex {
+  class HexColor {
     def red = toHex(Color.this.red)
     def green = toHex(Color.this.green)
     def blue = toHex(Color.this.blue)
@@ -21,11 +21,26 @@ trait Color extends EnumEntry {
 
     private def toHex(v: Double) = {
       java.lang.Long.toString((v * 255.0).toLong, 16) match {
-        case s if (s.length == 1) => "0%s".format(s)
+        case s if s.length == 1 => "0%s".format(s)
         case s => s
       }
     }
   }
+  class IntColor {
+    def red = toInt(Color.this.red)
+    def green = toInt(Color.this.green)
+    def blue = toInt(Color.this.blue)
+    def alpha = toInt(Color.this.alpha)
+
+    def rgb = s"$red, $green, $blue"
+    def rgba = s"$red, $green, $blue, $alpha"
+
+    private def toInt(v: Double) = {
+      math.round(v * 255.0).toInt
+    }
+  }
+  lazy val hex = new HexColor
+  lazy val int = new IntColor
 
   def apply(index: Int) = index match {
     case 0 => red
