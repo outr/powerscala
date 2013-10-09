@@ -211,6 +211,7 @@ object EnhancedMethod {
       case s: String => s.toFloat
     }
     case "Double" => value match {
+      case null => 0.0
       case b: Byte => b.toDouble
       case c: Char => c.toDouble
       case i: Int => i.toDouble
