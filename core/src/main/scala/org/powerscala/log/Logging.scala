@@ -8,46 +8,20 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * @author Matt Hicks <mhicks@outr.com>
  */
-trait Logging {
-  import language.reflectiveCalls
+trait Logging extends LoggingCore {
+  def trace(message: => Any): Unit = log(Level.Trace, message)
+  def debug(message: => Any): Unit = log(Level.Debug, message)
+  def info(message: => Any): Unit = log(Level.Info, message)
+  def warn(message: => Any): Unit = log(Level.Warn, message)
+  def error(message: => Any): Unit = log(Level.Error, message)
 
-  /**
-   * Determines whether logging should be asynchronous.
-   *
-   * Defaults to false
-   */
-  protected def asynchronousLogging = false
-
-  val logger = new InnerLogging(getClass.getName)
-
-  def trace(message: => String): Unit = log(Level.Trace, message)
-  def debug(message: => String): Unit = log(Level.Debug, message)
-  def info(message: => String): Unit = log(Level.Info, message)
-  def warn(message: => String): Unit = log(Level.Warn, message)
-  def warn(t: Throwable): Unit = log(Level.Warn, Logging.throwable2String(t))
-  def warn(message: => String, t: Throwable): Unit = {
+  def warn(message: => Any, t: Throwable): Unit = {
     log(Level.Warn, message)
-    warn(t)
+    log(Level.Warn, t)
   }
-  def error(message: => String): Unit = log(Level.Error, message)
-  def error(t: Throwable): Unit = log(Level.Error, Logging.throwable2String(t))
-  def error(message: => String, t: Throwable): Unit = {
+  def error(message: => Any, t: Throwable): Unit = {
     log(Level.Error, message)
-    error(t)
-  }
-
-  def log(level: Level, message: => String) = if (logger.isLevelEnabled(level)) {
-    val record = new LogRecord(level = level, _message = message, className = getClass.getName, asynchronous = asynchronousLogging)
-    if (asynchronousLogging) {
-      Logging.asynchronous.incrementAndGet()      // Keep track of unsaved logs
-      val f = () => {
-        logger().log(record)
-        Logging.asynchronous.decrementAndGet()
-      }
-      Logging.actor ! f
-    } else {
-      logger().log(record)
-    }
+    log(Level.Error, t)
   }
 }
 
@@ -69,7 +43,7 @@ class InnerLogging(className: String) {
 }
 
 object Logging {
-  private val asynchronous = new AtomicInteger(0)
+  private[log] val asynchronous = new AtomicInteger(0)
 
   /**
    * Returns the number of asynchronous logging requests are currently queued
@@ -96,8 +70,8 @@ object Logging {
   }
 
   System.setProperty("akka.daemonic", "on")
-  private val system = ActorSystem("LoggingActorSystem")
-  private val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
+  private[log] val system = ActorSystem("LoggingActorSystem")
+  private[log] val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
 
   def apply(logging: Logging): Logger = Logger(logging.getClass.getName)
 
