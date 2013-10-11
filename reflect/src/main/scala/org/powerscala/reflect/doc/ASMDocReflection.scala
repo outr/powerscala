@@ -104,7 +104,10 @@ object ASMDocReflection extends DocMapper {
     val url = declaringType.getInternalName + ".class"
     val classNode = new ClassNode()
     try {
-      val input = classLoader.getResourceAsStream(url)
+      val input = classLoader.getResourceAsStream(url) match {
+        case null => getClass.getClassLoader.getResourceAsStream(url)
+        case i => i
+      }
       try {
         val classReader = new ClassReader(input)
         classReader.accept(classNode, 0)
