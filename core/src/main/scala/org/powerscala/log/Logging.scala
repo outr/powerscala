@@ -120,7 +120,7 @@ object Logging {
 }
 
 class AsynchronousLoggingActor extends Actor {
-  context.dispatcher.inhabitants
+//  context.dispatcher.inhabitants
 
   def receive = {
     case f: Function0[_] => f()

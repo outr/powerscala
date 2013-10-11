@@ -6,9 +6,9 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.6.2",
+    version := "1.6.3-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.3",
     libraryDependencies ++= Seq(
       scalaTest
     ),
@@ -80,14 +80,14 @@ object Dependencies {
   val luceneVersion = "4.3.0"
 
   val asm = "org.ow2.asm" % "asm-all" % "4.1"
-  val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
-  val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.1"
-  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.1"
+  val scalaTest = "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test"
+  val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.3"
+  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.5"
   val reflections = "org.reflections" % "reflections" % "0.9.9-RC1"
-  val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.1.2"
+  val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.2.1"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
-  val h2 = "com.h2database" % "h2" % "1.3.171"
+  val h2 = "com.h2database" % "h2" % "1.3.173"
 }
