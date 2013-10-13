@@ -106,12 +106,12 @@ object JSONConverter {
     if (value == null) {
       null
     } else if (value.asInstanceOf[AnyRef].getClass.isArray) {
-      JSONArray(value.asInstanceOf[Array[_]].toList.map(v => generateJSON(v)))
+      JSONArray(value.asInstanceOf[Array[_]].toList.map(v => generateJSON(v, specifyClassName = specifyClassName)))
     } else if (value.isInstanceOf[Seq[_]]) {
-      JSONArray(value.asInstanceOf[Seq[_]].toList.map(v => generateJSON(v)))
+      JSONArray(value.asInstanceOf[Seq[_]].toList.map(v => generateJSON(v, specifyClassName = specifyClassName)))
     } else if (value.asInstanceOf[AnyRef].getClass.isCase) {
       val c: EnhancedClass = value.asInstanceOf[AnyRef].getClass
-      val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]))).toMap match {
+      val map = c.caseValues.map(cv => cv.name -> generateJSON(cv[AnyRef](value.asInstanceOf[AnyRef]), specifyClassName = specifyClassName)).toMap match {
         case m if specifyClassName => m + ("class" -> c.javaClass.getName)
         case m => m
       }
