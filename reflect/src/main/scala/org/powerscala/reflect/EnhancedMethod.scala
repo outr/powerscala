@@ -225,6 +225,9 @@ object EnhancedMethod {
     case "java.io.File" => value match {
       case s: String => new File(s)
     }
+    case "java.lang.Object" => value match {
+      case d: Double => d.asInstanceOf[AnyRef]
+    }
     case _ if converter.nonEmpty => converter()(name, value, resultType)
     // TODO: add more type conversions
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
