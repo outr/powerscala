@@ -10,11 +10,11 @@ import reflect._
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Disposed {
+trait Disposable {
   def dispose(): Unit
 }
 
-object Disposed {
+object Disposable {
   private val disposed = new AtomicBoolean(false)
 
   /**
@@ -22,10 +22,10 @@ object Disposed {
    * objects. This may be called more than once but will only ever invoke Disposed.dispose() once per runtime.
    */
   def apply() = if (disposed.compareAndSet(false, true)) {
-    val c: EnhancedClass = classOf[Disposed]
+    val c: EnhancedClass = classOf[Disposable]
     c.subTypes.foreach {
       case clazz => if (clazz.isCompanion) {
-        val d = clazz.instance.get.asInstanceOf[Disposed]
+        val d = clazz.instance.get.asInstanceOf[Disposable]
         d.dispose()
       } else {
         throw new ClassCastException("%s is not a object and cannot be used for Disposed")
