@@ -32,6 +32,16 @@ class LocalStack[T] {
     }
   }
 
+  def push(value: T) = {
+    val stack = threadLocal.get()
+    stack.push(value)
+  }
+
+  def pop() = {
+    val stack = threadLocal.get()
+    stack.pop()
+  }
+
   /**
    * Pushes value onto the stack only for the duration of f.
    *
@@ -41,16 +51,11 @@ class LocalStack[T] {
    * @return R
    */
   def context[R](value: T)(f: => R): R = {
-    val stack = threadLocal.get()
-    stack.push(value)
+    push(value)
     try {
       f
     } finally {
-      if (stack.top == value) {
-        stack.pop()
-      } else {
-        throw new RuntimeException(s"Trying to remove out of order. Attempting to remove $value, but ${stack.top} is at the top of the stack!")
-      }
+      pop()
     }
   }
 }
