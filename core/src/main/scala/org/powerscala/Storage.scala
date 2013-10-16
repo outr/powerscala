@@ -8,10 +8,18 @@ import scala.collection.mutable
 trait Storage[K, V] {
   def get[T <: V](key: K): Option[T]
   def clear(): Unit
-  protected def set(key: K, value: Option[Any]): Unit
+  protected def set[T <: V](key: K, value: Option[T]): Unit
 
-  def remove(key: K) = set(key, None)
-  def update(key: K, value: Any) = set(key, Some(value))
+  protected final def setValue[T <: V](key: K, value: Option[T]) = {
+    val previous = get[T](key)
+    set(key, value)
+    changed(key, previous, value)
+  }
+
+  protected def changed[T <: V](key: K, oldValue: Option[T], newValue: Option[T]) = {}
+
+  def remove(key: K) = setValue(key, None)
+  def update(key: K, value: V) = setValue(key, Some(value))
   def getOrSet[T <: V](key: K, value: => T): T = {
     get[T](key) match {
       case Some(v) => v
@@ -39,13 +47,30 @@ trait Storage[K, V] {
   def apply[T <: V](key: K): T = get[T](key).get
 }
 
+class MapStorage[K, V] extends Storage[K, V] {
+  private var map = Map.empty[K, V]
+
+  def get[T <: V](key: K) = map.get(key).asInstanceOf[Option[T]]
+
+  def clear() = synchronized {
+    map = Map.empty
+  }
+
+  protected def set[T <: V](key: K, value: Option[T]) = synchronized {
+    value match {
+      case Some(v) => map += key -> v
+      case None => map -= key
+    }
+  }
+}
+
 trait MappedStorage[K, V] extends Storage[K, V] {
   def get[T <: V](key: K) = Storage.get(this, key)
   def keyFromValue(value: Any) = Storage.keyFromValue(this, value)
   def map = Storage.map(this)
   def clear() = Storage.clear(this)
 
-  protected def set(key: K, value: Option[Any]) = value match {
+  protected def set[T <: V](key: K, value: Option[T]) = value match {
     case Some(v) => Storage.set(this, key, v)
     case None => Storage.remove(this, key)
   }
