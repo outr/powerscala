@@ -11,16 +11,17 @@ trait Listenable {
 
   val listeners = new Listeners
 
-  def listen[E, V, R](name: String, priority: Priority, modes: ListenMode*)(f: E => V)(implicit eventManifest: Manifest[E]): ListenerWrapper[E, V, R] = {
+  def listen[Event, Response, Result](name: String,
+                                      priority: Priority,
+                                      modes: ListenMode*)(f: Event => Response)(implicit eventManifest: Manifest[Event]) = {
     val modesList = if (modes.isEmpty) {
       EventProcessor.DefaultModes
     } else {
       modes.toList
     }
-    val listener = FunctionalListener(f, priority)
-    val wrapper = ListenerWrapper[E, V, R](name, modesList, listener)
-    listeners += wrapper
-    wrapper
+    val listener = FunctionalListener(f, name, priority, modesList)
+    listeners += listener
+    listener
   }
 }
 

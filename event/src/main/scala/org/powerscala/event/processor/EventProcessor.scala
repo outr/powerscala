@@ -11,26 +11,26 @@ import org.powerscala.Priority
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait EventProcessor[E, V, R] extends Logging {
+trait EventProcessor[Event, Response, Result] extends Logging {
   def name: String
   def listenable: Listenable
-  def eventManifest: Manifest[E]
-  protected def handleListenerResponse(value: V, state: EventState[E]): Unit
-  protected def responseFor(state: EventState[E]): R
+  def eventManifest: Manifest[Event]
+  protected def handleListenerResponse(value: Response, state: EventState[Event]): Unit
+  protected def responseFor(state: EventState[Event]): Result
 
   if (listenable == null) {
     throw new NullPointerException("Listenable cannot be null!")
   }
 
-  def listen(priority: Priority, modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
+  def listen(priority: Priority, modes: ListenMode*)(f: Event => Response) = {
     listenable.listen(name, priority, modes: _*)(f)(eventManifest)
   }
 
-  def and[NE >: E, NV >: V, NR >: R](processor: EventProcessor[NE, NV, NR]): ProcessorGroup[NE, NV, NR] = {
+  def and[NE >: Event, NV >: Response, NR >: Result](processor: EventProcessor[NE, NV, NR]): ProcessorGroup[NE, NV, NR] = {
     new ProcessorGroup(List(processor, this.asInstanceOf[EventProcessor[NE, NV, NR]]))
   }
 
-  def on(f: E => V, priority: Priority = Priority.Normal): ListenerWrapper[E, V, R] = listen(priority)(f)
+  def on(f: Event => Response, priority: Priority = Priority.Normal)= listen(priority)(f)
 
   /**
    * Invokes the function upon each event until it returns Some[V] and then removes the listener from receiving any
@@ -39,20 +39,20 @@ trait EventProcessor[E, V, R] extends Logging {
    * @param default the default value to send if None is returned by the function.
    * @param priority the priority for this listener. Defaults to Normal.
    * @param f the function to invoke upon event.
-   * @return ListenerWrapper[E, V, R]
+   * @return Listener[E, V, R]
    */
-  def onceConditional(default: V, priority: Priority = Priority.Normal)(f: E => Option[V]): ListenerWrapper[E, V, R] = {
-    var wrapper: ListenerWrapper[E, V, R] = null
-    val function = (e: E) => f(e) match {
+  def onceConditional(default: Response, priority: Priority = Priority.Normal)(f: Event => Option[Response]) = {
+    var listener: Listener[Event, Response] = null
+    val function = (e: Event) => f(e) match {
       case Some(v) => {
-        listenable.listeners -= wrapper
+        listenable.listeners -= listener
         v
       }
       case None => default
     }
-    wrapper = listen(priority)(function)
+    listener = listen(priority)(function)
 
-    wrapper
+    listener
   }
 
   /**
@@ -61,21 +61,21 @@ trait EventProcessor[E, V, R] extends Logging {
    * @param f the function to invoke upon event.
    * @return listener
    */
-  def once(f: E => V, priority: Priority = Priority.Normal): ListenerWrapper[E, V, R] = {
-    var wrapper: ListenerWrapper[E, V, R] = null
-    val function = (e: E) => {
-      listenable.listeners -= wrapper
+  def once(f: Event => Response, priority: Priority = Priority.Normal) = {
+    var listener: Listener[Event, Response] = null
+    val function = (e: Event) => {
+      listenable.listeners -= listener
       f(e)
     }
-    wrapper = listen(priority)(function)
+    listener = listen(priority)(function)
 
-    wrapper
+    listener
   }
 
-  def remove(wrapper: ListenerWrapper[E, V, R]) = listenable.listeners -= wrapper
+  def remove(listener: Listener[Event, Response]) = listenable.listeners -= listener
 
-  def fire(event: E, mode: ListenMode = ListenMode.Standard): R = {
-    val state = new EventState[E](event, listenable, EventState.current)
+  def fire(event: Event, mode: ListenMode = ListenMode.Standard): Result = {
+    val state = new EventState[Event](event, listenable, EventState.current)
     EventState.current = state
     try {
       fireInternal(state, mode, listenable)
@@ -91,7 +91,7 @@ trait EventProcessor[E, V, R] extends Logging {
     }
   }
 
-  protected def fireInternal(state: EventState[E], mode: ListenMode, listenable: Listenable): Unit = {
+  protected def fireInternal(state: EventState[Event], mode: ListenMode, listenable: Listenable): Unit = {
     fireRecursive(state, mode, listenable.listeners())
     if (!state.isStopPropagation) {
       fireAdditional(state, mode, listenable)
@@ -106,39 +106,39 @@ trait EventProcessor[E, V, R] extends Logging {
    * @param mode the current ListenMode
    * @param listenable the current Listenable
    */
-  protected def fireAdditional(state: EventState[E], mode: ListenMode, listenable: Listenable): Unit = {}
+  protected def fireAdditional(state: EventState[Event], mode: ListenMode, listenable: Listenable): Unit = {}
 
   @tailrec
-  private def fireRecursive(state: EventState[E], mode: ListenMode, wrappers: List[ListenerWrapper[_, _, _]]): Unit = {
-    if (wrappers.nonEmpty && !state.isStopPropagation) {
-      val wrapper = wrappers.head
-      if (isNameValid(wrapper) && isWrapperTypeValid(state, wrapper) && isModeValid(wrapper, mode)) {
-        val listener = wrapper.listener.asInstanceOf[Listener[E, V]]
-        val value = listener.receive(state.event)
+  private def fireRecursive(state: EventState[Event], mode: ListenMode, listeners: List[Listener[_, _]]): Unit = {
+    if (listeners.nonEmpty && !state.isStopPropagation) {
+      val listener = listeners.head
+      if (isNameValid(listener) && isListenerTypeValid(state, listener) && isModeValid(listener, mode)) {
+        val l = listener.asInstanceOf[Listener[Event, Response]]
+        val value = l.receive(state.event)
         handleListenerResponse(value, state)
       }
-      fireRecursive(state, mode, wrappers.tail)
+      fireRecursive(state, mode, listeners.tail)
     }
   }
 
-  protected def isModeValid(wrapper: ListenerWrapper[_, _, _], mode: ListenMode) = {
-    val valid = wrapper.modes.contains(mode)
+  protected def isModeValid(listener: Listener[_, _], mode: ListenMode) = {
+    val valid = listener.modes.contains(mode)
     if (!valid) {
-      debug(s"isModeValid - Modes: ${wrapper.modes}, Mode: $mode")
+      debug(s"isModeValid - Modes: ${listener.modes}, Mode: $mode")
     }
     valid
   }
 
-  protected def isNameValid(wrapper: ListenerWrapper[_, _, _]) = {
-    val valid = wrapper.name == name
+  protected def isNameValid(listener: Listener[_, _]) = {
+    val valid = listener.name == name
     if (!valid) {
-      debug(s"isNameValid - ProcessorName: $name / WrapperName: ${wrapper.name}")
+      debug(s"isNameValid - ProcessorName: $name / ListenerName: ${listener.name}")
     }
     valid
   }
 
-  protected def isWrapperTypeValid(state: EventState[E], wrapper: ListenerWrapper[_, _, _]) = if (state.event != null) {
-    val listenerEventClass = EnhancedClass.convertPrimitives(wrapper.eventManifest.runtimeClass)
+  protected def isListenerTypeValid(state: EventState[Event], listener: Listener[_, _]) = if (state.event != null) {
+    val listenerEventClass = EnhancedClass.convertPrimitives(listener.eventClass)
     val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
     val valid = listenerEventClass.isAssignableFrom(eventClass)
     if (!valid) {
