@@ -5,6 +5,7 @@ import annotation.tailrec
 import org.powerscala.event.{ListenMode, Listenable}
 import org.powerscala.hierarchy.event.ChildAddedEvent
 import org.powerscala.hierarchy.event.ChildRemovedEvent
+import org.powerscala.Priority
 
 /**
  * ContainerView represents a flat view of the hierarchical elements of a container. The view should represent the
@@ -23,7 +24,8 @@ class ContainerView[T](val container: Container[_],
                           query: T => Boolean = null,
                           sort: (T, T) => Int = null,
                           filterIn: T => Boolean = null,
-                          dynamic: Boolean = true)(implicit manifest: Manifest[T]) extends Iterable[T] with Listenable {
+                          dynamic: Boolean = true,
+                          priority: Priority = Priority.Normal)(implicit manifest: Manifest[T]) extends Iterable[T] with Listenable {
   private lazy val ordering = new Ordering[T] {
     def compare(x: T, y: T) = if (sort != null) sort(x, y) else 0
   }
@@ -37,14 +39,14 @@ class ContainerView[T](val container: Container[_],
 
   // Add listeners if dynamic is enabled
   if (dynamic) {
-    container.childAdded.listen(ListenMode.Standard, Descendants) {
+    container.childAdded.listen(priority, ListenMode.Standard, Descendants) {
       case added => synchronized {
         validateChild(added.child.asInstanceOf[AnyRef])
         refreshFilter()
         refreshSort()
       }
     }
-    container.childRemoved.listen(ListenMode.Standard, Descendants) {
+    container.childRemoved.listen(priority, ListenMode.Standard, Descendants) {
       case removed => synchronized {
         invalidateChild(removed.child.asInstanceOf[AnyRef])
         refreshFilter()

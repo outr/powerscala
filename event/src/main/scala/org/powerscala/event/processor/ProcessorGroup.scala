@@ -1,6 +1,7 @@
 package org.powerscala.event.processor
 
 import org.powerscala.event.{ListenMode, ListenerWrapper}
+import org.powerscala.Priority
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -10,10 +11,10 @@ case class ProcessorGroup[E, V, R](processors: List[EventProcessor[E, V, R]]) {
     copy(processors = processor :: processors.asInstanceOf[List[EventProcessor[NE, NV, NR]]])
   }
 
-  def on(f: E => V): List[ListenerWrapper[E, V, R]] = listen()(f)
+  def on(f: E => V, priority: Priority = Priority.Normal): List[ListenerWrapper[E, V, R]] = listen(priority)(f)
 
-  def listen(modes: ListenMode*)(f: E => V): List[ListenerWrapper[E, V, R]] = {
-    processors.map(ep => ep.listen(modes: _*)(f))
+  def listen(priority: Priority, modes: ListenMode*)(f: E => V): List[ListenerWrapper[E, V, R]] = {
+    processors.map(ep => ep.listen(priority, modes: _*)(f))
   }
 
   def fire(event: E, mode: ListenMode = ListenMode.Standard): List[R] = {

@@ -6,6 +6,7 @@ import org.powerscala.reflect.EnhancedClass
 
 import language.existentials
 import org.powerscala.log.Logging
+import org.powerscala.Priority
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -21,25 +22,26 @@ trait EventProcessor[E, V, R] extends Logging {
     throw new NullPointerException("Listenable cannot be null!")
   }
 
-  def listen(modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
-    listenable.listen(name, modes: _*)(f)(eventManifest)
+  def listen(priority: Priority, modes: ListenMode*)(f: E => V): ListenerWrapper[E, V, R] = {
+    listenable.listen(name, priority, modes: _*)(f)(eventManifest)
   }
 
   def and[NE >: E, NV >: V, NR >: R](processor: EventProcessor[NE, NV, NR]): ProcessorGroup[NE, NV, NR] = {
     new ProcessorGroup(List(processor, this.asInstanceOf[EventProcessor[NE, NV, NR]]))
   }
 
-  def on(f: E => V): ListenerWrapper[E, V, R] = listen()(f)
+  def on(f: E => V, priority: Priority = Priority.Normal): ListenerWrapper[E, V, R] = listen(priority)(f)
 
   /**
    * Invokes the function upon each event until it returns Some[V] and then removes the listener from receiving any
    * other invocations.
    *
    * @param default the default value to send if None is returned by the function.
+   * @param priority the priority for this listener. Defaults to Normal.
    * @param f the function to invoke upon event.
    * @return ListenerWrapper[E, V, R]
    */
-  def onceConditional(default: V)(f: E => Option[V]): ListenerWrapper[E, V, R] = {
+  def onceConditional(default: V, priority: Priority = Priority.Normal)(f: E => Option[V]): ListenerWrapper[E, V, R] = {
     var wrapper: ListenerWrapper[E, V, R] = null
     val function = (e: E) => f(e) match {
       case Some(v) => {
@@ -48,7 +50,7 @@ trait EventProcessor[E, V, R] extends Logging {
       }
       case None => default
     }
-    wrapper = listen()(function)
+    wrapper = listen(priority)(function)
 
     wrapper
   }
@@ -59,13 +61,13 @@ trait EventProcessor[E, V, R] extends Logging {
    * @param f the function to invoke upon event.
    * @return listener
    */
-  def once(f: E => V): ListenerWrapper[E, V, R] = {
+  def once(f: E => V, priority: Priority = Priority.Normal): ListenerWrapper[E, V, R] = {
     var wrapper: ListenerWrapper[E, V, R] = null
     val function = (e: E) => {
       listenable.listeners -= wrapper
       f(e)
     }
-    wrapper = listen()(function)
+    wrapper = listen(priority)(function)
 
     wrapper
   }
