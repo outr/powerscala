@@ -67,7 +67,7 @@ class MapStorage[K, V] extends Storage[K, V] {
 trait MappedStorage[K, V] extends Storage[K, V] {
   def get[T <: V](key: K) = Storage.get(this, key)
   def keyFromValue(value: Any) = Storage.keyFromValue(this, value)
-  def map = Storage.map(this)
+  def map = Storage.map(this).asInstanceOf[Map[K, V]]
   def clear() = Storage.clear(this)
 
   protected def set[T <: V](key: K, value: Option[T]) = value match {
