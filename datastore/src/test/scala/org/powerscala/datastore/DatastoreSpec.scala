@@ -4,7 +4,7 @@ import impl.mongodb.MongoDBDatastore
 
 import org.scalatest.WordSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.powerscala.Precision
+import org.powerscala.{Priority, Precision}
 import query.{Queryable, Field}
 import java.util.UUID
 import org.powerscala.hierarchy.event.Descendants
@@ -132,16 +132,16 @@ class DatastoreSpec extends WordSpec with ShouldMatchers {
       val collectionDeleteListener = c1.deletes.on {
         case event => collectionDeleteEvents += 1
       }
-      val sessionPersistListener = session.persists.listen(Descendants) {
+      val sessionPersistListener = session.persists.listen(Priority.Normal, Descendants) {
         case event => sessionPersistEvents += 1
       }
-      val sessionDeleteListener = session.deletes.listen(Descendants) {
+      val sessionDeleteListener = session.deletes.listen(Priority.Normal, Descendants) {
         case event => sessionDeleteEvents += 1
       }
-      val datastorePersistListener = datastore.persists.listen(Descendants) {
+      val datastorePersistListener = datastore.persists.listen(Priority.Normal, Descendants) {
         case event => datastorePersistEvents += 1
       }
-      val datastoreDeleteListener = datastore.deletes.listen(Descendants) {
+      val datastoreDeleteListener = datastore.deletes.listen(Priority.Normal, Descendants) {
         case event => datastoreDeleteEvents += 1
       }
       val t = Test1("Testing listener")

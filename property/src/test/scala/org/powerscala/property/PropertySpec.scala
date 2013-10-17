@@ -6,6 +6,7 @@ import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.event.Descendants
 import org.powerscala.hierarchy.ChildLike
 import org.powerscala.property.event.processor.PropertyChangeProcessor
+import org.powerscala.Priority
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
@@ -28,10 +29,10 @@ class PropertySpec extends WordSpec with ShouldMatchers {
     PropertyTester.inner.p.change.on {
       case event => direct += 1
     }
-    PropertyTester.inner.change.listen(Descendants) {
+    PropertyTester.inner.change.listen(Priority.Normal, Descendants) {
       case event => inner += 1
     }
-    PropertyTester.change.listen(Descendants) {
+    PropertyTester.change.listen(Priority.Normal, Descendants) {
       case event => outter += 1
     }
     "hierarchy is validated" should {
