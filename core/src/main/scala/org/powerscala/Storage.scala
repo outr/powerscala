@@ -8,6 +8,7 @@ import scala.collection.mutable
 trait Storage[K, V] {
   def get[T <: V](key: K): Option[T]
   def clear(): Unit
+  def map: Map[K, V]
   protected def set[T <: V](key: K, value: Option[T]): Unit
 
   protected final def setValue[T <: V](key: K, value: Option[T]) = {
@@ -48,18 +49,20 @@ trait Storage[K, V] {
 }
 
 class MapStorage[K, V] extends Storage[K, V] {
-  private var map = Map.empty[K, V]
+  private var _map = Map.empty[K, V]
 
   def get[T <: V](key: K) = map.get(key).asInstanceOf[Option[T]]
 
   def clear() = synchronized {
-    map = Map.empty
+    _map = Map.empty
   }
+
+  def map = _map
 
   protected def set[T <: V](key: K, value: Option[T]) = synchronized {
     value match {
-      case Some(v) => map += key -> v
-      case None => map -= key
+      case Some(v) => _map += key -> v
+      case None => _map -= key
     }
   }
 }
