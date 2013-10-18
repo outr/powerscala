@@ -22,8 +22,19 @@ trait EventProcessor[Event, Response, Result] extends Logging {
     throw new NullPointerException("Listenable cannot be null!")
   }
 
+  def +=(listener: Listener[Event, Response]) = add(listener)
+
+  def -=(listener: Listener[Event, Response]) = remove(listener)
+
   def listen(priority: Priority, modes: ListenMode*)(f: Event => Response) = {
-    listenable.listen(name, priority, modes: _*)(f)(eventManifest)
+    val modesList = if (modes.isEmpty) {
+      EventProcessor.DefaultModes
+    } else {
+      modes.toList
+    }
+    val listener = FunctionalListener(f, name, priority, modesList)(eventManifest)
+    this += listener
+    listener
   }
 
   def and[NE >: Event, NV >: Response, NR >: Result](processor: EventProcessor[NE, NV, NR]): ProcessorGroup[NE, NV, NR] = {
@@ -71,6 +82,8 @@ trait EventProcessor[Event, Response, Result] extends Logging {
 
     listener
   }
+
+  def add(listener: Listener[Event, Response]) = listenable.listeners += listener
 
   def remove(listener: Listener[Event, Response]) = listenable.listeners -= listener
 
