@@ -42,6 +42,11 @@ class LocalStack[T] {
     stack.pop()
   }
 
+  def clear() = {
+    val stack = threadLocal.get()
+    stack.clear()
+  }
+
   /**
    * Pushes value onto the stack only for the duration of f.
    *
