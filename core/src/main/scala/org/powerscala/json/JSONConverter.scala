@@ -116,6 +116,8 @@ object JSONConverter {
         case m => m
       }
       JSONObject(map)
+    } else if (value.isInstanceOf[Map[_, _]]) {
+      JSONObject(value.asInstanceOf[Map[String, Any]])
     } else {
       value
     }
