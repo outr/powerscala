@@ -48,9 +48,7 @@ trait Storage[K, V] {
   def apply[T <: V](key: K): T = get[T](key).get
 }
 
-class MapStorage[K, V] extends Storage[K, V] {
-  private var _map = Map.empty[K, V]
-
+class MapStorage[K, V](private var _map: Map[K, V] = Map.empty[K, V]) extends Storage[K, V] {
   def get[T <: V](key: K) = map.get(key).asInstanceOf[Option[T]]
 
   def clear() = synchronized {
