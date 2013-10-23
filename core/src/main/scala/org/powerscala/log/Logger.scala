@@ -22,7 +22,7 @@ class Logger private(val name: String, val parentName: String, val level: Level,
   def withHandler(handler: Handler): Logger = new Logger(name, parentName, level, (handler :: handlers.reverse).reverse)
 
   def withHandler(formatter: Formatter = Formatter.Default,
-                  level: Level = Level.Info,
+                  level: Level = Level.Trace,
                   writer: Writer = ConsoleWriter): Logger = withHandler(Handler(formatter, level, writer))
 
   def withoutHandlers = new Logger(name, parentName, level, Nil)
