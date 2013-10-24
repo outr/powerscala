@@ -46,21 +46,21 @@ class Logger private(val name: String, val parentName: String, val level: Level,
     }
   }
 
-  def log(record: LogRecord): Unit = {
-    process(record, handlers)
+  def log(record: LogRecord, level: Level = level): Unit = {
+    process(record, level, handlers)
     if (parent != null) {
-      parent.log(record)
+      parent.log(record, level)
     }
   }
 
   @tailrec
-  private def process(record: LogRecord, list: List[Handler]): Unit = {
+  private def process(record: LogRecord, loggingLevel: Level, list: List[Handler]): Unit = {
     if (list.nonEmpty) {
       val handler = list.head
-      if (isLevelEnabled(record.level)) {
+      if (loggingLevel.value <= record.level.value && handler.level.value <= record.level.value) {
         handler.publish(record)
       }
-      process(record, list.tail)
+      process(record, loggingLevel, list.tail)
     }
   }
 }
