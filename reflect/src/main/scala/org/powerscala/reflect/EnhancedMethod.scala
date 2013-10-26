@@ -228,6 +228,9 @@ object EnhancedMethod {
     case "java.lang.Object" => value match {
       case d: Double => d.asInstanceOf[AnyRef]
     }
+    case "String" => value match {
+      case b: Boolean => b.toString
+    }
     case _ if converter.nonEmpty => converter()(name, value, resultType)
     // TODO: add more type conversions
     case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
