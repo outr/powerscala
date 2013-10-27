@@ -2,6 +2,7 @@ package org.powerscala.log
 
 import akka.actor.{Actor, Props, ActorSystem}
 import java.util.concurrent.atomic.AtomicInteger
+import java.io.PrintStream
 
 /**
  * Logging trait can be mixed in to provide class-level logging.
@@ -43,6 +44,8 @@ class InnerLogging(className: String) {
 }
 
 object Logging {
+  val systemOut = System.out
+  val systemErr = System.err
   private[log] val asynchronous = new AtomicInteger(0)
 
   /**
@@ -51,6 +54,19 @@ object Logging {
   def queued = asynchronous.get()
 
   lazy val root = new InnerLogging("root")
+
+  /**
+   * Enables or disables logging of System.out and System.err to go through the logging system
+   *
+   * @param out true if System.out should redirect to info logging. Defaults to true.
+   * @param err true if System.err should redirect to error logging. Defaults to true.
+   */
+  def configureSystem(out: Boolean = true, err: Boolean = true) = {
+    val os = if (out) new PrintStream(new LoggingOutputStream("System.out", Level.Info)) else systemOut
+    val es = if (err) new PrintStream(new LoggingOutputStream("System.err", Level.Error)) else systemErr
+    System.setOut(os)
+    System.setErr(es)
+  }
 
   /**
    * Waits for the queue to become empty or the timeout to elapse.

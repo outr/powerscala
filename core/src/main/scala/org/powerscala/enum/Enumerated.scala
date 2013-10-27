@@ -14,9 +14,9 @@ trait Enumerated[E <: EnumEntry] {
   private var initialized = false
   private var enums = List.empty[E]
   private lazy val enumFields = getClass.fields.collect {
-    case f if (!f.isStatic && f.hasType(getClass.nonCompanion.javaClass)) => f
+    case f if !f.isStatic && f.hasType(getClass.nonCompanion.javaClass) => f
   }
-  private lazy val nameMap = enumFields.map(field2Entry _).toMap
+  private lazy val nameMap = enumFields.map(field2Entry).toMap
   private lazy val valueMap = nameMap.map(t => t._2 -> t._1)
 
   private def field2Entry(f: EnhancedField) = {
@@ -56,7 +56,7 @@ trait Enumerated[E <: EnumEntry] {
   def apply(name: String, caseSensitive: Boolean) = if (caseSensitive) {
     nameMap(name)
   } else {
-    values.find(e => e.name.equalsIgnoreCase(name)).getOrElse(null.asInstanceOf[E])
+    values.find(e => e.name != null && e.name.equalsIgnoreCase(name)).getOrElse(null.asInstanceOf[E])
   }
 
   /**
