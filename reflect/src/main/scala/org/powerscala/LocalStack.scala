@@ -37,9 +37,17 @@ class LocalStack[T] {
     stack.push(value)
   }
 
-  def pop() = {
+  def pop(): T = {
     val stack = threadLocal.get()
     stack.pop()
+  }
+
+  def pop(value: T): T = {
+    val current = threadLocal.get().head
+    if (current != value) {
+      throw new RuntimeException(s"Expecting to pop: $value, but current stack contains: $current.")
+    }
+    pop()
   }
 
   def clear() = {

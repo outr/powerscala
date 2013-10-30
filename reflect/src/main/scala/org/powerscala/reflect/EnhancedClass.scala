@@ -1,6 +1,6 @@
 package org.powerscala.reflect
 
-import doc.DocumentationReflection
+import org.powerscala.reflect.doc.{ASMDocReflection, DocumentationReflection}
 import ref.SoftReference
 import java.lang.reflect.{Modifier, Method}
 import org.reflections.Reflections
@@ -9,6 +9,7 @@ import scala.collection.JavaConversions._
 import annotation.tailrec
 
 import language.existentials
+import org.objectweb.asm.tree.FieldNode
 
 /**
  * Wraps a Class to provide more powerful functionality.
@@ -16,6 +17,9 @@ import language.existentials
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class EnhancedClass protected[reflect](val javaClass: Class[_]) {
+  private lazy val asmClassNode = ASMDocReflection.classNode(javaClass)
+  private lazy val asmFields = asmClassNode.fields.toList.asInstanceOf[List[FieldNode]]
+
   /**
    * The name of the class.
    */
@@ -33,7 +37,19 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
 
   lazy val fields: List[EnhancedField] = {
     val javaFields = javaClass.getFields.toSet ++ javaClass.getDeclaredFields.toSet
-    javaFields.toList.map(f => new EnhancedField(this, EnhancedClass(f.getDeclaringClass), f))
+    val map = javaFields.toList.map {
+      case f => {
+        val ef = new EnhancedField(this, EnhancedClass(f.getDeclaringClass), f)
+        f.getName -> ef
+      }
+    }.toMap
+    val result = asmFields.collect {       // Should define them in the proper order!
+      case fn if map.contains(fn.name) => map(fn.name)
+    }
+    if (result.length != map.size) {
+      throw new RuntimeException(s"The number of fields mapped from ASM doesn't correspond to the names found. Fields: ${map.size}, Resulting: ${result.size}")
+    }
+    result
   }
 
   /**
