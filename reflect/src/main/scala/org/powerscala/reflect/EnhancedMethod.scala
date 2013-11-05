@@ -178,61 +178,67 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
 object EnhancedMethod {
   val converter = new LocalStack[(String, Any, EnhancedClass) => Any]
 
-  def convertTo(name: String, value: Any, resultType: EnhancedClass) = resultType.name match {
-    case _ if resultType.isCastable(value) => value   // No conversion necessary
-    case "[D" => value match {
-      case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
+  def convertTo(name: String, value: Any, resultType: EnhancedClass) = convertToOption(name, value, resultType) match {
+    case Some(result) => result
+    case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
+  }
+  def convertToOption(name: String, value: Any, resultType: EnhancedClass) = {
+    resultType.name match {
+      case _ if resultType.isCastable(value) => Some(value)   // No conversion necessary
+      case "[D" => Some(value match {
+        case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
+      })
+      case "Int" => Some(value match {
+        case b: Byte => b.toInt
+        case c: Char => c.toInt
+        case l: Long => l.toInt
+        case f: Float => f.toInt
+        case d: Double => d.toInt
+        case i: java.lang.Integer => i.intValue()
+        case s: String => s.toInt
+      })
+      case "Long" => Some(value match {
+        case b: Byte => b.toLong
+        case c: Char => c.toLong
+        case i: Int => i.toLong
+        case f: Float => f.toLong
+        case d: Double => d.toLong
+        case l: java.lang.Long => l.longValue()
+        case s: String => s.toLong
+      })
+      case "Float" => Some(value match {
+        case b: Byte => b.toFloat
+        case c: Char => c.toFloat
+        case i: Int => i.toFloat
+        case l: Long => l.toFloat
+        case d: Double => d.toFloat
+        case f: java.lang.Float => f.floatValue()
+        case s: String => s.toFloat
+      })
+      case "Double" => Some(value match {
+        case null => 0.0
+        case b: Byte => b.toDouble
+        case c: Char => c.toDouble
+        case i: Int => i.toDouble
+        case l: Long => l.toDouble
+        case f: java.lang.Double => f.doubleValue()
+        case s: String => s.toDouble
+      })
+      case "Boolean" => value match {
+        case s: String => Some(s.toBoolean)
+      }
+      case "java.io.File" => value match {
+        case s: String => Some(new File(s))
+      }
+      case "java.lang.Object" => value match {
+        case d: Double => Some(d.asInstanceOf[AnyRef])
+      }
+      case "String" => value match {
+        case b: Boolean => Some(b.toString)
+      }
+      case "scala.Option" => Some(Option(value))
+      case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
+      case _ => None
     }
-    case "Int" => value match {
-      case b: Byte => b.toInt
-      case c: Char => c.toInt
-      case l: Long => l.toInt
-      case f: Float => f.toInt
-      case d: Double => d.toInt
-      case i: java.lang.Integer => i.intValue()
-      case s: String => s.toInt
-    }
-    case "Long" => value match {
-      case b: Byte => b.toLong
-      case c: Char => c.toLong
-      case i: Int => i.toLong
-      case f: Float => f.toLong
-      case d: Double => d.toLong
-      case l: java.lang.Long => l.longValue()
-      case s: String => s.toLong
-    }
-    case "Float" => value match {
-      case b: Byte => b.toFloat
-      case c: Char => c.toFloat
-      case i: Int => i.toFloat
-      case l: Long => l.toFloat
-      case d: Double => d.toFloat
-      case f: java.lang.Float => f.floatValue()
-      case s: String => s.toFloat
-    }
-    case "Double" => value match {
-      case null => 0.0
-      case b: Byte => b.toDouble
-      case c: Char => c.toDouble
-      case i: Int => i.toDouble
-      case l: Long => l.toDouble
-      case f: java.lang.Double => f.doubleValue()
-      case s: String => s.toDouble
-    }
-    case "Boolean" => value match {
-      case s: String => s.toBoolean
-    }
-    case "java.io.File" => value match {
-      case s: String => new File(s)
-    }
-    case "java.lang.Object" => value match {
-      case d: Double => d.asInstanceOf[AnyRef]
-    }
-    case "String" => value match {
-      case b: Boolean => b.toString
-    }
-    case "scala.Option" => Option(value)
-    case _ if converter.nonEmpty => converter()(name, value, resultType)
-    case _ => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }
 }
