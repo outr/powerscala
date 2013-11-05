@@ -231,8 +231,8 @@ object EnhancedMethod {
     case "String" => value match {
       case b: Boolean => b.toString
     }
+    case "scala.Option" => Option(value)
     case _ if converter.nonEmpty => converter()(name, value, resultType)
-    // TODO: add more type conversions
-    case _ => throw new RuntimeException("Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
+    case _ => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }
 }
