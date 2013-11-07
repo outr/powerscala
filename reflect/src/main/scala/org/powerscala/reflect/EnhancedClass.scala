@@ -149,6 +149,11 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   def isTransient = Modifier.isTransient(javaClass.getModifiers)
 
   /**
+   * True if this is a primitive value
+   */
+  def isPrimitive = javaClass.isPrimitive
+
+  /**
    * Iterates up the class hierarchy to find a companion of the specified type.
    *
    * @param manifest of type T
