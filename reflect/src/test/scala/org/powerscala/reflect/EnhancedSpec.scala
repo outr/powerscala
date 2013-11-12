@@ -151,6 +151,46 @@ class EnhancedSpec extends WordSpec with ShouldMatchers {
         test.name should equal(null)
         test.age should equal(0)
       }
+      "create a correct naming diff when comparing two instances" in {
+        val one = TestCaseClass2("John", age = 10)
+        val two = TestCaseClass2("Jane", age = 10)
+        val diff = classOf[TestCaseClass2].diff(one, two)
+        diff.length should equal(1)
+        val (cv, left, right) = diff.head
+        cv.name should equal("name")
+        left should equal("John")
+        right should equal("Jane")
+      }
+      "create a correct age diff when comparing two instances" in {
+        val one = TestCaseClass2("John", age = 10)
+        val two = TestCaseClass2("John", age = 12)
+        val diff = classOf[TestCaseClass2].diff(one, two)
+        diff.length should equal(1)
+        val (cv, left, right) = diff.head
+        cv.name should equal("age")
+        left should equal(10)
+        right should equal(12)
+      }
+      "create an empty diff when comparing two instances" in {
+        val one = TestCaseClass2("John", age = 10)
+        val two = TestCaseClass2("John", age = 10)
+        val diff = classOf[TestCaseClass2].diff(one, two)
+        diff.length should equal(0)
+      }
+      "create a correct name and age diff when comparing two instances" in {
+        val one = TestCaseClass2("John", age = 10)
+        val two = TestCaseClass2("Jane", age = 12)
+        val diff = classOf[TestCaseClass2].diff(one, two)
+        diff.length should equal(2)
+        val (cv1, left1, right1) = diff.head
+        val (cv2, left2, right2) = diff.tail.head
+        cv1.name should equal("name")
+        left1 should equal("John")
+        right1 should equal("Jane")
+        cv2.name should equal("age")
+        left2 should equal(10)
+        right2 should equal(12)
+      }
     }
     "working with hasType" should {
       val testClassType: EnhancedClass = classOf[TestClassType]

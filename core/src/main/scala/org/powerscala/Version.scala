@@ -25,7 +25,7 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
       b.append('-')
       b.append(extra)
     }
-    b.toString
+    b.toString()
   }
 
   override def toString = string

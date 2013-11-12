@@ -203,6 +203,19 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   lazy val copyMethod = methodByName("copy")
 
   /**
+   * Creates a differences list between the two instances supplied. The instances must be of the same type and derived
+   * as case classes of this class.
+   *
+   * @param first the first instance to compare
+   * @param second the second instance to compare
+   * @tparam T the type of the instances being compared
+   * @return List of (CaseValue, First Value, Second Value) for each entry that is different
+   */
+  def diff[T <: AnyRef](first: T, second: T) = caseValues.map(cv => (cv, cv[Any](first), cv[Any](second))).filter {
+    case (cv, fv, sv) => fv != sv
+  }
+
+  /**
    * Retrieves the constructor that matches the copy method.
    */
   lazy val copyConstructor = copyMethod match {
