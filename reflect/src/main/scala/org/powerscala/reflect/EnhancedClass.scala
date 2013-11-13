@@ -208,10 +208,9 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    *
    * @param first the first instance to compare
    * @param second the second instance to compare
-   * @tparam T the type of the instances being compared
    * @return List of (CaseValue, First Value, Second Value) for each entry that is different
    */
-  def diff[T <: AnyRef](first: T, second: T) = caseValues.map(cv => (cv, cv[Any](first), cv[Any](second))).filter {
+  def diff(first: AnyRef, second: AnyRef) = caseValues.map(cv => (cv, cv[Any](first), cv[Any](second))).filter {
     case (cv, fv, sv) => fv != sv
   }
 
