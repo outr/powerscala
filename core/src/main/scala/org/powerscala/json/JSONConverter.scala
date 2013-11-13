@@ -105,6 +105,8 @@ object JSONConverter {
   def generateJSON(value: Any, specifyClassName: Boolean = true): Any = {
     if (value == null) {
       null
+    } else if (value.isInstanceOf[Jsonify]) {
+      value.asInstanceOf[Jsonify].generate()
     } else if (value.asInstanceOf[AnyRef].getClass.isArray) {
       JSONArray(value.asInstanceOf[Array[_]].toList.map(v => generateJSON(v, specifyClassName = specifyClassName)))
     } else if (value.isInstanceOf[Seq[_]]) {
