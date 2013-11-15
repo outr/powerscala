@@ -426,6 +426,7 @@ object EnhancedClass {
     case "java.lang.Double" => "Double"
     case "void" => "Unit"
     case "java.lang.String" => "String"
+    case "[B" => "Array[Byte]"
     case "[I" => "Array[Int]"
     case "scala.collection.immutable.Nil$" => "List"
     case s => s
