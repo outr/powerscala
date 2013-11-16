@@ -19,6 +19,7 @@ trait Storage[K, V] {
 
   protected def changed[T <: V](key: K, oldValue: Option[T], newValue: Option[T]) = {}
 
+  def contains(key: K) = get(key).nonEmpty
   def values = map.values
   def remove(key: K) = setValue(key, None)
   def update(key: K, value: V) = setValue(key, Some(value))
