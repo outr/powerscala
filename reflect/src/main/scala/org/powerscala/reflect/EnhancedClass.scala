@@ -366,7 +366,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * Returns true if <code>c</code> is extended or mixed in to this EnhancedClass.
    */
-  def hasType(c: Class[_]) = c.isAssignableFrom(javaClass)
+  def hasType(c: Class[_]) = c.isAssignableFrom(javaClass) || c.name == name
 
   /**
    * Returns the default value by type. For primitives this will return zero or false and for references this will

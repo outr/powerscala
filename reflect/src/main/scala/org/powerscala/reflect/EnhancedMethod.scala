@@ -182,7 +182,7 @@ object EnhancedMethod {
     case Some(result) => result
     case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
   }
-  def convertToOption(name: String, value: Any, resultType: EnhancedClass) = {
+  def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
     resultType.name match {
       case _ if resultType.isCastable(value) => Some(value)   // No conversion necessary
       case "[D" => Some(value match {
@@ -196,6 +196,8 @@ object EnhancedMethod {
         case d: Double => d.toInt
         case i: java.lang.Integer => i.intValue()
         case s: String => s.toInt
+        case s: Some[_] => s.get
+        case None => 0
       })
       case "Long" => Some(value match {
         case b: Byte => b.toLong
@@ -237,6 +239,7 @@ object EnhancedMethod {
         case b: Boolean => Some(b.toString)
       }
       case "scala.Option" => Some(Option(value))
+      case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].getOrElse(null))
       case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
       case _ => None
     }
