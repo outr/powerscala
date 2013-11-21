@@ -12,12 +12,15 @@ import org.powerscala.reflect._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Property[T](backing: Backing[T] = new VariableBacking[T], val default: Option[T] = None)
+class Property[T](backing: Backing[T], default: => Option[T])
                  (implicit val parent: Listenable, val manifest: Manifest[T])
       extends PropertyLike[T]
       with Listenable
       with Bindable[T]
       with ChildLike[Listenable] {
+  def this()(implicit parent: Listenable, manifest: Manifest[T]) = this(new VariableBacking[T], None)
+  def this(default: => Option[T])(implicit parent: Listenable, manifest: Manifest[T]) = this(new VariableBacking[T], default)
+
   val read = new PropertyReadProcessor()(this)
   val changing = new PropertyChangingProcessor[T]()(this, manifest)
   val change = new PropertyChangeProcessor[T]()(this, Manifest.classType[PropertyChangeEvent[T]](classOf[PropertyChangeEvent[T]]))
