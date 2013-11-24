@@ -180,7 +180,7 @@ object EnhancedMethod {
 
   def convertTo(name: String, value: Any, resultType: EnhancedClass) = convertToOption(name, value, resultType) match {
     case Some(result) => result
-    case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType))
+    case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType.name))
   }
   def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
     resultType.name match {
@@ -239,9 +239,26 @@ object EnhancedMethod {
         case b: Boolean => Some(b.toString)
       }
       case "scala.Option" => Some(Option(value))
+      case "scala.collection.immutable.List" => value match {
+        case m: Map[_, _] => {
+          Some(m.toList.collect {
+            case (k, v) if intOption(k).nonEmpty => intOption(k).get -> v
+          }.sortBy(t => t._1).map(t => t._2))
+        }
+      }
       case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].getOrElse(null))
       case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
       case _ => None
     }
+  }
+
+  private def intOption(v: Any) = v match {
+    case s: String => try {
+      Some(s.toInt)
+    } catch {
+      case t: Throwable => None
+    }
+    case i: Int => Some(i)
+    case _ => None
   }
 }
