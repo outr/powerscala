@@ -25,5 +25,13 @@ trait StorageComponent[C, T] {
    */
   def apply(t: T) = Storage.getOrSet(t, componentIdentifier, create(t))
 
+  /**
+   * Retrieve an instance of C if one exists for T.
+   *
+   * @param t the reference for which to access C.
+   * @return Option[C]
+   */
+  def get(t: T) = Storage.get[String, C](t, componentIdentifier)
+
   protected def create(t: T): C
 }
