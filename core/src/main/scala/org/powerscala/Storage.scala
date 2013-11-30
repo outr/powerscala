@@ -47,7 +47,7 @@ trait Storage[K, V] {
     remove(key)
     previous
   }
-  def apply[T <: V](key: K): T = get[T](key).get
+  def apply[T <: V](key: K): T = get[T](key).getOrElse(throw new RuntimeException(s"Unable to find $this.$key ($getClass)"))
 }
 
 class MapStorage[K, V](private var _map: Map[K, V] = Map.empty[K, V]) extends Storage[K, V] {
