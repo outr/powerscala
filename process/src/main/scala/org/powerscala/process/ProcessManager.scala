@@ -1,10 +1,9 @@
 package org.powerscala.process
 
 import java.io.File
-import org.powerscala.Unique
+import org.powerscala.{IO, Unique}
 import org.powerscala.process.nativeprocess.NativeProcessInstance
 import org.powerscala.process.classloader.ClassLoaderProcessInstance
-import java.net.URL
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -22,29 +21,34 @@ object ProcessManager {
              className: String = null,
              args: List[String] = Nil,
              baseDirectory: File = new File("."),
-             resources: List[File] = Nil) = {
-    new NativeProcessInstance(name, vmArgs, className, args, baseDirectory, resources)
+             resources: List[File] = Nil,
+             resourcesDirectory: Option[File] = None) = {
+    new NativeProcessInstance(name, vmArgs, className, args, baseDirectory, remap(resources, resourcesDirectory))
   }
 
   def local(name: String = Unique(),
-                  className: String = null,
-                  methodName: String = null,
-                  args: Map[String, Any] = Map.empty,
-                  resources: List[URL]) = {
-    ClassLoaderProcessInstance(name, className, methodName, args, resources)
+            className: String = null,
+            methodName: String = null,
+            args: Map[String, Any] = Map.empty,
+            resources: List[File],
+            resourcesDirectory: Option[File] = None) = {
+    ClassLoaderProcessInstance(name, className, methodName, args, remap(resources, resourcesDirectory))
   }
 
-  def main(args: Array[String]): Unit = {
-    val jar = new File("/home/mhicks/test/test.jar")
-//    val p = local("test", "org.hyperscala.site.HyperscalaSite", args = Map("args" -> Array.empty[String]), resources = List(jar.toURI.toURL))
-    val p = native("test", className = "org.hyperscala.site.HyperscalaSite", baseDirectory = jar.getParentFile, resources = List(jar))
-    println("Starting...")
-    p.start(synchronous = false)
-    println("...started!")
-    println(s"${p.name} - ${p.state}")
-    Thread.sleep(10000)
-    println(s"${p.name} - ${p.state}")
-    Thread.sleep(10000)
-    p.stop()
+  private def remap(resources: List[File], resourcesDirectory: Option[File]) = resourcesDirectory match {
+    case Some(dir) => {
+      dir.mkdirs()
+      resources.map {
+        case f => {
+          val tmp = new File(dir, f.getName)
+          if (!tmp.exists() || tmp.lastModified() != f.lastModified()) {
+            IO.copy(f, tmp)                         // Copy the file to the directory
+            tmp.setLastModified(f.lastModified())   // Update the last modified date to be the same
+          }
+          tmp
+        }
+      }
+    }
+    case None => resources
   }
 }

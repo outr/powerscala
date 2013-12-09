@@ -1,8 +1,9 @@
 package org.powerscala.process.classloader
 
-import java.net.{URL, URLClassLoader}
+import java.net.URLClassLoader
 import org.powerscala.reflect.{EnhancedMethod, EnhancedClass}
 import org.powerscala.process.ProcessInstance
+import java.io.File
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -54,8 +55,8 @@ object ClassLoaderProcessInstance {
             className: String,
             methodName: String,
             args: Map[String, Any],
-            resources: List[URL]) = {
-    val classLoader = new URLClassLoader(resources.toArray, null)
+            resources: List[File]) = {
+    val classLoader = new URLClassLoader(resources.map(f => f.toURI.toURL).toArray, null)
     val previousClassLoader = Thread.currentThread().getContextClassLoader
     Thread.currentThread().setContextClassLoader(classLoader)
     val clazz: EnhancedClass = classLoader.loadClass(className)
