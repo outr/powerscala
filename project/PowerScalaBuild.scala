@@ -71,7 +71,7 @@ object PowerScalaBuild extends Build {
     .settings(libraryDependencies ++= Seq(mongodb, h2))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
-  lazy val process = project("process", file("process"), settings = createSettings("powerscala-process"))
+  lazy val process = Project("process", file("process"), settings = createSettings("powerscala-process"))
     .dependsOn(property)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
     .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % ))

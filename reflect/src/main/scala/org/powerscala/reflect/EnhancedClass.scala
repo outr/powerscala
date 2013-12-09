@@ -101,7 +101,14 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
    */
   lazy val instance = {
     companion match {
-      case Some(clazz) => clazz.javaClass.getFields.find(f => f.getName == "MODULE$").map(f => f.get(null))
+      case Some(clazz) => {
+        clazz.fieldByName("MODULE$") match {
+          case Some(field) => {
+            Some(field[AnyRef](null))
+          }
+          case None => None
+        }
+      }
       case None => None
     }
   }
@@ -179,7 +186,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     if (isCompanion) {
       Some(this)
     } else {
-      Some(Class.forName(javaClass.getName + "$"))
+      Some(Class.forName(javaClass.getName + "$", true, Thread.currentThread().getContextClassLoader))
     }
   } catch {
     case exc: ClassNotFoundException => None

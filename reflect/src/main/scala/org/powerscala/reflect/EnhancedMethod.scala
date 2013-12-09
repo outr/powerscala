@@ -108,8 +108,8 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
     val arguments = this.args.map {
       case methodArgument => args.get(methodArgument.name) match {
         case Some(value) => EnhancedMethod.convertTo(methodArgument.name, value, methodArgument.`type`)            // Value supplied directly
-        case _ if (methodArgument.hasDefault) => methodArgument.default[Any](instance).get    // Method had a default argument
-        case _ if (!requireValues) => methodArgument.`type`.defaultForType[Any]               // No argument found so we use the default for the type
+        case _ if methodArgument.hasDefault => methodArgument.default[Any](instance).get    // Method had a default argument
+        case _ if !requireValues => methodArgument.`type`.defaultForType[Any]               // No argument found so we use the default for the type
         case _ => throw new RuntimeException("No value supplied for %s.".format(methodArgument.name))
       }
     }
