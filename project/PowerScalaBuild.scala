@@ -49,7 +49,7 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, interpreter)
+    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, process, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, slf4j, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
