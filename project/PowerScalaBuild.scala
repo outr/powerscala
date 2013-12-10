@@ -49,7 +49,7 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, process, interpreter)
+    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, slf4j, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
@@ -71,8 +71,6 @@ object PowerScalaBuild extends Build {
     .settings(libraryDependencies ++= Seq(mongodb, h2))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
-  lazy val process = Project("process", file("process"), settings = createSettings("powerscala-process"))
-    .dependsOn(property)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
     .settings(libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % ))
     .dependsOn(reflect)
