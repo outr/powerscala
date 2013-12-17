@@ -26,13 +26,25 @@ trait EventProcessor[Event, Response, Result] extends Logging {
 
   def -=(listener: Listener[Event, Response]) = remove(listener)
 
-  def listen(priority: Priority, modes: ListenMode*)(f: Event => Response) = {
+  /**
+   * Creates the listener but does not add it.
+   *
+   * @param priority the priority of this listener
+   * @param modes the modes the listener should listen to. If this is empty it will be set to EventProcessor.DefaultModes.
+   * @param f the function to invoke when the listener is invoked.
+   * @return Listener
+   */
+  def create(priority: Priority, modes: ListenMode*)(f: Event => Response) = {
     val modesList = if (modes.isEmpty) {
       EventProcessor.DefaultModes
     } else {
       modes.toList
     }
-    val listener = FunctionalListener(f, name, priority, modesList)(eventManifest)
+    FunctionalListener(f, name, priority, modesList)(eventManifest)
+  }
+
+  def listen(priority: Priority, modes: ListenMode*)(f: Event => Response) = {
+    val listener = create(priority, modes: _*)(f)
     this += listener
     listener
   }
@@ -41,7 +53,7 @@ trait EventProcessor[Event, Response, Result] extends Logging {
     new ProcessorGroup(List(processor, this.asInstanceOf[EventProcessor[NE, NV, NR]]))
   }
 
-  def on(f: Event => Response, priority: Priority = Priority.Normal)= listen(priority)(f)
+  def on(f: Event => Response, priority: Priority = Priority.Normal) = listen(priority)(f)
 
   /**
    * Invokes the function upon each event until it returns Some[V] and then removes the listener from receiving any
