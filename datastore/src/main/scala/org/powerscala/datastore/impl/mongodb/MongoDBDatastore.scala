@@ -1,11 +1,13 @@
 package org.powerscala.datastore.impl.mongodb
 
 import org.powerscala.datastore.Datastore
+import com.mongodb.MongoClient
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 class MongoDBDatastore(val host: String = "localhost", val port: Int = 27017, val database: String = "datastore") extends Datastore {
+  protected[mongodb] lazy val connection = new MongoClient(host, port)
   override def session = super.session.asInstanceOf[MongoDBDatastoreSession]
 
   /**
@@ -19,4 +21,6 @@ class MongoDBDatastore(val host: String = "localhost", val port: Int = 27017, va
   var globalize = false
 
   protected def createSession() = new MongoDBDatastoreSession(this)
+
+  def shutdown() = connection.close()
 }
