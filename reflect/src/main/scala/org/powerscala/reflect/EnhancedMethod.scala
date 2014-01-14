@@ -3,6 +3,7 @@ package org.powerscala.reflect
 import java.lang.reflect.{Modifier, Method}
 import java.io.File
 import org.powerscala.LocalStack
+import argonaut.Json
 
 /**
  * EnhancedMethod wraps a java.lang.reflect.Method to provide more functionality and easier access.
@@ -183,72 +184,90 @@ object EnhancedMethod {
     case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType.name))
   }
   def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
-    resultType.name match {
-      case _ if resultType.isCastable(value) => Some(value)   // No conversion necessary
-      case "[D" => Some(value match {
-        case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
-      })
-      case "Int" => Some(value match {
-        case b: Byte => b.toInt
-        case c: Char => c.toInt
-        case l: Long => l.toInt
-        case f: Float => f.toInt
-        case d: Double => d.toInt
-        case i: java.lang.Integer => i.intValue()
-        case s: String => s.toInt
-        case s: Some[_] => s.get
-        case None => 0
-      })
-      case "Long" => Some(value match {
-        case b: Byte => b.toLong
-        case c: Char => c.toLong
-        case i: Int => i.toLong
-        case f: Float => f.toLong
-        case d: Double => d.toLong
-        case l: java.lang.Long => l.longValue()
-        case s: String => s.toLong
-      })
-      case "Float" => Some(value match {
-        case b: Byte => b.toFloat
-        case c: Char => c.toFloat
-        case i: Int => i.toFloat
-        case l: Long => l.toFloat
-        case d: Double => d.toFloat
-        case f: java.lang.Float => f.floatValue()
-        case s: String => s.toFloat
-      })
-      case "Double" => Some(value match {
-        case null => 0.0
-        case b: Byte => b.toDouble
-        case c: Char => c.toDouble
-        case i: Int => i.toDouble
-        case l: Long => l.toDouble
-        case f: java.lang.Double => f.doubleValue()
-        case s: String => s.toDouble
-      })
-      case "Boolean" => value match {
-        case s: String => Some(s.toBoolean)
+    value match {
+      case json: Json => {                      // Convert Json into useful types
+        val converted = if (json.isArray) {
+          json.arrayOrEmpty
+        } else if (json.isBool) {
+          json.bool.getOrElse(false)
+        } else if (json.isNull) {
+          null
+        } else if (json.isNumber) {
+          json.numberOrZero
+        } else if (json.isString) {
+          json.stringOrEmpty
+        }
+        convertToOption(name, converted, resultType)
       }
-      case "java.io.File" => value match {
-        case s: String => Some(new File(s))
-      }
-      case "java.lang.Object" => value match {
-        case d: Double => Some(d.asInstanceOf[AnyRef])
-      }
-      case "String" => value match {
-        case b: Boolean => Some(b.toString)
-      }
-      case "scala.Option" => Some(Option(value))
-      case "scala.collection.immutable.List" => value match {
-        case m: Map[_, _] => {
-          Some(m.toList.collect {
-            case (k, v) if intOption(k).nonEmpty => intOption(k).get -> v
-          }.sortBy(t => t._1).map(t => t._2))
+      case _ => {
+        resultType.name match {
+          case _ if resultType.isCastable(value) => Some(value)   // No conversion necessary
+          case "[D" => Some(value match {
+            case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
+          })
+          case "Int" => Some(value match {
+            case b: Byte => b.toInt
+            case c: Char => c.toInt
+            case l: Long => l.toInt
+            case f: Float => f.toInt
+            case d: Double => d.toInt
+            case i: java.lang.Integer => i.intValue()
+            case s: String => s.toInt
+            case s: Some[_] => s.get
+            case None => 0
+          })
+          case "Long" => Some(value match {
+            case b: Byte => b.toLong
+            case c: Char => c.toLong
+            case i: Int => i.toLong
+            case f: Float => f.toLong
+            case d: Double => d.toLong
+            case l: java.lang.Long => l.longValue()
+            case s: String => s.toLong
+          })
+          case "Float" => Some(value match {
+            case b: Byte => b.toFloat
+            case c: Char => c.toFloat
+            case i: Int => i.toFloat
+            case l: Long => l.toFloat
+            case d: Double => d.toFloat
+            case f: java.lang.Float => f.floatValue()
+            case s: String => s.toFloat
+          })
+          case "Double" => Some(value match {
+            case null => 0.0
+            case b: Byte => b.toDouble
+            case c: Char => c.toDouble
+            case i: Int => i.toDouble
+            case l: Long => l.toDouble
+            case f: java.lang.Double => f.doubleValue()
+            case s: String => s.toDouble
+          })
+          case "Boolean" => value match {
+            case s: String => Some(s.toBoolean)
+          }
+          case "java.io.File" => value match {
+            case s: String => Some(new File(s))
+          }
+          case "java.lang.Object" => value match {
+            case d: Double => Some(d.asInstanceOf[AnyRef])
+          }
+          case "String" => value match {
+            case b: Boolean => Some(b.toString)
+          }
+          case "scala.Option" => Some(Option(value))
+          case "scala.collection.immutable.List" => value match {
+            case m: Map[_, _] => {
+              Some(m.toList.collect {
+                case (k, v) if intOption(k).nonEmpty => intOption(k).get -> v
+              }.sortBy(t => t._1).map(t => t._2))
+            }
+          }
+          case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].getOrElse(null))
+          case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
+          case _ => None
         }
       }
-      case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].getOrElse(null))
-      case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
-      case _ => None
     }
   }
 

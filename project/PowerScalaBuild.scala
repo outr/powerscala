@@ -51,7 +51,7 @@ object PowerScalaBuild extends Build {
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
     .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, slf4j, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
+    .settings(libraryDependencies ++= Seq(asm, slf4j, argonaut, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
@@ -90,4 +90,5 @@ object Dependencies {
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val h2 = "com.h2database" % "h2" % "1.3.173"
+  val argonaut = "io.argonaut" %% "argonaut" % "6.0.1"
 }
