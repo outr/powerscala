@@ -36,20 +36,19 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   lazy val constructors: List[EnhancedConstructor] = javaClass.getConstructors.toList.map(c => new EnhancedConstructor(this, c))
 
   lazy val fields: List[EnhancedField] = {
-    val javaFields = javaClass.getFields.toSet ++ javaClass.getDeclaredFields.toSet
-    val map = javaFields.toList.map {
-      case f => {
-        val ef = new EnhancedField(this, EnhancedClass(f.getDeclaringClass), f)
-        f.getName -> ef
-      }
+    val javaFields = (javaClass.getFields.toSet ++ javaClass.getDeclaredFields.toSet).toList.map(f => new EnhancedField(this, EnhancedClass(f.getDeclaringClass), f))
+    val map = javaFields.map {
+      case f => f.name -> f
     }.toMap
     val result = asmFields.collect {       // Should define them in the proper order!
       case fn if map.contains(fn.name) => map(fn.name)
     }
     if (result.length != map.size) {
-      throw new RuntimeException(s"The number of fields mapped from ASM doesn't correspond to the names found. Fields: ${map.size}, Resulting: ${result.size}")
+      System.err.println(s"The number of fields mapped from ASM (${result.map(f => f.name).mkString(", ")}) doesn't correspond to the names found via Reflection (${map.keys.mkString(", ")}) for $name.")
+      javaFields
+    } else {
+      result
     }
-    result
   }
 
   /**
