@@ -29,6 +29,8 @@ object IO {
     }
   }
 
+  def stream(input: InputStream, output: File): Long = stream(input, new FileOutputStream(output))
+
   def copy(read: File, write: File): Unit = {
     val parent = write.getParentFile
     if (parent != null) {
