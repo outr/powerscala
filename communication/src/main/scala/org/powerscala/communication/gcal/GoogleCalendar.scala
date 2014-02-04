@@ -31,6 +31,7 @@ object CalendarItem {
   val ParserRegex1 = """(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})[.](\d{3})Z""".r
   val ParserRegex2 = """(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})-(\d{2}):(\d{2})""".r
   val ParserRegex3 = """(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})[+](\d{2}):(\d{2})""".r
+  val ParserRegex4 = """(\d{4})-(\d{2})-(\d{2})""".r
 
   def apply(map: Map[String, Any]) = {
     val kind = map("kind").asInstanceOf[String]
@@ -38,10 +39,19 @@ object CalendarItem {
     val status = map("status").asInstanceOf[String]
     val summary = map.getOrElse("summary", "busy").asInstanceOf[String]
     val updated = parseDate(map("updated").asInstanceOf[String])
-    val start = parseDate(map("start").asInstanceOf[Map[String, String]]("dateTime"))
-    val end = parseDate(map("end").asInstanceOf[Map[String, String]]("dateTime"))
+    val start = extractDate("start", map)
+    val end = extractDate("start", map)
     val iCalUID = map("iCalUID").asInstanceOf[String]
     new CalendarItem(kind, id, status, summary, updated, start, end, iCalUID)
+  }
+
+  private def extractDate(key: String, map: Map[String, Any]) = {
+    val container = map(key).asInstanceOf[Map[String, String]]
+    if (container.contains("dateTime")) {
+      parseDate(container("dateTime"))
+    } else {
+      parseDate(container("date"))
+    }
   }
 
   def parseDate(date: String) = date match {
@@ -62,6 +72,11 @@ object CalendarItem {
       val timeZone = TimeZone.getTimeZone(TimeZone.getAvailableIDs(offset).head)
       val calendar = Calendar.getInstance(timeZone)
       calendar.set(year.toInt, month.toInt - 1, day.toInt, hour.toInt, minute.toInt, second.toInt)
+      calendar.getTimeInMillis
+    }
+    case ParserRegex4(year, month, day) => {
+      val calendar = Calendar.getInstance()
+      calendar.set(year.toInt, month.toInt - 1, day.toInt, 0, 0, 0)
       calendar.getTimeInMillis
     }
   }
