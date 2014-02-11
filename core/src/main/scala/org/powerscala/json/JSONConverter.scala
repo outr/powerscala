@@ -79,6 +79,7 @@ object JSONConverter {
       list.map(v => parseJSON[Any](v, hierarchicalName)(null)).asInstanceOf[T]
     }
 //    case _ => json.asInstanceOf[T]
+    case _ if manifest != null => EnhancedMethod.convertTo(null, json, manifest.runtimeClass).asInstanceOf[T]
     case _ => {
       val c: EnhancedClass = typeMap.get(hierarchicalName) match {
         case Some(clazz) => clazz

@@ -234,7 +234,8 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * Retrieve a CaseValue by name if this is a case class.
    */
-  def caseValue(name: String) = caseValues.find(cv => cv.name == name)
+  private lazy val caseValueMap = caseValues.map(cv => cv.name -> cv).toMap
+  def caseValue(name: String) = caseValueMap.get(name)
 
   /**
    * Utilizes case classes to derive the value of the field defined by 'name' on the given 'instance'.
