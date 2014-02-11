@@ -14,11 +14,11 @@ object JSONConverter {
     typeMap += hierarchicalName -> clazz
   }
 
-  val formatter: Any => String = (value: Any) => value match {
+  val formatter: Any => String = {
     case null => "null"
-    case s : String => "\"" + JSONFormat.quoteString(s) + "\""
-    case jo : JSONObject => jo.toString(formatter)
-    case ja : JSONArray => ja.toString(formatter)
+    case s: String => "\"" + JSONFormat.quoteString(s) + "\""
+    case jo: JSONObject => jo.toString(formatter)
+    case ja: JSONArray => ja.toString(formatter)
     case other => other.toString
   }
 

@@ -78,6 +78,18 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
    */
   def isStatic = Modifier.isStatic(javaMethod.getModifiers)
 
+  def isPublic = Modifier.isPublic(javaMethod.getModifiers)
+
+  def isAbstract = Modifier.isAbstract(javaMethod.getModifiers)
+  def isFinal = Modifier.isFinal(javaMethod.getModifiers)
+  def isInterface = Modifier.isInterface(javaMethod.getModifiers)
+  def isPrivate = Modifier.isPrivate(javaMethod.getModifiers)
+  def isProtected = Modifier.isProtected(javaMethod.getModifiers)
+  def isStrict = Modifier.isStrict(javaMethod.getModifiers)
+  def isSynchronized = Modifier.isSynchronized(javaMethod.getModifiers)
+  def isTransient = Modifier.isTransient(javaMethod.getModifiers)
+  def isVolatile = Modifier.isVolatile(javaMethod.getModifiers)
+
   private def getDefault(index: Int) = {
     val instanceClass = parent.nonCompanion
     val defaultMethodName = name + "$default$" + (index + 1)
