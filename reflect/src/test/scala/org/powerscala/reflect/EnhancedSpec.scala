@@ -1,7 +1,6 @@
 package org.powerscala.reflect
 
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.WordSpec
+import org.scalatest.{Matchers, WordSpec}
 
 
 /**
@@ -9,7 +8,7 @@ import org.scalatest.WordSpec
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class EnhancedSpec extends WordSpec with ShouldMatchers {
+class EnhancedSpec extends WordSpec with Matchers {
   var ec: EnhancedClass = _
   var method: EnhancedMethod = _
 

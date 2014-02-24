@@ -1,16 +1,16 @@
 package org.powerscala.bind
 
 import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
 import org.powerscala.event.Change
 import org.powerscala.event.processor.UnitProcessor
+import org.scalatest.Matchers
 
 /**
  * BindingSpec tests Binding and Bindable classes.
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class BindingSpec extends WordSpec with ShouldMatchers {
+class BindingSpec extends WordSpec with Matchers {
   "Bindable" when {
     "single binding" should {
       "set the initial values" in {

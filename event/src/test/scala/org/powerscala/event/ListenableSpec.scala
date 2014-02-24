@@ -1,14 +1,13 @@
 package org.powerscala.event
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 import org.powerscala.event.processor.{ListProcessor, InterceptProcessor, UnitProcessor, OptionProcessor}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  *         Date: 12/3/11
  */
-class ListenableSpec extends WordSpec with ShouldMatchers {
+class ListenableSpec extends WordSpec with Matchers {
   "Listenable" when {
     "using UnitProcessor" should {
       var received = false

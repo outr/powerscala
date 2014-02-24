@@ -1,7 +1,6 @@
 package org.powerscala.log
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 import org.powerscala.log.writer.Writer
 import org.powerscala.log.formatter.Formatter
 import scala.collection.mutable.ListBuffer
@@ -9,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class LoggingSpec extends WordSpec with ShouldMatchers with Logging {
+class LoggingSpec extends WordSpec with Matchers with Logging {
   logger.configure {
     case l => l.withHandler(writer = TestingWriter).withLevel(Level.Debug)
   }

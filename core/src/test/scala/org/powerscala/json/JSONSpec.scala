@@ -1,12 +1,11 @@
 package org.powerscala.json
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 
 /**
  * @author Matt Hicks <mhicks@outr.com>
  */
-class JSONSpec extends WordSpec with ShouldMatchers {
+class JSONSpec extends WordSpec with Matchers {
   JSONConverter.registerType("org.powerscala.json.TestJSON1.values", classOf[Int])
   JSONConverter.registerType("org.powerscala.json.TestJSON2.values", classOf[String])
 

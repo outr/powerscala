@@ -1,7 +1,6 @@
 package org.powerscala.property
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.event.Descendants
 import org.powerscala.hierarchy.ChildLike
@@ -11,7 +10,7 @@ import org.powerscala.Priority
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class PropertySpec extends WordSpec with ShouldMatchers {
+class PropertySpec extends WordSpec with Matchers {
   "Property values" when {
     "created without a default value" should {
       val sp = Property[String]()

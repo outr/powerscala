@@ -52,6 +52,8 @@ sealed case class Time(value: Double, pattern: String) extends EnumEntry {
 
   def format(calendar: Calendar) = dateFormat.format(calendar.getTime)
 
+  def millis = Time.millis(value)
+
   /**
    * Parses the Calendar and then returns a Long shortened to the precision of this format in milliseconds.
    */

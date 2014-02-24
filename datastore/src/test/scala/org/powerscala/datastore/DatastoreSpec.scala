@@ -2,8 +2,7 @@ package org.powerscala.datastore
 
 import impl.mongodb.MongoDBDatastore
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 import org.powerscala.{Priority, Precision}
 import query.{Queryable, Field}
 import java.util.UUID
@@ -12,7 +11,7 @@ import org.powerscala.hierarchy.event.Descendants
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class DatastoreSpec extends WordSpec with ShouldMatchers {
+class DatastoreSpec extends WordSpec with Matchers {
   lazy val datastore = new MongoDBDatastore("localhost", 27017, "DatastoreSpec")
   datastore.register(classOf[BaseTrait])
 

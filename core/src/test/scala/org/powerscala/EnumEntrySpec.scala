@@ -1,7 +1,6 @@
 package org.powerscala
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
@@ -9,7 +8,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class EnumEntrySpec extends WordSpec with ShouldMatchers {
+class EnumEntrySpec extends WordSpec with Matchers {
   "TestEnum" should {
     "have three entries" in {
       TestEnum.values.length should be(3)

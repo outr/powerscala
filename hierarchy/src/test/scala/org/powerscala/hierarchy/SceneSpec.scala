@@ -33,8 +33,7 @@
 package org.powerscala.hierarchy
 
 import event.{ChildRemovedEvent, ChildAddedEvent}
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.WordSpec
+import org.scalatest.{Matchers, WordSpec}
 
 import language.implicitConversions
 import language.reflectiveCalls
@@ -44,7 +43,7 @@ import language.reflectiveCalls
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class SceneSpec extends WordSpec with ShouldMatchers {
+class SceneSpec extends WordSpec with Matchers {
 
   case class StringElement(name: String) extends MutableChildLike[Any]
 
