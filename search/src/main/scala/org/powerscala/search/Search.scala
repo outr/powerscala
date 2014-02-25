@@ -87,6 +87,17 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     taxonomyWriter.commit()
   }
 
+  def delete(du: DocumentUpdate): Unit = {
+    val id = du.fields.head
+    if (!id.isInstanceOf[StringField]) throw new RuntimeException(s"Attempting to update with non-StringField term (${id.getClass}). Not supported.")
+    val term = new Term(id.name(), id.stringValue())
+    delete(term)
+  }
+
+  def delete(term: Term): Unit = {
+    writer.deleteDocuments(term)
+  }
+
   def commit() = writer.commit()
 
   val query = SearchQueryBuilder(this, defaultField)
