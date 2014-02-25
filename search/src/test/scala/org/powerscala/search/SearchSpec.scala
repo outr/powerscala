@@ -1,12 +1,10 @@
 package org.powerscala.search
 
 import org.scalatest.{Matchers, WordSpec}
-import org.apache.lucene.document.{TextField, StringField, Field, IntField}
+import org.apache.lucene.document.{TextField, StringField, Field}
 
 import scala.language.implicitConversions
 import org.apache.lucene.facet.taxonomy.CategoryPath
-import org.apache.lucene.facet.search.FacetsCollector
-import org.apache.lucene.search.MultiCollector
 
 
 /**
@@ -44,7 +42,7 @@ class SearchSpec extends WordSpec with Matchers {
         search.update(Image(1, "butterfly", "this is a test image of a butterfly.", List("flying", "butter", "insect", "image")))
         search.update(Image(2, "dragonfly", "this is a test image of a dragonfly.", List("flying", "dragon", "insect", "image")))
         search.update(Image(3, "unicorn", "this is a test image of a unicorn.", List("animal", "mythical", "horse", "image")))
-        search.update(Image(4, "rainbow", "this is a test image of a rainbow (not a fly).", List("light", "colorful", "pretty", "image")))
+        search.update(Image(4, "rainbow", "this is a test image of a rainbow (not a dragonfly).", List("light", "colorful", "pretty", "image")))
         search.update(Image(5, "fly", "this is a test image of a fly.", List("flying", "insect", "image")))
         search.commit()
       }
@@ -52,13 +50,24 @@ class SearchSpec extends WordSpec with Matchers {
         val results = search.query.run()
         results.total should equal(5)
       }
+      "query one record matching 'unicorn' and get the document" in {
+        val results = search.query("unicorn").run()
+        results.total should equal(1)
+        val doc = results.doc(0)
+        doc.get("id") should equal("3")
+        doc.get("name") should equal("unicorn")
+        doc.get("description") should equal("this is a test image of a unicorn.")
+        doc.get("tags") should equal("animal, mythical, horse, image")
+      }
+      "query all text that matches 'dragonfly'" in {
+        val results = search.query("dragonfly").run()
+        results.total should equal(2)
+      }
       "query everything with 'fly' in the name along with tags" in {
         val results = search.query("name:*fly").facet("tag").run()
         results.total should equal(3)
         results.facetResults.size should equal(1)
-        val facetsOption = results.facets("tag")
-        facetsOption shouldNot equal(None)
-        val facets = facetsOption.get.toVector
+        val facets = results.facets("tag").toVector
         facets.size should equal(5)
         facets(0).name should equal("image")
         facets(0).value should equal(3.0)
@@ -83,7 +92,7 @@ class SearchSpec extends WordSpec with Matchers {
         results.pageStart should equal(0)
         results.page should equal(0)
         results.pages should equal(3)
-        results.facets("tag").get.size should equal(11)
+        results.facets("tag").size should equal(11)
       }
       "go to the next page" in {
         results = results.page(1)
@@ -131,6 +140,23 @@ class SearchSpec extends WordSpec with Matchers {
       "go backward one page" in {
         results = results.previousPage
         results.page should equal(1)
+      }
+    }
+    "doing faceted drill-down" should {
+      "return one result for 'butter'" in {
+        val results = search.query.facet("tag", 100).drillDown("tag", "butter").run()
+        results.total should equal(1)
+        results.facets("tag").size should equal(4)
+      }
+      "return three results for 'flying'" in {
+        val results = search.query.facet("tag", 100).drillDown("tag", "flying").run()
+        results.total should equal(3)
+        results.facets("tag").size should equal(5)
+      }
+      "combine tagged drill-down and search arguments" in {
+        val results = search.query("dragonfly").facet("tag", 100).drillDown("tag", "flying").run()
+        results.total should equal(1)
+        results.facets("tag").size should equal(4)
       }
     }
   }

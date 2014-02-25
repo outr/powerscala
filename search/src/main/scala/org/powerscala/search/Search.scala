@@ -14,18 +14,24 @@ import org.apache.lucene.facet.taxonomy.directory.{DirectoryTaxonomyReader, Dire
 import org.apache.lucene.facet.index.FacetFields
 import scala.collection.JavaConversions._
 import org.apache.lucene.facet.params.FacetSearchParams
-import org.apache.lucene.facet.search.{FacetRequest, FacetResult, FacetsCollector, CountFacetRequest}
+import org.apache.lucene.facet.search._
+import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
+import org.powerscala.concurrent.Time._
+import org.powerscala.concurrent.{Executor, Time}
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0) {
+class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds) {
   private val version = Version.LUCENE_46
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
     case None => new RAMDirectory
   }
   val analyzer = new StandardAnalyzer(version)
+
+  private val lastCommit = new AtomicLong(0L)
+  private val committing = new AtomicBoolean(false)
 
   private val config = new IndexWriterConfig(version, analyzer)
   config.setOpenMode(if (append) OpenMode.CREATE_OR_APPEND else OpenMode.CREATE)
@@ -69,6 +75,12 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     _searcher
   }
 
+  def apply(docId: Int, fieldsToLoad: String*) = if (fieldsToLoad.isEmpty) {
+    searcher.doc(docId)
+  } else {
+    searcher.doc(docId, fieldsToLoad.toSet)
+  }
+
   def update(du: DocumentUpdate) = {
     val id = du.fields.head
     if (!id.isInstanceOf[StringField]) throw new RuntimeException(s"Attempting to update with non-StringField term (${id.getClass}). Not supported.")
@@ -98,7 +110,19 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     writer.deleteDocuments(term)
   }
 
-  def commit() = writer.commit()
+  def commit() = {
+    writer.commit()
+    lastCommit.set(System.currentTimeMillis())
+  }
+
+  def requestCommit() = if (committing.compareAndSet(false, true)) {    // Invoke commit if not already scheduled
+    val elapsed = Time.fromMillis(System.currentTimeMillis() - lastCommit.get())
+    val timeLeft = math.max(commitDelay - elapsed, 0.0)
+    Executor.schedule(timeLeft) {
+      commit()
+      committing.set(false)
+    }
+  }
 
   val query = SearchQueryBuilder(this, defaultField)
 
@@ -107,16 +131,26 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   private[search] def search(q: SearchQueryBuilder) = {
     val parser = new QueryParser(version, defaultField, analyzer)
     parser.setAllowLeadingWildcard(q.allowLeadingWildcard)
-    val query = parser.parse(q.queryString)
+    val baseQuery = parser.parse(q.queryString)
     val collector = TopScoreDocCollector.create(q.offset + q.limit, null, false)
 
+    var fsp: FacetSearchParams = null
     var fc: FacetsCollector = null
     val collectors = if (q.facetRequests.nonEmpty) {
-      val fsp = new FacetSearchParams(q.facetRequests: _*)
+      fsp = new FacetSearchParams(q.facetRequests: _*)
       fc = FacetsCollector.create(fsp, searcher.getIndexReader, taxonomyReader)
       MultiCollector.wrap(fc, collector)
     } else {
       collector
+    }
+
+    val query = if (q.drillDown.nonEmpty) {          // Drill-down via facets query
+      if (fsp == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
+      val ddq = new DrillDownQuery(fsp.indexingParams, baseQuery)
+      ddq.add(q.drillDown: _*)
+      ddq
+    } else {                                                        // No drill-down, use the base query
+      baseQuery
     }
 
     searcher.search(query, collectors)
@@ -152,9 +186,11 @@ case class SearchQueryBuilder(instance: Search,
                               offset: Int = 0,
                               limit: Int = 100,
                               allowLeadingWildcard: Boolean = true,
-                              facetRequests: List[FacetRequest] = Nil) {
+                              facetRequests: List[FacetRequest] = Nil,
+                              drillDown: List[CategoryPath] = Nil) {
   def facets(facetRequests: FacetRequest*) = copy(facetRequests = facetRequests.toList)
   def facet(name: String, max: Int = 10) = copy(facetRequests = new CountFacetRequest(new CategoryPath(name), max) :: facetRequests)
+  def drillDown(facet: String, value: String): SearchQueryBuilder = copy(drillDown = new CategoryPath(facet, value) :: drillDown)
   def run() = instance.search(this)
 
   def offset(o: Int): SearchQueryBuilder = copy(offset = o)
@@ -162,6 +198,7 @@ case class SearchQueryBuilder(instance: Search,
 }
 
 case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: SearchQueryBuilder) {
+  def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
   def scoreDocs = topDocs.scoreDocs
   def pageStart = b.offset
   def pageSize = b.limit
@@ -170,7 +207,7 @@ case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: S
   def total = topDocs.totalHits
   def facets(name: String) = facetResults.collectFirst {
     case r if r.getFacetResultNode.label.components(0) == name => r.getFacetResultNode.subResults.map(n => Facet(n.label.components(1), n.value)).toList
-  }
+  }.getOrElse(Nil)
   def page(p: Int) = {
     val pageNumber = math.min(pages - 1, math.max(0, p))
     // Offset to the proper page, remove all facets (no need to query them again), and then set the facetResults
