@@ -30,6 +30,9 @@ class DelayedQueue[T](delay: Double, quietPeriod: Double, handler: T => Unit) {
         start.set(0L)
         queueBacklog()
       }
+      if (!queue.isEmpty) {
+        schedule()          // There are more items to process, so lets schedule another run
+      }
     } else {
       handler(item)
       execute()
@@ -60,6 +63,12 @@ class DelayedQueue[T](delay: Double, quietPeriod: Double, handler: T => Unit) {
       future = Executor.schedule(delay) {
         execute()
       }
+    }
+  }
+
+  private def schedule() = if (start.compareAndSet(0L, System.currentTimeMillis())) {
+    future = Executor.schedule(delay) {
+      execute()
     }
   }
 }

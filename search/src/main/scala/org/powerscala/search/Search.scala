@@ -199,6 +199,7 @@ case class SearchQueryBuilder(instance: Search,
 
 case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: SearchQueryBuilder) {
   def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
+  def docs = topDocs.scoreDocs.indices.map(index => doc(index)).toList
   def scoreDocs = topDocs.scoreDocs
   def pageStart = b.offset
   def pageSize = b.limit
