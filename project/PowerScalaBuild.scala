@@ -22,6 +22,7 @@ object PowerScalaBuild extends Build {
         else
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
+    fork := true,
     publishArtifact in Test := false,
     pomExtra := <url>http://powerscala.org</url>
       <licenses>
