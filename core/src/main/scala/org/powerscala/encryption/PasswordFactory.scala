@@ -10,6 +10,8 @@ import scala.util.Random
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 object PasswordFactory {
+  var saltType = "SHA1PRNG"
+
   def authenticate(attemptedPassword: String, encryptedPassword: Array[Byte], salt: Array[Byte]) = {
     val encryptedAttemptedPassword = encryptPassword(attemptedPassword, salt)
     util.Arrays.equals(encryptedPassword, encryptedAttemptedPassword)
@@ -24,8 +26,10 @@ object PasswordFactory {
     factory.generateSecret(spec).getEncoded
   }
 
-  def generateSalt() = {
-    val random = SecureRandom.getInstance("SHA1PRNG")
+  def generateSalt() = if (saltType.equalsIgnoreCase("TEST")) {
+    Array[Byte](1, 2, 3, 4, 5, 6, 7, 8)
+  } else {
+    val random = SecureRandom.getInstance(saltType)
     val salt = new Array[Byte](8)
     random.nextBytes(salt)
     salt
