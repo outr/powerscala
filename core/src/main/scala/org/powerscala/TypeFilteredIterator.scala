@@ -1,6 +1,7 @@
 package org.powerscala
 
 import scala.annotation.tailrec
+import org.powerscala.reflect._
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -30,7 +31,7 @@ case class TypeFilteredIterator[T](iterator: Iterator[_ >: T])(implicit manifest
     None
   } else {
     val next = iterator.next()
-    if (next != null && manifest.runtimeClass.isAssignableFrom(next.getClass)) {
+    if (next != null && next.getClass.hasType(manifest.runtimeClass)) {
       Some(next.asInstanceOf[T])
     } else {
       findNext()
