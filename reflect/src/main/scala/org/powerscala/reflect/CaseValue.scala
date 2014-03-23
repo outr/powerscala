@@ -40,6 +40,7 @@ object CaseValue {
     val b = new StringBuilder
     var p = ' '
     name.foreach {
+      case '$' => // Ignore $
       case c => {
         if (b.length > 1 && (p.isUpper || p.isDigit) && (!c.isUpper && !c.isDigit)) {
           b.insert(b.length - 1, ' ')

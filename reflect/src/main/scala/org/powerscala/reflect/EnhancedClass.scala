@@ -51,6 +51,8 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     }
   }
 
+  def computeAllLazy(instance: AnyRef) = fields.foreach(f => f.computeLazy(instance))
+
   /**
    * All methods on this class.
    */
