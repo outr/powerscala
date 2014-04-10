@@ -128,6 +128,12 @@ object Time extends Enumerated[Time] {
     (System.nanoTime - time) / Precision.Nanoseconds.conversion
   }
 
+  def elapsedReturn[R](f: R): (R, Double) = {
+    val time = System.nanoTime()
+    val result: R = f
+    result -> fromNanos(System.nanoTime - time)
+  }
+
   /**
    * Converts time in milliseconds to a short String representation.
    */
