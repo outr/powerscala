@@ -80,7 +80,7 @@ object PowerScalaBuild extends Build {
 object Dependencies {
   val luceneVersion = "4.6.1"
 
-  val asm = "org.ow2.asm" % "asm-all" % "4.1"
+  val asm = "org.ow2.asm" % "asm-all" % "5.0.2"
   val scalaTest = "org.scalatest" % "scalatest_2.10" % "2.0" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.3"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.5"
