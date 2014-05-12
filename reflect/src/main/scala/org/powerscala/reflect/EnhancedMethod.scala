@@ -4,6 +4,7 @@ import java.lang.reflect.{Modifier, Method}
 import java.io.File
 import org.powerscala.LocalStack
 import argonaut.Json
+import java.sql.Timestamp
 
 /**
  * EnhancedMethod wraps a java.lang.reflect.Method to provide more functionality and easier access.
@@ -235,6 +236,7 @@ object EnhancedMethod {
             case f: Float => f.toLong
             case d: Double => d.toLong
             case l: java.lang.Long => l.longValue()
+            case ts: Timestamp => ts.getTime
             case s: String => s.toLong
           })
           case "Float" => Some(value match {
@@ -257,6 +259,9 @@ object EnhancedMethod {
           })
           case "Boolean" => value match {
             case s: String => Some(s.toBoolean)
+          }
+          case "scala.math.BigDecimal" => value match {
+            case d: java.math.BigDecimal => Some(BigDecimal(d))
           }
           case "java.io.File" => value match {
             case s: String => Some(new File(s))
