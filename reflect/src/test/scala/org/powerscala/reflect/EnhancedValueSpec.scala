@@ -1,12 +1,11 @@
 package org.powerscala.reflect
 
-import org.scalatest.WordSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{Matchers, WordSpec}
 
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class EnhancedValueSpec extends WordSpec with ShouldMatchers {
+class EnhancedValueSpec extends WordSpec with Matchers {
   val one = One("Test One", 1)
   val two = Two("Test Two", one)
   val three = Three("Test Three", two)

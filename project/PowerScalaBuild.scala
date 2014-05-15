@@ -81,7 +81,7 @@ object Dependencies {
   val luceneVersion = "4.6.1"
 
   val asm = "org.ow2.asm" % "asm-all" % "5.0.2"
-  val scalaTest = "org.scalatest" % "scalatest_2.10" % "2.0" % "test"
+  val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.3"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.5"
   val reflections = "org.reflections" % "reflections" % "0.9.9-RC1"
@@ -92,5 +92,5 @@ object Dependencies {
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val h2 = "com.h2database" % "h2" % "1.3.173"
-  val argonaut = "io.argonaut" %% "argonaut" % "6.0.1"
+  val argonaut = "io.argonaut" %% "argonaut" % "latest.release"
 }
