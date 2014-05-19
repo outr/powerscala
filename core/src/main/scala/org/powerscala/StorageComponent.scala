@@ -33,5 +33,13 @@ trait StorageComponent[C, T] {
    */
   def get(t: T) = Storage.get[String, C](t, componentIdentifier)
 
+  /**
+   * Sets a pre-defined value to this StorageComponent.
+   *
+   * @param t the component key
+   * @param value the value to set
+   */
+  def set(t: T, value: C): Unit = Storage.set(t, componentIdentifier, value)
+
   protected def create(t: T): C
 }
