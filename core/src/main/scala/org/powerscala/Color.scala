@@ -76,6 +76,12 @@ trait Color extends EnumEntry {
   }
 
   override def toString = "Color(red=%s, green=%s, blue=%s, alpha=%s)".format(red, green, blue, alpha)
+
+  def toCSS = if (alpha < 1.0) {
+    s"rgba(${int.rgb}, ${alpha})"
+  } else {
+    hex.rgb
+  }
 }
 
 object Color extends Enumerated[Color] {
