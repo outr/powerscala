@@ -25,5 +25,13 @@ abstract class EnumEntry {
 
   parent += this
 
+  /**
+   * Adds additional lookup validation to match on Enumerated.apply
+   *
+   * @param s the String to validate
+   * @return defaults to false
+   */
+  def isMatch(s: String) = false
+
   override def toString = s"${parent.name}.$name"
 }
