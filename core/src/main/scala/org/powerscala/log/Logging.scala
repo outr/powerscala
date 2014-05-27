@@ -86,8 +86,8 @@ object Logging {
   }
 
   System.setProperty("akka.daemonic", "on")
-  private[log] val system = ActorSystem("LoggingActorSystem")
-  private[log] val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
+  private[log] lazy val system = ActorSystem("LoggingActorSystem")
+  private[log] lazy val actor = system.actorOf(Props[AsynchronousLoggingActor], name = "asynchronousLoggingActor")
 
   def apply(logging: Logging): Logger = Logger(logging.getClass.getName)
 

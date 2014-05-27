@@ -307,7 +307,6 @@ class Report(_start: Long) {
 
   def apply(name: String) = {
     val current = System.nanoTime()
-    blocks
     blocks += name -> (current - _last)
     absolute += name -> current
     _last = current
@@ -335,7 +334,6 @@ class Report(_start: Long) {
         b.append("%s - Block: %ss, Elapsed: %ss\r\n".format(name, block(name), elapsed(name)))
       }
     }
-    b.append()
     b.toString()
   }
 }

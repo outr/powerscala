@@ -6,9 +6,9 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.6.4-SNAPSHOT",
+    version := "1.6.5-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.10.3",
+    scalaVersion := "2.11.1",
     libraryDependencies ++= Seq(
       scalaTest
     ),
@@ -80,17 +80,17 @@ object PowerScalaBuild extends Build {
 object Dependencies {
   val luceneVersion = "4.6.1"
 
-  val asm = "org.ow2.asm" % "asm-all" % "5.0.2"
+  val asm = "org.ow2.asm" % "asm-all" % "latest.release"
   val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
   val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.3"
   val slf4j = "org.slf4j" % "slf4j-api" % "1.7.5"
-  val reflections = "org.reflections" % "reflections" % "0.9.9-RC1"
-  val akkaActors = "com.typesafe.akka" % "akka-actor_2.10" % "2.2.1"
+  val reflections = "org.reflections" % "reflections" % "latest.release"
+  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "latest.release"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
-  val h2 = "com.h2database" % "h2" % "1.3.173"
+  val h2 = "com.h2database" % "h2" % "latest.release"
   val argonaut = "io.argonaut" %% "argonaut" % "latest.release"
 }
