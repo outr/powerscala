@@ -75,6 +75,9 @@ trait Color extends EnumEntry {
     case _ => false
   }
 
+  def mutable: MutableColor
+  def immutable: ImmutableColor
+
   override def toString = "Color(red=%s, green=%s, blue=%s, alpha=%s)".format(red, green, blue, alpha)
 
   def toCSS = if (alpha < 1.0) {
@@ -251,7 +254,7 @@ object Color extends Enumerated[Color] {
    * @param saturation the saturation (value from 0.0 to 1.0)
    * @param value the value (value from 0.0 to 1.0)
    */
-  def hsv(hue: Double, saturation: Double, value: Double): ImmutableColor = {
+  def hsv(hue: Double, saturation: Double, value: Double): Color = {
     val c  = saturation * value
     val h1 = hue / 60.0
     val x  = c*(1.0 - ((h1 % 2) - 1.0).abs)
@@ -265,7 +268,7 @@ object Color extends Enumerated[Color] {
     immutable(r + m, g + m, b + m)
   }
 
-  def immutable(value: Long): ImmutableColor = {
+  def immutable(value: Long): Color = {
     val alpha = (value >> 24 & 0xff) / 255.0
     val red = (value >> 16 & 0xff) / 255.0
     val green = (value >> 8 & 0xff) / 255.0
@@ -273,16 +276,16 @@ object Color extends Enumerated[Color] {
     immutable(red, green, blue, alpha)
   }
 
-  def immutable(red: Int, green: Int, blue: Int, alpha: Int): ImmutableColor = {
+  def immutable(red: Int, green: Int, blue: Int, alpha: Int): Color = {
     immutable(red / 255.0, green / 255.0, blue / 255.0, alpha / 255.0)
   }
 
-  def immutable(hex: String): ImmutableColor = {
+  def immutable(hex: String): Color = {
     val (red, green, blue, alpha) = convertHex(hex)
     new ImmutableColor(red, green, blue, alpha)
   }
 
-  def immutable(red: Double = 0.0, green: Double = 0.0, blue: Double = 0.0, alpha: Double = 1.0): ImmutableColor = {
+  def immutable(red: Double = 0.0, green: Double = 0.0, blue: Double = 0.0, alpha: Double = 1.0): Color = {
     ImmutableColor(red, green, blue, alpha)
   }
 
@@ -352,6 +355,7 @@ case class ImmutableColor(red: Double, green: Double, blue: Double, alpha: Doubl
   }
 
   def mutable = MutableColor(red, green, blue, alpha)
+  def immutable = this
 }
 
 case class MutableColor(var red: Double, var green: Double, var blue: Double, var alpha: Double) extends Color {
@@ -359,5 +363,6 @@ case class MutableColor(var red: Double, var green: Double, var blue: Double, va
     copy(red, green, blue, alpha)
   }
 
+  def mutable = this
   def immutable = ImmutableColor(red, green, blue, alpha)
 }
