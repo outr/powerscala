@@ -15,7 +15,7 @@ class PropertyGroup[T](val properties: List[Property[T]]) extends PropertyLike[T
   /**
    * Retrieves the first value from this PropertyGroup or null if it is empty.
    */
-  def apply() = properties.headOption.map(p => p.value).getOrElse(null.asInstanceOf[T])
+  def apply() = properties.headOption.fold(null.asInstanceOf[T])(p => p.value)
 
   /**
    * Sets the supplied value to all properties in the group.

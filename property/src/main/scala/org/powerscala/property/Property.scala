@@ -12,15 +12,12 @@ import org.powerscala.reflect._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Property[T](backing: Backing[T], default: => Option[T])
-                 (implicit val parent: Listenable, val manifest: Manifest[T])
+class Property[T](backing: Backing[T] = new VariableBacking[T], default: => Option[T] = None)
+                 (implicit val parent: Listenable = null, val manifest: Manifest[T])
       extends PropertyLike[T]
       with Listenable
       with Bindable[T]
       with ChildLike[Listenable] {
-  def this()(implicit parent: Listenable, manifest: Manifest[T]) = this(new VariableBacking[T], None)
-  def this(default: => Option[T])(implicit parent: Listenable, manifest: Manifest[T]) = this(new VariableBacking[T], default)
-
   val read = new PropertyReadProcessor()(this)
   val changing = new PropertyChangingProcessor[T]()(this, manifest)
   val change = new PropertyChangeProcessor[T]()(this, Manifest.classType[PropertyChangeEvent[T]](classOf[PropertyChangeEvent[T]]))
@@ -39,13 +36,13 @@ class Property[T](backing: Backing[T], default: => Option[T])
 
   def apply(value: T): Unit = apply(value, suppressEvent = false)
 
-  def apply(value: T, suppressEvent: Boolean): Unit = if (suppressEvent) {
-    backing.setValue(value)
-  } else {
-    propertyChanging(value) match {
-      case Some(newValue) if isChange(newValue) => propertyChange(newValue)
-      case _ => // Don't change the value
+  def apply(value: T, suppressEvent: Boolean): Unit = propertyChanging(value) match {
+    case Some(newValue) if isChange(newValue) => if (suppressEvent) {
+      backing.setValue(value)
+    } else {
+      propertyChange(newValue)
     }
+    case _ => // Don't change the value
   }
 
   def get = Option(apply())

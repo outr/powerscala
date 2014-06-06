@@ -67,7 +67,7 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(index: Int) = values(index)
 
-  def unapply(s: String) = get(name)
+  def unapply(s: String) = get(s)
 
   /**
    * Retrieves a random enum.
