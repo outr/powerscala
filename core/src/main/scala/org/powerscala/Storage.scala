@@ -96,16 +96,16 @@ object Storage {
     }
   }
   def getAndSet[K, T](obj: Any, key: K, value: T) = {
-    val previous = get(obj, key)
+    val previous = get[K, T](obj, key)
     set(obj, key, value)
     previous
   }
-  def getOrElse[K, T](obj: Any, key: K, value: => T) = get(obj, key) match {
+  def getOrElse[K, T](obj: Any, key: K, value: => T) = get[K, T](obj, key) match {
     case Some(v) => v
     case None => value
   }
   def getAndRemove[K, T](obj: Any, key: K) = {
-    val option = get(obj, key)
+    val option = get[K, T](obj, key)
     remove(obj, key)
     option
   }
@@ -125,7 +125,7 @@ object Storage {
   def clear(obj: Any) = synchronized {
     _map.put(obj, Map.empty[Any, Any])
   }
-  def apply[T](obj: Any, key: String) = get(obj, key).getOrElse(throw new NullPointerException(s"Unable to find $key"))
+  def apply[T](obj: Any, key: String) = get[String, T](obj, key).getOrElse(throw new NullPointerException(s"Unable to find $key"))
   def set[K, T](obj: Any, key: K, value: T) = synchronized {
     val current = _map.get(obj) match {
       case Some(m) => m

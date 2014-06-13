@@ -8,6 +8,7 @@ import org.powerscala.hierarchy.ChildLike
 import org.powerscala.bind.Bindable
 
 import org.powerscala.reflect._
+import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -34,15 +35,17 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], default: => Opti
     backing.getValue
   }
 
-  def apply(value: T): Unit = apply(value, suppressEvent = false)
+  def apply(value: T): Unit = apply(value, EventHandling.Normal)
 
-  def apply(value: T, suppressEvent: Boolean): Unit = propertyChanging(value) match {
-    case Some(newValue) if isChange(newValue) => if (suppressEvent) {
-      backing.setValue(value)
-    } else {
-      propertyChange(newValue)
+  def apply(value: T, handling: EventHandling) = propertyChanging(value) match {
+    case Some(newValue) => handling match {
+      case EventHandling.Normal => if (isChange(newValue)) {
+        propertyChange(newValue)
+      }
+      case EventHandling.SuppressEvent => backing.setValue(newValue)
+      case EventHandling.FireEvent => propertyChange(newValue)
     }
-    case _ => // Don't change the value
+    case None => // The change was suppressed
   }
 
   def get = Option(apply())
@@ -69,4 +72,21 @@ object Property {
               (implicit parent: Listenable = null, manifest: Manifest[T]) = new Property[T](backing, default)
 
   def fireChanged[T](property: Property[T]) = property.propertyChange(property.value)
+}
+
+class EventHandling extends EnumEntry
+
+object EventHandling extends Enumerated[EventHandling] {
+  /**
+   * Fires an event only if the new value is different from the old value.
+   */
+  val Normal = new EventHandling
+  /**
+   * Never fires an event.
+   */
+  val SuppressEvent = new EventHandling
+  /**
+   * Fires an event no matter what the new value is.
+   */
+  val FireEvent = new EventHandling
 }

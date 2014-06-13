@@ -12,17 +12,14 @@ trait TransactionProperty[T] extends Property[T] {
     case None => super.apply()
   }
 
-  override def apply(value: T, suppressEvent: Boolean): Unit = if (transaction.active) {
-    propertyChanging(value) match {
-      case Some(newValue) if isChange(newValue) => transaction.set(this, TransactionChange(apply(), value))
-      case _ => // Don't change the value
-    }
+  override def apply(value: T, handling: EventHandling) = if (transaction.active) {
+    transaction.set(this, TransactionChange(apply(), value, handling))
   } else {
-    super.apply(value, suppressEvent)
+    super.apply(value, handling)
   }
 
-  case class TransactionChange(oldValue: T, newValue: T) extends TransactionState {
-    override def commit() = propertyChange(newValue)
+  case class TransactionChange(oldValue: T, newValue: T, handling: EventHandling) extends TransactionState {
+    override def commit() = apply(newValue, handling)
 
     override def rollback() = {}
   }

@@ -22,7 +22,7 @@ trait Enumerated[E <: EnumEntry] {
   private def field2Entry(f: EnhancedField) = {
     val name = f.name
     val value = f[E](this)
-    if (value == null) throw new RuntimeException(s"Enumerated requesting names before all EnumEntries have initialized (field: ${f.name}!")
+    if (value == null) throw new RuntimeException(s"Enumerated requesting names before all EnumEntries have initialized (field: ${f.name})!")
     name -> value
   }
 
