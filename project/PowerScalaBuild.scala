@@ -50,9 +50,9 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, datastore, search, event, hierarchy, property, interpreter)
+    .aggregate(reflect, core, concurrent, communication, search, event, hierarchy, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, slf4j, argonaut, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
+    .settings(libraryDependencies ++= Seq(asm, argonaut, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
@@ -67,9 +67,6 @@ object PowerScalaBuild extends Build {
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet))
-  lazy val datastore = Project("datastore", file("datastore"), settings = createSettings("powerscala-datastore"))
-    .dependsOn(core, event, hierarchy)
-    .settings(libraryDependencies ++= Seq(mongodb, h2))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
@@ -81,10 +78,9 @@ object Dependencies {
   val luceneVersion = "4.6.1"
 
   val asm = "org.ow2.asm" % "asm-all" % "latest.release"
+  val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
+  val reflections = "org.reflections" % "reflections" % "0.9.8"
   val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
-  val mongodb = "org.mongodb" % "mongo-java-driver" % "2.11.3"
-  val slf4j = "org.slf4j" % "slf4j-api" % "1.7.5"
-  val reflections = "org.reflections" % "reflections" % "latest.release"
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "latest.release"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
@@ -92,5 +88,4 @@ object Dependencies {
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val h2 = "com.h2database" % "h2" % "latest.release"
-  val argonaut = "io.argonaut" %% "argonaut" % "latest.release"
 }
