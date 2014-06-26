@@ -1,12 +1,12 @@
 package org.powerscala.log
 
-import java.io.PrintStream
+import java.io.{File, PrintStream}
 
 import org.powerscala.event.{Listenable, Intercept, EventState}
 import org.powerscala.event.processor.{OptionProcessor, EventProcessor}
 import org.powerscala.log.formatter.Formatter
 import org.powerscala.log.handler.Handler
-import org.powerscala.log.writer.{ConsoleWriter, Writer}
+import org.powerscala.log.writer.{FileWriter, ConsoleWriter, Writer}
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -30,6 +30,13 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
 
   def detailed = _detailed
   def detailed_=(detailed: Boolean) = _detailed = detailed
+
+  def configureFileLogging(name: String = "site",
+                            directory: File = new File("logs"),
+                            level: Level = Level.Info,
+                            formatter: Formatter = Formatter.Default) = {
+    addHandler(new FileWriter(directory, FileWriter.Daily(name), append = true), level, formatter)
+  }
 
   protected def handleListenerResponse(value: Intercept, state: EventState[LogRecord]) = if (value == Intercept.Stop) {
     state.stopPropagation()
