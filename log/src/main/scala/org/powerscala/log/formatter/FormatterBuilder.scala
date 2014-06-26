@@ -1,6 +1,6 @@
 package org.powerscala.log.formatter
 
-import org.powerscala.log.LogRecord
+import org.powerscala.log.{Logger, LogRecord}
 import annotation.tailrec
 import util.matching.Regex
 import collection.mutable.ListBuffer
@@ -71,11 +71,14 @@ object FormatterBuilder {
   val ThreadName = (record: LogRecord) => record.threadName
   val Level = (record: LogRecord) => record.level.name
   val LevelPaddedRight = (record: LogRecord) => record.level.namePaddedRight
-  val ClassName = (record: LogRecord) => record.className
-  val ClassNameAbbreviated = (record: LogRecord) => record.classNameAbbreviated
-  val MethodName = (record: LogRecord) => record.methodName
-  val LineNumber = (record: LogRecord) => record.lineNumber.toString
-  val Message = (record: LogRecord) => record.message
+  val ClassName = (record: LogRecord) => record.name
+  val ClassNameAbbreviated = (record: LogRecord) => abbreviate(record.name.split("[.]").toList)
+  val MethodName = (record: LogRecord) => record.methodName.getOrElse("Unknown method")
+  val LineNumber = (record: LogRecord) => record.lineNumber.fold("???")(_.toString)
+  val Message = (record: LogRecord) => {
+    val message = record.message()
+    Logger.stringify.fire(message).getOrElse(throw new NullPointerException(s"Unable to convert: $message to String. Add support to Logger.stringify."))
+  }
   val NewLine = (record: LogRecord) => System.lineSeparator()
 
   private val regex = """\$\{(.*?)\}""".r
@@ -114,5 +117,21 @@ object FormatterBuilder {
 
   protected def parseBlock(name: String, value: String): FormatEntry = {
     map(name)(value)
+  }
+
+  @tailrec
+  final def abbreviate(values: List[String], b: StringBuilder = new StringBuilder): String = {
+    if (values.isEmpty) {
+      b.toString()
+    } else {
+      if (values.tail.isEmpty) {
+        b.append(values.head)
+        b.toString()
+      } else {
+        b.append(values.head.charAt(0))
+        b.append('.')
+        abbreviate(values.tail, b)
+      }
+    }
   }
 }

@@ -5,7 +5,7 @@ import java.io.OutputStream
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class LoggingOutputStream(override val loggingClassName: String, level: Level) extends OutputStream with Logging {
+class LoggingOutputStream(override val loggerName: String, level: Level) extends OutputStream with Logging {
   private val b = new StringBuilder
 
   // TODO: override other write methods to make it more efficient

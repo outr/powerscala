@@ -1,8 +1,8 @@
 package org.powerscala.log.handler
 
 import org.powerscala.log.formatter.Formatter
-import org.powerscala.log.{LogRecord, Level}
 import org.powerscala.log.writer.Writer
+import org.powerscala.log.{Level, LogRecord}
 
 /**
  * @author Matt Hicks <mhicks@outr.com>

@@ -5,13 +5,12 @@ import org.powerscala.event._
 import org.powerscala.reflect.EnhancedClass
 
 import language.existentials
-import org.powerscala.log.Logging
 import org.powerscala.Priority
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-trait EventProcessor[Event, Response, Result] extends Logging {
+trait EventProcessor[Event, Response, Result] {
   def name: String
   def listenable: Listenable
   def eventManifest: Manifest[Event]
@@ -148,17 +147,11 @@ trait EventProcessor[Event, Response, Result] extends Logging {
 
   protected def isModeValid(listener: Listener[_, _], mode: ListenMode) = {
     val valid = listener.modes.contains(mode)
-    if (!valid) {
-      debug(s"isModeValid - Modes: ${listener.modes}, Mode: $mode")
-    }
     valid
   }
 
   protected def isNameValid(listener: Listener[_, _]) = {
     val valid = listener.name == name
-    if (!valid) {
-      debug(s"isNameValid - ProcessorName: $name / ListenerName: ${listener.name}")
-    }
     valid
   }
 
@@ -166,9 +159,6 @@ trait EventProcessor[Event, Response, Result] extends Logging {
     val listenerEventClass = EnhancedClass.convertPrimitives(listener.eventClass)
     val eventClass = EnhancedClass.convertPrimitives(state.event.getClass)
     val valid = listenerEventClass.isAssignableFrom(eventClass)
-    if (!valid) {
-      debug(s"isWrapperValid: $listenerEventClass not assignable from $eventClass")
-    }
     valid
   } else {
     true    // We can't validate by class

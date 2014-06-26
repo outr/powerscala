@@ -3,7 +3,7 @@ package org.powerscala.log.formatter
 import org.powerscala.log.LogRecord
 
 /**
- * @author Matt Hicks <mhicks@outr.com>
+ * @author Matt Hicks <matt@outr.com>
  */
 trait Formatter {
   def format(record: LogRecord): String

@@ -1,6 +1,5 @@
 package org.powerscala.concurrent
 
-import org.powerscala.log.Logging
 import org.powerscala.concurrent.Time._
 import org.powerscala.{Disposable, Updatable}
 
@@ -10,7 +9,7 @@ import org.powerscala.{Disposable, Updatable}
  *
  * @author Matt Hicks <matt@outr.com>
  */
-trait Temporal extends Updatable with Logging with Disposable {
+trait Temporal extends Updatable with Disposable {
   val created = System.currentTimeMillis()
 
   @volatile private var lastCheckIn = created
@@ -27,7 +26,6 @@ trait Temporal extends Updatable with Logging with Disposable {
   override def update(delta: Double) {
     val elapsed = stale
     if (elapsed > timeout) {    // Temporal has timed out
-      debug(s"${getClass.getSimpleName} ($this) has timed out; Elapsed: $elapsed, Timeout: $timeout")
       _disposed = true
       dispose()
     } else if (disposed) {
