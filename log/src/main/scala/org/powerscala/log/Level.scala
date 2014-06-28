@@ -22,8 +22,8 @@ object Level {
   val Trace = Level("TRACE", 5000)
   val Debug = Level("DEBUG", 10000)
   val Info = Level("INFO", 20000)
-  val Warn = Level("WARN", 30000)
-  val Error = Level("ERROR", 40000)
+  val Warn = Level("WARN", 40000)
+  val Error = Level("ERROR", 80000)
 
   private def +=(level: Level) = synchronized {
     _levels = (level :: _levels).sortBy(l => l.value)

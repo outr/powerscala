@@ -23,8 +23,6 @@ object LogRecord {
   def trace(level: Level, message: () => Any, name: String, multiplier: Double = 1.0, timestamp: Long = System.currentTimeMillis()) = {
     val stackTrace = Thread.currentThread().getStackTrace
     val element = stackTrace.find(ste => isValid(ste, level)).getOrElse(throw new NullPointerException(s"Unable to find $name in stack trace (${stackTrace.map(ste => ste.getClassName).mkString(", ")}})!"))
-//    stackTrace.foreach(ste => println(s"Element: ${ste.getClassName} - ${ste.getMethodName}"))
-//    val element = stackTrace.find(ste => ste.getClassName == className).getOrElse(throw new NullPointerException(s"Unable to find $className in stack trace (${stackTrace.map(ste => ste.getClassName).mkString(", ")}})!"))
     val methodName = Some(element.getMethodName)
     val lineNumber = Some(element.getLineNumber)
     LogRecord(level, message, name, multiplier, methodName, lineNumber, timestamp = timestamp)

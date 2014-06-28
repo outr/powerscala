@@ -73,9 +73,10 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
   }
 
   def log(record: LogRecord): Unit = {
-    fire(record.boost(multiplier)) match {
+    val boosted = record.boost(multiplier)
+    fire(boosted) match {
       case Intercept.Continue => parent match {
-        case Some(parentLogger) => parentLogger.log(record)
+        case Some(parentLogger) => parentLogger.log(boosted)
         case None => // Stopped logging
       }
     }
