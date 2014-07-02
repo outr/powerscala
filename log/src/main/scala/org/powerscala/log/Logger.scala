@@ -8,7 +8,12 @@ import org.powerscala.log.formatter.Formatter
 import org.powerscala.log.handler.Handler
 import org.powerscala.log.writer.{FileWriter, ConsoleWriter, Writer}
 
+import scala.annotation.tailrec
+
 /**
+ * Logger is used to receive LogRecords, fire to handlers, and propagate them up to parent Loggers. A Logger always
+ * defaults Logger.Root as the parent.
+ *
  * @author Matt Hicks <matt@outr.com>
  */
 class Logger private(val loggerName: String) extends EventProcessor[LogRecord, Intercept, Intercept] with Listenable {
@@ -22,16 +27,61 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
 
   val eventManifest = implicitly[Manifest[LogRecord]]
 
+  /**
+   * This Logger's parent Logger.
+   */
   def parent = _parent
+
+  /**
+   * Set the parent Logger. If this is set to None then propagation will stop with this Logger.
+   *
+   * Defaults to Logger.Root.
+   */
   def parent_=(parent: Option[Logger]) = _parent = parent
 
+  /**
+   * The multiplier boosts the value of LogRecords received at this Logger and retains the boosted value as it
+   * propagates up hierarchically.
+   */
   def multiplier = _multiplier
+
+  /**
+   * The multiplier boosts the value of LogRecords received at this Logger and retains the boosted value as it
+   * propagates up hierarchically.
+   *
+   * Defaults to 1.0.
+   */
   def multiplier_=(value: Double) = _multiplier = value
 
+  /**
+   * Boosts the muliplier (multiplies multiplier by the supplied value).
+   */
+  def boost(value: Double) = multiplier = multiplier * value
+
+  /**
+   * Flag defining whether detailed LogRecords should be created for log records created from this logger.
+   *
+   * Detailed LogRecords include information on the method and line number the log entry occurred at.
+   */
   def detailed = _detailed
+
+  /**
+   * Flag defining whether detailed LogRecords should be created for log records created from this logger.
+   *
+   * Detailed LogRecords include information on the method and line number the log entry occurred at.
+   */
   def detailed_=(detailed: Boolean) = _detailed = detailed
 
-  def configureFileLogging(name: String = "site",
+  /**
+   * Convenience method to add a file logging handler to this logger.
+   *
+   * @param name the name to use to derive the filename. Defaults to the logger name.
+   * @param directory the directory where logs should be stored.
+   * @param level the level of logs to write to the file.
+   * @param formatter how logs should be formatted in the output.
+   * @return the created and added handler
+   */
+  def configureFileLogging(name: String = loggerName,
                             directory: File = new File("logs"),
                             level: Level = Level.Info,
                             formatter: Formatter = Formatter.Default) = {
@@ -82,8 +132,24 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
     }
   }
 
+  /**
+   * Add a handler to this Logger.
+   */
   def +=(handler: Handler) = listenable.listeners += handler
+
+  /**
+   * Remove a handler from this Logger.
+   */
   def -=(handler: Handler) = listenable.listeners -= handler
+
+  /**
+   * Creates a handler and adds it to this Logger.
+   *
+   * @param writer the writer
+   * @param level the level to filter
+   * @param formatter the formatter
+   * @return handler
+   */
   def addHandler(writer: Writer, level: Level = Level.Info, formatter: Formatter = Formatter.Default) = {
     val handler = Handler(formatter, level, writer)
     this += handler
@@ -105,13 +171,25 @@ object Logger extends Listenable {
 
   private var loggers = Map.empty[String, Logger]
 
+  /**
+   * The Root logger. The default top-level Logger for all Loggers unless otherwise specified.
+   */
   lazy val Root = {
     val l = apply("root")
     l += DefaultRootHandler
     l
   }
+  /**
+   * The default root handler associated with the Root Logger by default.
+   */
   lazy val DefaultRootHandler = Handler(Formatter.Default, Level.Info, ConsoleWriter)
 
+  /**
+   * Creates (if necessary) and retrieves the Logger by the supplied name.
+   *
+   * @param name the name of the Logger to get.
+   * @return Logger
+   */
   def apply(name: String) = synchronized {
     loggers.get(name) match {
       case Some(logger) => logger
@@ -136,7 +214,11 @@ object Logger extends Listenable {
     System.setErr(es)
   }
 
-  def throwable2String(t: Throwable, primaryCause: Boolean = true): String = {
+  /**
+   * Converts a Throwable to a String representation for output in logging.
+   */
+  final def throwable2String(t: Throwable, primaryCause: Boolean = true): String = {
+    // TODO: convert to use tailrec
     val b = new StringBuilder
     if (!primaryCause) {
       b.append("Caused by: ")
@@ -154,6 +236,7 @@ object Logger extends Listenable {
     b.toString()
   }
 
+  @tailrec
   private def writeStackTrace(b: StringBuilder, elements: Array[StackTraceElement]): Unit = {
     if (elements.nonEmpty) {
       val head = elements.head
