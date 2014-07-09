@@ -206,6 +206,7 @@ case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: S
   def pages = math.ceil(total.toDouble / pageSize.toDouble).toInt
   def page = pageStart / pageSize
   def total = topDocs.totalHits
+  def pageTotal = scoreDocs.length
   def facets(name: String) = facetResults.collectFirst {
     case r if r.getFacetResultNode.label.components(0) == name => r.getFacetResultNode.subResults.map(n => Facet(n.label.components(1), n.value)).toList
   }.getOrElse(Nil)
@@ -216,6 +217,8 @@ case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: S
   }
   def previousPage = page(page - 1)
   def nextPage = page(page + 1)
+  def hasPreviousPage = page > 0
+  def hasNextPage = page < pages - 1
 }
 
 case class Facet(name: String, value: Double)
