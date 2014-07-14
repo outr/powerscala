@@ -232,8 +232,8 @@ object Color extends Enumerated[Color] {
   private val RGBAIntRegex = """rgba\((\d*), (\d*), (\d*), (\d.*)\)""".r
   private val HSVIntRegex = """hsv\((\d*), (\d*)%?, (\d*)%?\)""".r
 
-  override def apply(name: String, caseSensitive: Boolean) = super.apply(name, caseSensitive) match {
-    case null => name match {
+  override def apply(name: String, caseSensitive: Boolean) = get(name, caseSensitive) match {
+    case None => name match {
       case null => null
       case RGBIntRegex(red, green, blue) => immutable(red.toInt, green.toInt, blue.toInt, 255)                                       // RGB
       case RGBAIntRegex(red, green, blue, alpha) => immutable(red.toInt, green.toInt, blue.toInt, (alpha.toDouble * 255.0).toInt)    // RGBA
@@ -244,7 +244,7 @@ object Color extends Enumerated[Color] {
         case t: Throwable => null
       }
     }
-    case color => color
+    case Some(color) => color
   }
 
   /**

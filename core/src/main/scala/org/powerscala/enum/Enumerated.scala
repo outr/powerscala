@@ -9,32 +9,22 @@ import scala.util.Random
  * @author Matt Hicks <matt@outr.com>
  */
 trait Enumerated[E <: EnumEntry] {
-  implicit val thisEnumerated = this.asInstanceOf[Enumerated[EnumEntry]]
-
-  private var initialized = false
-  private var enums = List.empty[E]
-  private lazy val enumFields = getClass.fields.collect {
-    case f if !f.isStatic && f.hasType(getClass.nonCompanion.javaClass) => f
-  }
-  private lazy val nameMap = enumFields.map(field2Entry).toMap
-  private lazy val valueMap = nameMap.map(t => t._2 -> t._1)
-
-  private def field2Entry(f: EnhancedField) = {
-    val name = f.name
-    val value = f[E](this)
-    if (value == null) throw new RuntimeException(s"Enumerated requesting names before all EnumEntries have initialized (field: ${f.name})!")
-    name -> value
-  }
+  private val fields = getClass.fields.filter(f => f.returnType.hasType(classOf[EnumEntry])).zipWithIndex.map(t => new EnumField[E](t._1, t._2))
+  private val namesMapLowerCase = fields.map(ef => ef.name.toLowerCase -> ef).toMap
+  private val namesMap = fields.map(ef => ef.name -> ef).toMap
 
   /**
    * The name of this Enumerated.
    */
   lazy val name = getClass.getSimpleName.replaceAll("\\$", "")
-  lazy val values = {
-    initialized = true
-    enums.reverse
+
+  private[enum] def define(e: E) = fields.find(f => !f.isDefined) match {
+    case Some(f) => f.define(e)
+    case None => null.asInstanceOf[String] -> -1        // Not a defined field in the Enumerated instance
   }
-  lazy val length = values.length
+
+  def values = fields.map(ef => ef.entry)         // TODO: optimize to pre-defined list after initialization
+  lazy val length = fields.length
 
   /**
    * Retrieve the EnumEntry by name with a case-insensitive lookup.
@@ -44,7 +34,11 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(name: String): E = apply(name, caseSensitive = false)
 
-  def get(name: String): Option[E] = Option(apply(name))
+  def get(name: String, caseSensitive: Boolean = false) = if (caseSensitive) {
+    namesMap.get(name).map(ef => ef.entry)
+  } else {
+    namesMapLowerCase.get(name.toLowerCase).map(ef => ef.entry)
+  }
 
   /**
    * Retrieve the EnumEntry by name.
@@ -53,10 +47,8 @@ trait Enumerated[E <: EnumEntry] {
    * @param caseSensitive defines whether the lookup should be case-sensitive. Defaults to false.
    * @return EnumEntry or null if not found
    */
-  def apply(name: String, caseSensitive: Boolean) = if (caseSensitive) {
-    nameMap(name)
-  } else {
-    values.find(e => (e.name != null && e.name.equalsIgnoreCase(name)) || e.isMatch(name)).getOrElse(null.asInstanceOf[E])
+  def apply(name: String, caseSensitive: Boolean) = {
+    get(name, caseSensitive).getOrElse(throw new NullPointerException(s"Unable to find ${this.name} by name: $name."))
   }
 
   /**
@@ -73,13 +65,18 @@ trait Enumerated[E <: EnumEntry] {
    * Retrieves a random enum.
    */
   def random = apply(Enumerated.r.nextInt(length))
+}
 
-  protected[enum] def +=(enum: E) = synchronized {
-    enums = enum :: enums
+case class EnumField[E <: EnumEntry](field: EnhancedField, index: Int) {
+  val name = field.name
+  @volatile private var _entry: E = _
+  def entry = _entry
+
+  def define(e: E) = {
+    _entry = e
+    name -> index
   }
-
-  protected[enum] def enumName(enum: EnumEntry) = valueMap.getOrElse(enum.asInstanceOf[E], null)
-  protected[enum] def enumOrdinal(enum: EnumEntry) = values.indexOf(enum)
+  def isDefined = _entry != null
 }
 
 object Enumerated {
