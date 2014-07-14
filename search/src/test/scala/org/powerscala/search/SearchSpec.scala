@@ -1,5 +1,6 @@
 package org.powerscala.search
 
+import org.apache.lucene.search.{SortField, Sort}
 import org.scalatest.{Matchers, WordSpec}
 import org.apache.lucene.document.{TextField, StringField, Field}
 
@@ -63,6 +64,8 @@ class SearchSpec extends WordSpec with Matchers {
         val results = search.query("dragonfly").run()
         results.total should equal(2)
       }
+    }
+    "validating facets in search" should {
       "query everything with 'fly' in the name along with tags" in {
         val results = search.query("name:*fly").facet("tag").run()
         results.total should equal(3)
@@ -79,6 +82,22 @@ class SearchSpec extends WordSpec with Matchers {
         facets(3).value should equal(1.0)
         facets(4).name should equal("butter")
         facets(4).value should equal(1.0)
+      }
+    }
+    "testing sort order" should {
+      "query everything with 'fly' in the name sorted by name" in {
+        val results = search.query("name:*fly").sort(new Sort(new SortField("name", SortField.Type.STRING))).run()
+        results.total should equal(3)
+        results.doc(0).get("name") should equal("butterfly")
+        results.doc(1).get("name") should equal("dragonfly")
+        results.doc(2).get("name") should equal("fly")
+      }
+      "query everything with 'fly' in the name sorted by name reversed" in {
+        val results = search.query("name:*fly").sort(new Sort(new SortField("name", SortField.Type.STRING, true))).run()
+        results.total should equal(3)
+        results.doc(0).get("name") should equal("fly")
+        results.doc(1).get("name") should equal("dragonfly")
+        results.doc(2).get("name") should equal("butterfly")
       }
     }
     "testing pagination" should {

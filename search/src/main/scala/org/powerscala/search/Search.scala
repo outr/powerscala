@@ -6,7 +6,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
 import org.apache.lucene.index.{Term, DirectoryReader, IndexWriter, IndexWriterConfig}
 import org.apache.lucene.index.IndexWriterConfig.OpenMode
-import org.apache.lucene.search.{TopDocs, MultiCollector, TopScoreDocCollector, IndexSearcher}
+import org.apache.lucene.search._
 import org.apache.lucene.document.{StringField, Document, Field}
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.facet.taxonomy.{TaxonomyReader, CategoryPath}
@@ -132,7 +132,14 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val parser = new QueryParser(version, defaultField, analyzer)
     parser.setAllowLeadingWildcard(q.allowLeadingWildcard)
     val baseQuery = parser.parse(q.queryString)
-    val collector = TopScoreDocCollector.create(q.offset + q.limit, null, false)
+    val sort = q.sort
+    val numHits = q.offset + q.limit
+    val fillFields = true
+    val trackDocScores = true
+    val trackMaxScore = true
+    val docsScoredInOrder = false
+    val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore, docsScoredInOrder)
+//    val collector = TopScoreDocCollector.create(q.offset + q.limit, null, false)
 
     var fsp: FacetSearchParams = null
     var fc: FacetsCollector = null
@@ -187,10 +194,12 @@ case class SearchQueryBuilder(instance: Search,
                               limit: Int = 100,
                               allowLeadingWildcard: Boolean = true,
                               facetRequests: List[FacetRequest] = Nil,
-                              drillDown: List[CategoryPath] = Nil) {
+                              drillDown: List[CategoryPath] = Nil,
+                              sort: Sort = Sort.RELEVANCE) {
   def facets(facetRequests: FacetRequest*) = copy(facetRequests = facetRequests.toList)
   def facet(name: String, max: Int = 10) = copy(facetRequests = new CountFacetRequest(new CategoryPath(name), max) :: facetRequests)
   def drillDown(facet: String, value: String): SearchQueryBuilder = copy(drillDown = new CategoryPath(facet, value) :: drillDown)
+  def sort(s: Sort) = copy(sort = s)
   def run() = instance.search(this)
 
   def offset(o: Int): SearchQueryBuilder = copy(offset = o)
