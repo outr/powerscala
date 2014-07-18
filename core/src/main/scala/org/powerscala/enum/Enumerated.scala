@@ -34,10 +34,17 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(name: String): E = apply(name, caseSensitive = false)
 
-  def get(name: String, caseSensitive: Boolean = false) = if (caseSensitive) {
-    namesMap.get(name).map(ef => ef.entry)
-  } else {
-    namesMapLowerCase.get(name.toLowerCase).map(ef => ef.entry)
+  def get(name: String, caseSensitive: Boolean = false) = {
+    val exactMatch = if (caseSensitive) {
+      namesMap.get(name).map(ef => ef.entry)
+    } else {
+      namesMapLowerCase.get(name.toLowerCase).map(ef => ef.entry)
+    }
+    if (exactMatch.isEmpty) {     // Do isMatch checks on entries
+      values.find(e => e.isMatch(name))
+    } else {
+      exactMatch
+    }
   }
 
   /**

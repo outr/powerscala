@@ -219,6 +219,7 @@ object EnhancedMethod {
             case seq: Seq[_] => seq.asInstanceOf[Seq[Double]].toArray[Double]
           })
           case "Int" => Some(value match {
+            case null => 0
             case b: Byte => b.toInt
             case c: Char => c.toInt
             case l: Long => l.toInt
@@ -230,6 +231,7 @@ object EnhancedMethod {
             case None => 0
           })
           case "Long" => Some(value match {
+            case null => 0L
             case b: Byte => b.toLong
             case c: Char => c.toLong
             case i: Int => i.toLong
@@ -240,6 +242,7 @@ object EnhancedMethod {
             case s: String => s.toLong
           })
           case "Float" => Some(value match {
+            case null => 0.0f
             case b: Byte => b.toFloat
             case c: Char => c.toFloat
             case i: Int => i.toFloat
@@ -258,6 +261,7 @@ object EnhancedMethod {
             case s: String => s.toDouble
           })
           case "Boolean" => value match {
+            case null => Some(false)
             case s: String => Some(s.toBoolean)
           }
           case "scala.math.BigDecimal" => value match {
