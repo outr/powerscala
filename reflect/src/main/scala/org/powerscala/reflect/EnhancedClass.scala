@@ -11,6 +11,8 @@ import annotation.tailrec
 import language.existentials
 import org.objectweb.asm.tree.FieldNode
 
+import scala.reflect.runtime.{universe => u}
+
 /**
  * Wraps a Class to provide more powerful functionality.
  *
@@ -459,5 +461,24 @@ object EnhancedClass {
     classOf[java.lang.Double]
   } else {
     c
+  }
+
+  def annotationFromClass[T: u.TypeTag, A: u.TypeTag] = {
+    val classSymbol = u.typeOf[T].typeSymbol.asClass
+    val annotations = classSymbol.annotations
+    val annotationType = u.typeOf[A]
+    annotations.find(a => a.tree.tpe == annotationType) match {
+      case Some(annotation) => {
+        val args = annotation.tree.children.tail
+        val argValues = args.map(a => a.productElement(0).asInstanceOf[u.Constant].value)
+        val mirror = u.runtimeMirror(getClass.getClassLoader)
+        val cSymbol = annotationType.typeSymbol.asClass
+        val cMirror = mirror.reflectClass(cSymbol)
+        val mSymbol = annotationType.decl(u.termNames.CONSTRUCTOR).asMethod
+        val mMirror = cMirror.reflectConstructor(mSymbol)
+        Some(mMirror(argValues: _*).asInstanceOf[A])
+      }
+      case None => None
+    }
   }
 }
