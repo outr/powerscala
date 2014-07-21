@@ -151,7 +151,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
   /**
    * True if this is a case class
    */
-  def isCase = !javaClass.isArray && copyMethod != None
+  def isCase = !javaClass.isArray && copyMethod != None && !javaClass.getName.startsWith("scala.collection") && !javaClass.getName.startsWith("java.lang")
 
   /**
    * True if this is a transient class

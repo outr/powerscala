@@ -2,9 +2,10 @@ package org.powerscala.json
 
 import org.json4s._
 import org.json4s.jackson.JsonMethods
+import org.powerscala.Priority
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.OptionProcessor
-import org.powerscala.json.convert.JSONConverter
+import org.powerscala.json.convert.{EnumEntryConverter, CaseClassSupport, JSONConverter}
 import org.powerscala.reflect._
 
 /**
@@ -14,16 +15,33 @@ object JSON extends Listenable {
   val parsers = new OptionProcessor[Any, JValue]("parsers")
   val readers = new OptionProcessor[JValue, Any]("readers")
 
-  parsers += JSONClassMap.parserListener         // JSONClassMap is a quick and efficient mapping of a Class to a parser.
-  readers += JSONClassMap.readerListener         // JSONClassMap is a quick and efficient mapping of a Class to a reader.
+  JSONClassMap.init()         // JSONClassMap is a quick and efficient mapping of a Class to a parser.
+  CaseClassSupport.init()     // CaseClassSupport adds support for case classes.
+  EnumEntryConverter.init()   // EnumEntryConverter supports EnumEntries.
 
-  def +=[T, J <: JValue](converter: JSONConverter[T, J], matcher: T => Boolean = null)(implicit manifest: Manifest[T]) = {
-    val clazz = manifest.runtimeClass
+  def add[T, J <: JValue](converter: JSONConverter[T, J],
+                          typeMatcher: T => Boolean = null,
+                          jsonMatcher: J => Boolean = null,
+                          priority: Priority = Priority.Normal)(implicit typeManifest: Manifest[T], jsonManifest: Manifest[J]) = {
+    val typeClass = typeManifest.runtimeClass
+    val jsonClass = jsonManifest.runtimeClass
     parsers.on {
-      case value => if (value.getClass.hasType(clazz)) {
+      case value => if (value.getClass.hasType(typeClass)) {
         val v = value.asInstanceOf[T]
-        if (matcher == null || matcher(v)) {
+        if (typeMatcher == null || typeMatcher(v)) {
           Some(converter.toJSON(v))
+        } else {
+          None
+        }
+      } else {
+        None
+      }
+    }
+    readers.on {
+      case value => if (value.getClass.hasType(jsonClass)) {
+        val v = value.asInstanceOf[J]
+        if (jsonMatcher == null || jsonMatcher(v)) {
+          Some(converter.fromJSON(v))
         } else {
           None
         }

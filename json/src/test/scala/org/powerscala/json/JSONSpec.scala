@@ -1,6 +1,8 @@
 package org.powerscala.json
 
 import org.json4s._
+import org.powerscala.Language
+import org.powerscala.json.convert.{EnumEntryConverter, CaseClassSupport}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -98,5 +100,25 @@ class JSONSpec extends WordSpec with Matchers {
         map("Fourth") should equal(JBool(value = true))
       }
     }
+    "handling custom types" should {
+      "properly read EnumEntry" in {
+        JSON.readAndGet[Language](JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.German.name))) should equal(Language.German)
+      }
+      "properly parse EnumEntry" in {
+        JSON.parseAndGet(Language.Albanian) should equal(JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.Albanian.name)))
+      }
+    }
+    "reading case classes" should {
+      "handle simple case class" in {
+        JSON.readAndGet[CaseClass1](JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe"))) should equal(CaseClass1("John Doe"))
+      }
+    }
+    "parsing case classes" should {
+      "handle simple case class" in {
+        JSON.parseAndGet(CaseClass1("John Doe")) should equal(JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe")))
+      }
+    }
   }
 }
+
+case class CaseClass1(name: String)

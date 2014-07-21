@@ -50,4 +50,9 @@ object JSONClassMap extends Logging {
     map += jsonManifest.runtimeClass -> converter.asInstanceOf[JSONConverter[Any, JValue]]
     aliasClasses.foreach(map += _ -> converter.asInstanceOf[JSONConverter[Any, JValue]])
   }
+
+  def init() = {
+    JSON.parsers += parserListener
+    JSON.readers += readerListener
+  }
 }
