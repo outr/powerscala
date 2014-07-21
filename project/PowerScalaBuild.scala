@@ -50,13 +50,14 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, search, event, hierarchy, log, property, interpreter)
+    .aggregate(reflect, core, concurrent, communication, search, event, hierarchy, log, json, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, argonaut, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
   lazy val communication = Project("communication", file("communication"), settings = createSettings("powerscala-communication"))
+    .settings(libraryDependencies ++= Seq(json4s))
     .dependsOn(core)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
@@ -66,6 +67,9 @@ object PowerScalaBuild extends Build {
     .dependsOn(core, event)
   lazy val log = Project("log", file("log"), settings = createSettings("powerscala-log"))
     .dependsOn(core, event)
+  lazy val json = Project("json", file("json"), settings = createSettings("powerscala-json"))
+    .settings(libraryDependencies ++= Seq(json4s))
+    .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet))
@@ -79,15 +83,16 @@ object PowerScalaBuild extends Build {
 object Dependencies {
   val luceneVersion = "4.6.1"
 
-  val asm = "org.ow2.asm" % "asm-all" % "latest.release"
-  val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
-  val reflections = "org.reflections" % "reflections" % "0.9.8"
-  val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "latest.release"
+  val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
+  val asm = "org.ow2.asm" % "asm-all" % "latest.release"
+  val json4s = "org.json4s" %% "json4s-jackson" % "latest.release"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val h2 = "com.h2database" % "h2" % "latest.release"
+  val reflections = "org.reflections" % "reflections" % "0.9.8"
+  val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
 }

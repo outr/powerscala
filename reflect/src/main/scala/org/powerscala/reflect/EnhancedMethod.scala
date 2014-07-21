@@ -198,7 +198,7 @@ object EnhancedMethod {
   }
   def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
     value match {
-      case json: Json => {                      // Convert Json into useful types
+      case json: Json => {                      // Convert Argonaut Json into useful types
         val converted = if (json.isArray) {
           json.arrayOrEmpty
         } else if (json.isBool) {

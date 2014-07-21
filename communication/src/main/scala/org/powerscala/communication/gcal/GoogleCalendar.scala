@@ -1,6 +1,9 @@
 package org.powerscala.communication.gcal
 
 import java.net.{URL, URLEncoder}
+import org.json4s.JsonAST.JObject
+import org.json4s.jackson.JsonMethods
+
 import util.parsing.json.JSON
 import org.powerscala.IO
 import java.util.{TimeZone, Calendar}
@@ -12,9 +15,9 @@ class GoogleCalendar(email: String, maxResults: Int = 8, token: String, timeMin:
   val minimum = "%1$tY-%1$tm-%1$tdT00:00:00-06:00".format(timeMin)
   val url = new URL("https://www.googleapis.com/calendar/v3/calendars/%s/events?maxResults=%s&orderBy=startTime&singleEvents=true&timeMin=%s&key=%s".format(URLEncoder.encode(email, "UTF-8"), maxResults, URLEncoder.encode(minimum, "UTF-8"), token))
   val content = IO.copy(url)
-  val map = JSON.parseFull(content) match {
-    case Some(parsed) => parsed.asInstanceOf[Map[String, Any]]
-    case None => throw new RuntimeException("Unable to parse: %s".format(content))
+  val map = JsonMethods.parse(content) match {
+    case o: JObject => o.values       // TODO: do the values of this need additional conversion?
+    case v => throw new RuntimeException(s"Unexpected result back from JSON parsing: $v.")
   }
   val busyOnly = map("accessRole") == "freeBusyReader"
   private val _items = map.getOrElse("items", Nil).asInstanceOf[List[Map[String, Any]]]
