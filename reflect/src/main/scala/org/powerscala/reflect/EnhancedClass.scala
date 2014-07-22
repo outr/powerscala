@@ -143,6 +143,8 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     list.reverse
   }
 
+  lazy val parentsSet = parents.toSet
+
   /**
    * True if this is a companion object.
    */

@@ -5,7 +5,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Color extends EnumEntry {
+abstract class Color extends EnumEntry {
   def red: Double
   def green: Double
   def blue: Double
@@ -232,19 +232,19 @@ object Color extends Enumerated[Color] {
   private val RGBAIntRegex = """rgba\((\d*), (\d*), (\d*), (\d.*)\)""".r
   private val HSVIntRegex = """hsv\((\d*), (\d*)%?, (\d*)%?\)""".r
 
-  override def apply(name: String, caseSensitive: Boolean) = get(name, caseSensitive) match {
+  override def get(name: String, caseSensitive: Boolean = false) = super.get(name, caseSensitive) match {
     case None => name match {
       case null => null
-      case RGBIntRegex(red, green, blue) => immutable(red.toInt, green.toInt, blue.toInt, 255)                                       // RGB
-      case RGBAIntRegex(red, green, blue, alpha) => immutable(red.toInt, green.toInt, blue.toInt, (alpha.toDouble * 255.0).toInt)    // RGBA
-      case HSVIntRegex(hue, saturation, value) => hsv(hue.toDouble, saturation.toDouble / 100.0, value.toDouble / 100.0)             // HSV
+      case RGBIntRegex(red, green, blue) => Some(immutable(red.toInt, green.toInt, blue.toInt, 255))                                       // RGB
+      case RGBAIntRegex(red, green, blue, alpha) => Some(immutable(red.toInt, green.toInt, blue.toInt, (alpha.toDouble * 255.0).toInt))    // RGBA
+      case HSVIntRegex(hue, saturation, value) => Some(hsv(hue.toDouble, saturation.toDouble / 100.0, value.toDouble / 100.0))             // HSV
       case _ => try {
-        immutable(name)
-      } catch{
-        case t: Throwable => null
+        Some(immutable(name))
+      } catch {
+        case t: Throwable => None
       }
     }
-    case Some(color) => color
+    case Some(color) => Some(color)
   }
 
   /**
