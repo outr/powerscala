@@ -45,13 +45,21 @@ class CaseClassConverter(clazz: EnhancedClass) extends JSONConverter[AnyRef, JOb
   val caseValueMap = caseValues.map(cv => cv.name -> cv).toMap
 
   override def toJSON(v: AnyRef) = {
-    val values = CaseClassSupport.ClassKey -> JString(clazz.name) :: caseValues.map(cv => cv.name -> JSON.parseAndGet(cv[Any](v)))
+    val list = caseValues.map(cv => cv.name -> JSON.parseAndGet(cv[Any](v)))
+    val values = if (JSON.writeExtras) {
+      CaseClassSupport.ClassKey -> JString(clazz.name) :: list
+    } else {
+      list
+    }
     JObject(values: _*)
   }
 
   override def fromJSON(v: JObject) = {
-    val map = v.obj.map {
-      case (key, value) => key -> JSON.readAndGet[Any](value)
+    val map = v.obj.collect {
+      case (key, value) if caseValueMap.contains(key) => {
+        val cv = caseValueMap(key)
+        key -> JSON.readAs[Any](value)(Manifest.classType[Any](cv.valueType.javaClass)).getOrElse(throw new RuntimeException(s"Unable to read ${cv.name} as ${cv.valueType} with $v."))
+      }
     }.toMap
     clazz.create[AnyRef](map)
   }

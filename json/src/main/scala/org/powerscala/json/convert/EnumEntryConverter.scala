@@ -12,7 +12,11 @@ import org.powerscala.reflect._
 object EnumEntryConverter extends JSONConverter[EnumEntry, JObject] {
   val ClassKey = "enumClass"
 
-  override def toJSON(v: EnumEntry) = JObject(ClassKey -> JString(v.getClass.getName), "name" -> JString(v.name))
+  override def toJSON(v: EnumEntry) = if (JSON.writeExtras) {
+    JObject(ClassKey -> JString(v.getClass.getName), "name" -> JString(v.name))
+  } else {
+    JObject("name" -> JString(v.name))
+  }
 
   override def fromJSON(v: JObject) = {
     val classString = v.obj.collectFirst {

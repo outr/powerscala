@@ -104,18 +104,34 @@ class JSONSpec extends WordSpec with Matchers {
       "properly read EnumEntry" in {
         JSON.readAndGet[Language](JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.German.name))) should equal(Language.German)
       }
+      "properly read EnumEntry without class info" in {
+        JSON.readAs[Language](JObject("name" -> JString(Language.Bemba.name))) should equal(Some(Language.Bemba))
+      }
       "properly parse EnumEntry" in {
         JSON.parseAndGet(Language.Albanian) should equal(JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.Albanian.name)))
+      }
+      "properly parse EnumEntry without writing class info" in {
+        JSON.dontWriteExtras {
+          JSON.parseAndGet(Language.Albanian) should equal(JObject("name" -> JString(Language.Albanian.name)))
+        }
       }
     }
     "reading case classes" should {
       "handle simple case class" in {
         JSON.readAndGet[CaseClass1](JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe"))) should equal(CaseClass1("John Doe"))
       }
+      "handle simple case class without class info" in {
+        JSON.readAs[CaseClass1](JObject("name" -> JString("Jane Doe"))) should equal(Some(CaseClass1("Jane Doe")))
+      }
     }
     "parsing case classes" should {
       "handle simple case class" in {
         JSON.parseAndGet(CaseClass1("John Doe")) should equal(JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe")))
+      }
+      "handle simple case class without writing class info" in {
+        JSON.dontWriteExtras {
+          JSON.parseAndGet(CaseClass1("John Doe")) should equal(JObject("name" -> JString("John Doe")))
+        }
       }
     }
   }

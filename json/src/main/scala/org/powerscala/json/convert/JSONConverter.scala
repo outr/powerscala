@@ -38,7 +38,7 @@ object StringSupport extends JSONConverter[String, JString] {
 
 object ListSupport extends JSONConverter[List[_], JArray] {
   override def toJSON(v: List[_]) = JArray(v.toList.map(JSON.parseAndGet))
-  override def fromJSON(v: JArray) = v.arr.map(JSON.readAndGet)
+  override def fromJSON(v: JArray) = v.arr.map(JSON.readAndGet[Any])
 }
 
 object MapSupport extends JSONConverter[Map[String, _], JObject] {
