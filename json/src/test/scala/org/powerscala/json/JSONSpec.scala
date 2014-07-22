@@ -107,12 +107,20 @@ class JSONSpec extends WordSpec with Matchers {
       "properly read EnumEntry without class info" in {
         JSON.readAs[Language](JObject("name" -> JString(Language.Bemba.name))) should equal(Some(Language.Bemba))
       }
+      "properly read Option[Int]" in {
+        JSON.readAndGet[Option[Int]](JObject("option" -> JInt(5))) should equal(Some(5))
+      }
       "properly parse EnumEntry" in {
         JSON.parseAndGet(Language.Albanian) should equal(JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.Albanian.name)))
       }
       "properly parse EnumEntry without writing class info" in {
         JSON.dontWriteExtras {
           JSON.parseAndGet(Language.Albanian) should equal(JObject("name" -> JString(Language.Albanian.name)))
+        }
+      }
+      "properly parse Option[Int]" in {
+        JSON.dontWriteExtras {
+          JSON.parseAndGet(Option(5)) should equal(JObject("option" -> JInt(5)))
         }
       }
     }

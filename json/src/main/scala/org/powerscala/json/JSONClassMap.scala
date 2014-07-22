@@ -14,7 +14,7 @@ object JSONClassMap extends Logging {
 
   val parserListener = new Listener[Any, Option[JValue]] {
     override val name = "parsers"
-    override val priority = Priority.Low
+    override val priority = Priority.Lowest
     override val eventClass = classOf[Any]
     override val modes = List(ListenMode.Standard)
 
@@ -25,7 +25,7 @@ object JSONClassMap extends Logging {
   }
   val readerListener = new Listener[JValue, Option[Any]] {
     override val name = "readers"
-    override val priority = Priority.Low
+    override val priority = Priority.Lowest
     override val eventClass = classOf[JValue]
     override val modes = List(ListenMode.Standard)
 
@@ -38,6 +38,7 @@ object JSONClassMap extends Logging {
   // Default types
   register(BooleanSupport, classOf[java.lang.Boolean])
   register(IntSupport, classOf[java.lang.Integer])
+  register(BigIntSupport)
   register(DoubleSupport, classOf[java.lang.Double])
   register(DecimalSupport)
   register(StringSupport)

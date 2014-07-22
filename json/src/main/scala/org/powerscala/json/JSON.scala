@@ -6,7 +6,7 @@ import org.powerscala.Priority
 import org.powerscala.enum.EnumEntry
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.OptionProcessor
-import org.powerscala.json.convert.{EnumEntryConverter, CaseClassSupport, JSONConverter}
+import org.powerscala.json.convert.{OptionSupport, EnumEntryConverter, CaseClassSupport, JSONConverter}
 import org.powerscala.reflect._
 
 /**
@@ -35,6 +35,7 @@ object JSON extends Listenable {
   JSONClassMap.init()         // JSONClassMap is a quick and efficient mapping of a Class to a parser.
   CaseClassSupport.init()     // CaseClassSupport adds support for case classes.
   EnumEntryConverter.init()   // EnumEntryConverter supports EnumEntries.
+  OptionSupport.init()        // Support Some / None Option types.
 
   def add[T, J <: JValue](converter: JSONConverter[T, J],
                           typeMatcher: T => Boolean = null,
@@ -42,7 +43,7 @@ object JSON extends Listenable {
                           priority: Priority = Priority.Normal)(implicit typeManifest: Manifest[T], jsonManifest: Manifest[J]) = {
     val typeClass = typeManifest.runtimeClass
     val jsonClass = jsonManifest.runtimeClass
-    parsers.on {
+    parsers.listen(priority) {
       case value => if (value.getClass.hasType(typeClass)) {
         val v = value.asInstanceOf[T]
         if (typeMatcher == null || typeMatcher(v)) {
@@ -54,7 +55,7 @@ object JSON extends Listenable {
         None
       }
     }
-    readers.on {
+    readers.listen(priority) {
       case value => if (value.getClass.hasType(jsonClass)) {
         val v = value.asInstanceOf[J]
         if (jsonMatcher == null || jsonMatcher(v)) {
@@ -110,7 +111,7 @@ object JSON extends Listenable {
     case _ => read[T](value)
   }
 
-  def parseAndGet[T](value: T) = parse[T](value).getOrElse(throw new RuntimeException(s"Unable to parse $value as JSON."))
+  def parseAndGet[T](value: T) = parse[T](value).getOrElse(throw new RuntimeException(s"Unable to parse $value (${value.getClass}) as JSON."))
 
   def readAndGet[T](value: JValue) = read[T](value).getOrElse(throw new RuntimeException(s"Unable to read $value."))
 
