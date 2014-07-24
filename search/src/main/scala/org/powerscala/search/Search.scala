@@ -1,6 +1,7 @@
 package org.powerscala.search
 
 import java.io.File
+import org.apache.lucene.facet.{FacetResult, DrillDownQuery, FacetsConfig, FacetsCollector}
 import org.apache.lucene.store.{RAMDirectory, FSDirectory}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
@@ -9,12 +10,9 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode
 import org.apache.lucene.search._
 import org.apache.lucene.document.{StringField, Document, Field}
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.facet.taxonomy.{TaxonomyReader, CategoryPath}
+import org.apache.lucene.facet.taxonomy.{FastTaxonomyFacetCounts, TaxonomyReader, CategoryPath}
 import org.apache.lucene.facet.taxonomy.directory.{DirectoryTaxonomyReader, DirectoryTaxonomyWriter}
-import org.apache.lucene.facet.index.FacetFields
 import scala.collection.JavaConversions._
-import org.apache.lucene.facet.params.FacetSearchParams
-import org.apache.lucene.facet.search._
 import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Executor, Time}
@@ -23,7 +21,7 @@ import org.powerscala.concurrent.{Executor, Time}
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds) {
-  private val version = Version.LUCENE_46
+  private val version = Version.LUCENE_4_9
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
     case None => new RAMDirectory
@@ -45,7 +43,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     case None => new RAMDirectory
   }
   protected val taxonomyWriter = new DirectoryTaxonomyWriter(taxonomyDir)
-  protected val facetFields = new FacetFields(taxonomyWriter)
+  val facetsConfig = new FacetsConfig
 
   @volatile private var _taxonomyReader: DirectoryTaxonomyReader = _
   def taxonomyReader = synchronized {
@@ -90,12 +88,8 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
       case f => doc.add(f)
     }
 
-    // Set facet fields
-    if (du.paths.nonEmpty) {
-      facetFields.addFields(doc, du.paths)
-    }
-
-    writer.updateDocument(term, doc)
+    val updatedDoc = facetsConfig.build(taxonomyWriter, doc)      // Update the document for FacetFields
+    writer.updateDocument(term, updatedDoc)
     taxonomyWriter.commit()
   }
 
@@ -139,35 +133,37 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val trackMaxScore = true
     val docsScoredInOrder = false
     val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore, docsScoredInOrder)
-//    val collector = TopScoreDocCollector.create(q.offset + q.limit, null, false)
 
-    var fsp: FacetSearchParams = null
-    var fc: FacetsCollector = null
-    val collectors = if (q.facetRequests.nonEmpty) {
-      fsp = new FacetSearchParams(q.facetRequests: _*)
-      fc = FacetsCollector.create(fsp, searcher.getIndexReader, taxonomyReader)
-      MultiCollector.wrap(fc, collector)
+    val facetsCollector = if (q.facetRequests.nonEmpty) {
+      new FacetsCollector
     } else {
-      collector
+      null
     }
 
     val query = if (q.drillDown.nonEmpty) {          // Drill-down via facets query
-      if (fsp == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
-      val ddq = new DrillDownQuery(fsp.indexingParams, baseQuery)
-      ddq.add(q.drillDown: _*)
+      if (facetsCollector == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
+      val ddq = new DrillDownQuery(facetsConfig, baseQuery)
+      q.drillDown.foreach {
+        case dd => ddq.add(dd.dim, dd.path: _*)
+      }
       ddq
     } else {                                                        // No drill-down, use the base query
       baseQuery
     }
 
-    searcher.search(query, collectors)
+    if (q.facetRequests.nonEmpty) {
+      FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)
+    }
+    searcher.search(query, collector)
 
     val topDocs = collector.topDocs(q.offset, q.limit)
 
-    val facetResults = if (q.facetRequests.nonEmpty) {
-      fc.getFacetResults.toList
+    val facetResults: Map[String, FacetResult] = if (q.facetRequests.nonEmpty) {
+      val facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector)
+
+      q.facetRequests.map(fr => fr.drillDown.dim -> facets.getTopChildren(fr.limit, fr.drillDown.dim, fr.drillDown.path: _*)).toMap
     } else {
-      Nil
+      Map.empty
     }
 
     SearchResults(topDocs, facetResults, q)
@@ -181,10 +177,10 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   }
 }
 
-case class DocumentUpdate(fields: List[Field], paths: List[CategoryPath])
+case class DocumentUpdate(fields: List[Field])
 
 object DocumentUpdate {
-  def apply(fields: Field*): DocumentUpdate = DocumentUpdate(fields.toList, Nil)
+  def apply(fields: Field*): DocumentUpdate = DocumentUpdate(fields.toList)
 }
 
 case class SearchQueryBuilder(instance: Search,
@@ -194,11 +190,11 @@ case class SearchQueryBuilder(instance: Search,
                               limit: Int = 100,
                               allowLeadingWildcard: Boolean = true,
                               facetRequests: List[FacetRequest] = Nil,
-                              drillDown: List[CategoryPath] = Nil,
+                              drillDown: List[DrillDown] = Nil,
                               sort: Sort = Sort.RELEVANCE) {
   def facets(facetRequests: FacetRequest*) = copy(facetRequests = facetRequests.toList)
-  def facet(name: String, max: Int = 10) = copy(facetRequests = new CountFacetRequest(new CategoryPath(name), max) :: facetRequests)
-  def drillDown(facet: String, value: String): SearchQueryBuilder = copy(drillDown = new CategoryPath(facet, value) :: drillDown)
+  def facet(name: String, max: Int = 10) = copy(facetRequests = FacetRequest(DrillDown(name), max) :: facetRequests)
+  def drillDown(facet: String, values: String*): SearchQueryBuilder = copy(drillDown = DrillDown(facet, values: _*) :: drillDown)
   def sort(s: Sort) = copy(sort = s)
   def run() = instance.search(this)
 
@@ -206,7 +202,11 @@ case class SearchQueryBuilder(instance: Search,
   def limit(l: Int): SearchQueryBuilder = copy(limit = l)
 }
 
-case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: SearchQueryBuilder) {
+case class FacetRequest(drillDown: DrillDown, limit: Int)
+
+case class DrillDown(dim: String, path: String*)
+
+case class SearchResults(topDocs: TopDocs, facetResults: Map[String, FacetResult], b: SearchQueryBuilder) {
   def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
   def docs = topDocs.scoreDocs.indices.map(index => doc(index)).toList
   def scoreDocs = topDocs.scoreDocs
@@ -216,9 +216,7 @@ case class SearchResults(topDocs: TopDocs, facetResults: List[FacetResult], b: S
   def page = pageStart / pageSize
   def total = topDocs.totalHits
   def pageTotal = scoreDocs.length
-  def facets(name: String) = facetResults.collectFirst {
-    case r if r.getFacetResultNode.label.components(0) == name => r.getFacetResultNode.subResults.map(n => Facet(n.label.components(1), n.value)).toList
-  }.getOrElse(Nil)
+  def facets(name: String) = facetResults(name)
   def page(p: Int) = {
     val pageNumber = math.min(pages - 1, math.max(0, p))
     // Offset to the proper page, remove all facets (no need to query them again), and then set the facetResults

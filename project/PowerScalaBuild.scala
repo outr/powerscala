@@ -72,7 +72,7 @@ object PowerScalaBuild extends Build {
     .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
-    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet))
+    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy, log)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
@@ -81,7 +81,7 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "4.6.1"
+  val luceneVersion = "4.9.0"
 
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "latest.release"
   val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
@@ -92,6 +92,7 @@ object Dependencies {
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
+  val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
   val h2 = "com.h2database" % "h2" % "latest.release"
   val reflections = "org.reflections" % "reflections" % "0.9.8"
   val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"

@@ -1,5 +1,6 @@
 package org.powerscala.search
 
+import org.apache.lucene.facet.FacetField
 import org.apache.lucene.search.{SortField, Sort}
 import org.scalatest.{Matchers, WordSpec}
 import org.apache.lucene.document.{TextField, StringField, Field}
@@ -15,6 +16,7 @@ class SearchSpec extends WordSpec with Matchers {
   implicit def image2DocumentUpdate(i: Image) = i.toDocumentUpdate
 
   val search = new Search("description")
+  search.facetsConfig.setMultiValued("tag", true)
   "Search" when {
     "testing simple search" should {
       "insert some simple records without any tags" in {
@@ -70,17 +72,17 @@ class SearchSpec extends WordSpec with Matchers {
         val results = search.query("name:*fly").facet("tag").run()
         results.total should equal(3)
         results.facetResults.size should equal(1)
-        val facets = results.facets("tag").toVector
+        val facets = results.facets("tag").labelValues.toVector
         facets.size should equal(5)
-        facets(0).name should equal("image")
+        facets(0).label should equal("flying")
         facets(0).value should equal(3.0)
-        facets(1).name should equal("insect")
+        facets(1).label should equal("insect")
         facets(1).value should equal(3.0)
-        facets(2).name should equal("flying")
+        facets(2).label should equal("image")
         facets(2).value should equal(3.0)
-        facets(3).name should equal("dragon")
+        facets(3).label should equal("butter")
         facets(3).value should equal(1.0)
-        facets(4).name should equal("butter")
+        facets(4).label should equal("dragon")
         facets(4).value should equal(1.0)
       }
     }
@@ -111,7 +113,7 @@ class SearchSpec extends WordSpec with Matchers {
         results.pageStart should equal(0)
         results.page should equal(0)
         results.pages should equal(3)
-        results.facets("tag").size should equal(11)
+        results.facets("tag").childCount should equal(11)
       }
       "go to the next page" in {
         results = results.page(1)
@@ -165,17 +167,17 @@ class SearchSpec extends WordSpec with Matchers {
       "return one result for 'butter'" in {
         val results = search.query.facet("tag", 100).drillDown("tag", "butter").run()
         results.total should equal(1)
-        results.facets("tag").size should equal(4)
+        results.facets("tag").childCount should equal(4)
       }
       "return three results for 'flying'" in {
         val results = search.query.facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(3)
-        results.facets("tag").size should equal(5)
+        results.facets("tag").childCount should equal(5)
       }
       "combine tagged drill-down and search arguments" in {
         val results = search.query("dragonfly").facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(1)
-        results.facets("tag").size should equal(4)
+        results.facets("tag").childCount should equal(4)
       }
     }
   }
@@ -189,8 +191,7 @@ case class Image(id: Int, name: String, description: String, tags: List[String] 
         new StringField("name", name, Field.Store.YES),
         new TextField("description", description, Field.Store.YES),
         new TextField("tags", tags.mkString(", "), Field.Store.YES)
-      ),
-      tags.map(t => new CategoryPath("tag", t))
+      ) ::: tags.map(t => new FacetField("tag", t))
     )
   }
 }
