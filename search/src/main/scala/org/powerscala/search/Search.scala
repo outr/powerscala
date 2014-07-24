@@ -1,7 +1,11 @@
 package org.powerscala.search
 
 import java.io.File
+import com.spatial4j.core.context.SpatialContext
 import org.apache.lucene.facet.{FacetResult, DrillDownQuery, FacetsConfig, FacetsCollector}
+import org.apache.lucene.spatial.SpatialStrategy
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy
+import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree
 import org.apache.lucene.store.{RAMDirectory, FSDirectory}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
@@ -58,9 +62,17 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     _taxonomyReader
   }
 
+  // Spatial functionality
+  val spatialContext = SpatialContext.GEO
+  var spatialStrategy: SpatialStrategy = _
+
   // Reader / Search
   @volatile private var _reader = DirectoryReader.open(indexDir)
   @volatile private var _searcher = new IndexSearcher(_reader)
+
+  def configureSpatialStrategy(maxLevels: Int = 11, fieldName: String = "geoSpatial") = {
+    spatialStrategy = new RecursivePrefixTreeStrategy(new GeohashPrefixTree(spatialContext, maxLevels), fieldName)
+  }
 
   def searcher = synchronized {
     DirectoryReader.openIfChanged(_reader) match {
@@ -86,6 +98,16 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val doc = new Document
     du.fields.foreach {
       case f => doc.add(f)
+    }
+
+    if (du.shapes.nonEmpty) {
+      if (spatialStrategy == null) throw new NullPointerException("Search.spatialStrategy must not be null.")
+
+      du.shapes.foreach {       // Add shapes to document
+        case shape => spatialStrategy.createIndexableFields(shape).foreach {
+          case f => doc.add(f)
+        }
+      }
     }
 
     val updatedDoc = facetsConfig.build(taxonomyWriter, doc)      // Update the document for FacetFields
@@ -154,7 +176,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     if (q.facetRequests.nonEmpty) {
       FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)
     }
-    searcher.search(query, collector)
+    searcher.search(query, q.filter, collector)
 
     val topDocs = collector.topDocs(q.offset, q.limit)
 
@@ -176,56 +198,3 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     taxonomyReader.close()
   }
 }
-
-case class DocumentUpdate(fields: List[Field])
-
-object DocumentUpdate {
-  def apply(fields: Field*): DocumentUpdate = DocumentUpdate(fields.toList)
-}
-
-case class SearchQueryBuilder(instance: Search,
-                              defaultField: String,
-                              queryString: String = "*",
-                              offset: Int = 0,
-                              limit: Int = 100,
-                              allowLeadingWildcard: Boolean = true,
-                              facetRequests: List[FacetRequest] = Nil,
-                              drillDown: List[DrillDown] = Nil,
-                              sort: Sort = Sort.RELEVANCE) {
-  def facets(facetRequests: FacetRequest*) = copy(facetRequests = facetRequests.toList)
-  def facet(name: String, max: Int = 10) = copy(facetRequests = FacetRequest(DrillDown(name), max) :: facetRequests)
-  def drillDown(facet: String, values: String*): SearchQueryBuilder = copy(drillDown = DrillDown(facet, values: _*) :: drillDown)
-  def sort(s: Sort) = copy(sort = s)
-  def run() = instance.search(this)
-
-  def offset(o: Int): SearchQueryBuilder = copy(offset = o)
-  def limit(l: Int): SearchQueryBuilder = copy(limit = l)
-}
-
-case class FacetRequest(drillDown: DrillDown, limit: Int)
-
-case class DrillDown(dim: String, path: String*)
-
-case class SearchResults(topDocs: TopDocs, facetResults: Map[String, FacetResult], b: SearchQueryBuilder) {
-  def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
-  def docs = topDocs.scoreDocs.indices.map(index => doc(index)).toList
-  def scoreDocs = topDocs.scoreDocs
-  def pageStart = b.offset
-  def pageSize = b.limit
-  def pages = math.ceil(total.toDouble / pageSize.toDouble).toInt
-  def page = pageStart / pageSize
-  def total = topDocs.totalHits
-  def pageTotal = scoreDocs.length
-  def facets(name: String) = facetResults(name)
-  def page(p: Int) = {
-    val pageNumber = math.min(pages - 1, math.max(0, p))
-    // Offset to the proper page, remove all facets (no need to query them again), and then set the facetResults
-    b.offset(pageNumber * b.limit).facets().run().copy(facetResults = facetResults)
-  }
-  def previousPage = page(page - 1)
-  def nextPage = page(page + 1)
-  def hasPreviousPage = page > 0
-  def hasNextPage = page < pages - 1
-}
-
-case class Facet(name: String, value: Double)
