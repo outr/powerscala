@@ -29,7 +29,7 @@ case class SearchQueryBuilder(instance: Search,
   }
   def filter(f: Filter): SearchQueryBuilder = copy(filter = f)
   def filterByCircle(latitude: Double, longitude: Double, distanceInDegrees: Double) = {
-    val args = new SpatialArgs(SpatialOperation.Intersects, instance.spatialContext.makeCircle(latitude, longitude, distanceInDegrees))
+    val args = new SpatialArgs(SpatialOperation.Intersects, instance.spatialContext.makeCircle(longitude, latitude, distanceInDegrees))
     val filter = instance.spatialStrategy.makeFilter(args)
     copy(filter = filter)
   }

@@ -66,6 +66,8 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   val spatialContext = SpatialContext.GEO
   var spatialStrategy: SpatialStrategy = _
 
+  def point(latitude: Double, longitude: Double) = spatialContext.makePoint(longitude, latitude)
+
   // Reader / Search
   @volatile private var _reader = DirectoryReader.open(indexDir)
   @volatile private var _searcher = new IndexSearcher(_reader)

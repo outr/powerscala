@@ -134,6 +134,45 @@ object Time extends Enumerated[Time] {
     result -> fromNanos(System.nanoTime - time)
   }
 
+  class Counters(logger: String => Unit) {
+    var map = Map.empty[String, Int]
+
+    def increment(name: String) = {
+      val value = map.getOrElse(name, 0)
+      map += name -> (value + 1)
+    }
+
+    def log() = if (map.nonEmpty) {
+      val s = map.map {
+        case (n, v) => s"$n = $v"
+      }.mkString(", ")
+      logger(s)
+    }
+  }
+  private val counters = new ThreadLocal[Counters]
+  def withCounters[R](logEvery: Double = 1.0, logger: String => Unit)(f: => R): R = {
+    val c = new Counters(logger)
+    counters.set(c)
+    try {
+      val scheduled = Executor.scheduleWithFixedDelay(logEvery, logEvery) {
+        c.log()
+      }
+      try {
+        f
+      } finally {
+        scheduled.cancel(false)
+      }
+    } finally {
+      c.log()
+      counters.remove()
+    }
+  }
+  def hasCounter = counters.get() != null
+  def increment(name: String) = {
+    val c = counters.get()
+    c.increment(name)
+  }
+
   /**
    * Converts time in milliseconds to a short String representation.
    */

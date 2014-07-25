@@ -187,9 +187,9 @@ class SearchSpec extends WordSpec with Matchers {
     }
     "doing spatial queries" should {
       "create some Person documents" in {
-        personSearch.update(Person(10, List(personSearch.spatialContext.makePoint(-80.93, 33.77))))
-        personSearch.update(Person(11, List(personSearch.spatialContext.makePoint(60.9289094, -50.7693246))))
-        personSearch.update(Person(12, List(personSearch.spatialContext.makePoint(0.1, 0.1), personSearch.spatialContext.makePoint(100, 0))))
+        personSearch.update(Person(10, List(personSearch.point(33.77, -80.93))))
+        personSearch.update(Person(11, List(personSearch.point(-50.7693246, 60.9289094))))
+        personSearch.update(Person(12, List(personSearch.point(0.1, 0.1), personSearch.point(0, 100))))
         personSearch.commit()
       }
       "search for all Person documents sorted by distance ascending" in {
@@ -200,12 +200,12 @@ class SearchSpec extends WordSpec with Matchers {
         results.doc(2).get("id") should equal("10")
       }
       "search for all Person documents within a circle" in {
-        val results = personSearch.query.filterByCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM)).run()
+        val results = personSearch.query.filterByCircle(33.0, -80.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM)).run()
         results.total should equal(1)
         results.doc(0).get("id") should equal("10")
       }
       "search for all Person documents within a circle using secondary point" in {
-        val results = personSearch.query.filterByCircle(100.0, 0.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM)).run()
+        val results = personSearch.query.filterByCircle(0.0, 100.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM)).run()
         results.total should equal(1)
         results.doc(0).get("id") should equal("12")
       }
