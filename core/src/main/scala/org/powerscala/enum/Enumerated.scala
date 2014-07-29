@@ -34,7 +34,7 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(name: String): E = apply(name, caseSensitive = false)
 
-  def get(name: String, caseSensitive: Boolean = false) = {
+  def get(name: String, caseSensitive: Boolean = false) = if (name != null && name.nonEmpty) {
     val exactMatch = if (caseSensitive) {
       namesMap.get(name).map(ef => ef.entry)
     } else {
@@ -45,6 +45,8 @@ trait Enumerated[E <: EnumEntry] {
     } else {
       exactMatch
     }
+  } else {
+    None
   }
 
   /**

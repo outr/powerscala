@@ -3,9 +3,10 @@ package org.powerscala.search
 import com.spatial4j.core.distance.DistanceUtils
 import com.spatial4j.core.shape.Point
 import org.apache.lucene.facet.FacetField
-import org.apache.lucene.search.{SortField, Sort}
+import org.apache.lucene.index.Term
+import org.apache.lucene.search.{RegexpQuery, SortField, Sort}
 import org.scalatest.{Matchers, WordSpec}
-import org.apache.lucene.document.{TextField, StringField, Field}
+import org.apache.lucene.document.{IntField, TextField, StringField, Field}
 
 import scala.language.implicitConversions
 import org.apache.lucene.facet.taxonomy.CategoryPath
@@ -42,6 +43,18 @@ class SearchSpec extends WordSpec with Matchers {
       }
       "query everything with 'fly' in the name" in {
         val results = imageSearch.query("name:*fly").run()
+        results.total should equal(3)
+      }
+      "query everything starting with 'dragon' in the name" in {
+        val results = imageSearch.query("name:dragon*").run()
+        results.total should equal(1)
+      }
+      "query with term" in {
+        val results = imageSearch.query.term("fly", "name").run()
+        results.total should equal(1)
+      }
+      "query with regular expression" in {
+        val results = imageSearch.query.regexp(".*fly", "name").run()
         results.total should equal(3)
       }
     }
@@ -187,9 +200,9 @@ class SearchSpec extends WordSpec with Matchers {
     }
     "doing spatial queries" should {
       "create some Person documents" in {
-        personSearch.update(Person(10, List(personSearch.point(33.77, -80.93))))
-        personSearch.update(Person(11, List(personSearch.point(-50.7693246, 60.9289094))))
-        personSearch.update(Person(12, List(personSearch.point(0.1, 0.1), personSearch.point(0, 100))))
+        personSearch.update(Person(10, 20, List(personSearch.point(33.77, -80.93))))
+        personSearch.update(Person(11, 12, List(personSearch.point(-50.7693246, 60.9289094))))
+        personSearch.update(Person(12, 80, List(personSearch.point(0.1, 0.1), personSearch.point(0, 100))))
         personSearch.commit()
       }
       "search for all Person documents sorted by distance ascending" in {
@@ -209,6 +222,16 @@ class SearchSpec extends WordSpec with Matchers {
         results.total should equal(1)
         results.doc(0).get("id") should equal("12")
       }
+      "search for all Person documents with an age between 10 and 30" in {
+        val results = personSearch.query.intRange(10, 30, "age").run()
+        results.total should equal(2)
+        results.docs.map(doc => doc.get("age").toInt).toSet should equal(Set(12, 20))
+      }
+      "search for all Person documents with an age greater than 30" in {
+        val results = personSearch.query.intRange(30, field = "age").run()
+        results.total should equal(1)
+        results.docs.map(doc => doc.get("age").toInt).toSet should equal(Set(80))
+      }
     }
   }
 }
@@ -218,7 +241,7 @@ case class Image(id: Int, name: String, description: String, tags: List[String] 
     DocumentUpdate(
       List(
         new StringField("id", id.toString, Field.Store.YES),
-        new StringField("name", name, Field.Store.YES),
+        new TextField("name", name, Field.Store.YES),
         new TextField("description", description, Field.Store.YES),
         new TextField("tags", tags.mkString(", "), Field.Store.YES)
       ) ::: tags.map(t => new FacetField("tag", t)),
@@ -227,10 +250,10 @@ case class Image(id: Int, name: String, description: String, tags: List[String] 
   }
 }
 
-case class Person(id: Int, points: List[Point]) {
+case class Person(id: Int, age: Int, points: List[Point]) {
   def toDocumentUpdate = {
     DocumentUpdate(
-      List(new StringField("id", id.toString, Field.Store.YES)),
+      List(new StringField("id", id.toString, Field.Store.YES), new IntField("age", age, Field.Store.YES)),
       points
     )
   }

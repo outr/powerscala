@@ -25,7 +25,7 @@ import org.powerscala.concurrent.{Executor, Time}
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds) {
-  private val version = Version.LUCENE_4_9
+  val version = Version.LUCENE_4_9
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
     case None => new RAMDirectory
@@ -144,12 +144,10 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
 
   val query = SearchQueryBuilder(this, defaultField)
 
-  def query(q: String): SearchQueryBuilder = query.copy(queryString = q)
+  def query(q: String): SearchQueryBuilder = query.copy(queryString = Some(q))
 
   private[search] def search(q: SearchQueryBuilder) = {
-    val parser = new QueryParser(version, defaultField, analyzer)
-    parser.setAllowLeadingWildcard(q.allowLeadingWildcard)
-    val baseQuery = parser.parse(q.queryString)
+    val baseQuery = q.createQuery()
     val sort = q.sort
     val numHits = q.offset + q.limit
     val fillFields = true
@@ -174,6 +172,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     } else {                                                        // No drill-down, use the base query
       baseQuery
     }
+
 
     if (q.facetRequests.nonEmpty) {
       FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)
