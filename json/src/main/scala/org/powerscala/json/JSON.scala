@@ -44,6 +44,7 @@ object JSON extends Listenable {
     val typeClass = typeManifest.runtimeClass
     val jsonClass = jsonManifest.runtimeClass
     parsers.listen(priority) {
+      case null => Some(JNull)
       case value => if (value.getClass.hasType(typeClass)) {
         val v = value.asInstanceOf[T]
         if (typeMatcher == null || typeMatcher(v)) {

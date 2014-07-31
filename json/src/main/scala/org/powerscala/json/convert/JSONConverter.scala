@@ -21,6 +21,11 @@ object IntSupport extends JSONConverter[Int, JInt] {
   override def fromJSON(v: JInt) = v.num.intValue()
 }
 
+object LongSupport extends JSONConverter[Long, JInt] {
+  override def toJSON(v: Long) = JInt(v)
+  override def fromJSON(v: JInt) = v.num.longValue()
+}
+
 object BigIntSupport extends JSONConverter[BigInt, JInt] {
   override def toJSON(v: BigInt) = JInt(v)
   override def fromJSON(v: JInt) = v.num

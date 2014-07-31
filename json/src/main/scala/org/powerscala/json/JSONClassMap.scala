@@ -38,11 +38,12 @@ object JSONClassMap extends Logging {
   // Default types
   register(BooleanSupport, classOf[java.lang.Boolean])
   register(IntSupport, classOf[java.lang.Integer])
+  register(LongSupport, classOf[java.lang.Long])
   register(BigIntSupport)
   register(DoubleSupport, classOf[java.lang.Double])
   register(DecimalSupport)
   register(StringSupport)
-  register(ListSupport, classOf[::[_]])
+  register(ListSupport, classOf[::[_]], Nil.getClass)
   register(MapSupport, classOf[Map.Map1[_, _]], classOf[Map.Map2[_, _]], classOf[Map.Map3[_, _]], classOf[Map.Map4[_, _]])
 
   def register[T, J <: JValue](converter: JSONConverter[T, J], aliasClasses: Class[_]*)

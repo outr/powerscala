@@ -196,6 +196,7 @@ object EnhancedMethod {
     case Some(result) => result
     case None => throw new RuntimeException("EnhancedMethod.convertTo: Unable to convert %s (%s) to %s".format(value, value.asInstanceOf[AnyRef].getClass.getName, resultType.name))
   }
+
   def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
     value match {
       case json: Json => {                      // Convert Argonaut Json into useful types
@@ -284,8 +285,9 @@ object EnhancedMethod {
               }.sortBy(t => t._1).map(t => t._2))
             }
           }
-          case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].getOrElse(null))
+          case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].orNull)
           case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
+          case _ if value.isInstanceOf[String] => FromString.get(value.asInstanceOf[String], resultType)
           case _ => None
         }
       }

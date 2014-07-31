@@ -8,7 +8,7 @@ import scala.util.Random
  *
  * @author Matt Hicks <matt@outr.com>
  */
-trait Enumerated[E <: EnumEntry] {
+trait Enumerated[E <: EnumEntry] extends FromString[E] {
   private val fields = getClass.fields.filter(f => f.returnType.hasType(classOf[EnumEntry])).zipWithIndex.map(t => new EnumField[E](t._1, t._2))
   private val namesMapLowerCase = fields.map(ef => ef.name.toLowerCase -> ef).toMap
   private val namesMap = fields.map(ef => ef.name -> ef).toMap
@@ -34,7 +34,8 @@ trait Enumerated[E <: EnumEntry] {
    */
   def apply(name: String): E = apply(name, caseSensitive = false)
 
-  def get(name: String, caseSensitive: Boolean = false) = if (name != null && name.nonEmpty) {
+  def get(name: String) = get(name, caseSensitive = false)
+  def get(name: String, caseSensitive: Boolean) = if (name != null && name.nonEmpty) {
     val exactMatch = if (caseSensitive) {
       namesMap.get(name).map(ef => ef.entry)
     } else {

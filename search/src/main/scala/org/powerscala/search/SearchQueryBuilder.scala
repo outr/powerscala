@@ -89,11 +89,20 @@ case class SearchQueryBuilder(instance: Search,
   def facet(name: String, max: Int = 10) = copy(facetRequests = FacetRequest(DrillDown(name), max) :: facetRequests)
   def drillDown(facet: String, values: String*): SearchQueryBuilder = copy(drillDown = DrillDown(facet, values: _*) :: drillDown)
   def sort(s: Sort): SearchQueryBuilder = copy(sort = s)
-  def sortFromPoint(latitude: Double, longitude: Double) = {
-    val point = instance.spatialContext.makePoint(latitude, longitude)
+  def sortFromPoint(latitude: Double, longitude: Double, reverse: Boolean = false) = {
+    val point = instance.point(latitude, longitude)
     val valueSource = instance.spatialStrategy.makeDistanceValueSource(point, DistanceUtils.DEG_TO_KM)
-    val distanceSort = new Sort(valueSource.getSortField(false)).rewrite(instance.searcher)
-    copy(sort = distanceSort)
+    val distanceSortField = valueSource.getSortField(reverse)
+    addSort(distanceSortField)
+  }
+  def addSort(field: SortField) = {
+    val sort = if (this.sort == null) {
+      new Sort()
+    } else {
+      this.sort
+    }
+    val fields = sort.getSort :+ field
+    copy(sort = new Sort(fields: _*).rewrite(instance.searcher))
   }
   def filter(f: Filter): SearchQueryBuilder = copy(filter = f)
   def filterByCircle(latitude: Double, longitude: Double, distanceInDegrees: Double) = {
