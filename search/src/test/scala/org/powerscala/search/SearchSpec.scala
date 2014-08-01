@@ -208,9 +208,9 @@ class SearchSpec extends WordSpec with Matchers {
       "search for all Person documents sorted by distance ascending" in {
         val results = personSearch.query.sortFromPoint(60, -50).run()
         results.total should equal(3)
-        results.doc(0).get("id") should equal("11")
+        results.doc(0).get("id") should equal("10")
         results.doc(1).get("id") should equal("12")
-        results.doc(2).get("id") should equal("10")
+        results.doc(2).get("id") should equal("11")
       }
       "search for all Person documents within a circle" in {
         val results = personSearch.query.filterByCircle(33.0, -80.0, DistanceUtils.dist2Degrees(200, DistanceUtils.EARTH_MEAN_RADIUS_KM)).run()
