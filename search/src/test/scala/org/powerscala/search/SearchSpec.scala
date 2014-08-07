@@ -1,10 +1,13 @@
 package org.powerscala.search
 
+import java.util
+
 import com.spatial4j.core.distance.DistanceUtils
 import com.spatial4j.core.shape.Point
-import org.apache.lucene.facet.FacetField
-import org.apache.lucene.index.Term
-import org.apache.lucene.search.{RegexpQuery, SortField, Sort}
+import org.apache.lucene.facet.{LabelAndValue, FacetField}
+import org.apache.lucene.index.{AtomicReaderContext, Term}
+import org.apache.lucene.search._
+import org.apache.lucene.util.{DocIdBitSet, Bits}
 import org.scalatest.{Matchers, WordSpec}
 import org.apache.lucene.document.{IntField, TextField, StringField, Field}
 
@@ -78,11 +81,16 @@ class SearchSpec extends WordSpec with Matchers {
         doc.get("id") should equal("3")
         doc.get("name") should equal("unicorn")
         doc.get("description") should equal("this is a test image of a unicorn.")
-        doc.get("tags") should equal("animal, mythical, horse, image")
+        doc.get("tags") should equal("animal mythical horse image")
       }
       "query all text that matches 'dragonfly'" in {
         val results = imageSearch.query("dragonfly").run()
         results.total should equal(2)
+      }
+      "query all tags with 'fly' in a tag" in {
+        val results = imageSearch.query.facet("tag", filter = Some((lv: LabelAndValue) => lv.label.contains("fly"))).run()
+        val entries = results.facetResults("tag").map(lv => s"${lv.label}: ${lv.value}").toSet
+        entries should equal(Set("flying: 3"))
       }
     }
     "validating facets in search" should {
@@ -90,7 +98,7 @@ class SearchSpec extends WordSpec with Matchers {
         val results = imageSearch.query("name:*fly").facet("tag").run()
         results.total should equal(3)
         results.facetResults.size should equal(1)
-        val facets = results.facets("tag").labelValues.toVector
+        val facets = results.facets("tag").toVector
         facets.size should equal(5)
         facets(0).label should equal("flying")
         facets(0).value should equal(3.0)
@@ -131,7 +139,7 @@ class SearchSpec extends WordSpec with Matchers {
         results.pageStart should equal(0)
         results.page should equal(0)
         results.pages should equal(3)
-        results.facets("tag").childCount should equal(11)
+        results.facets("tag").length should equal(11)
       }
       "go to the next page" in {
         results = results.page(1)
@@ -185,17 +193,21 @@ class SearchSpec extends WordSpec with Matchers {
       "return one result for 'butter'" in {
         val results = imageSearch.query.facet("tag", 100).drillDown("tag", "butter").run()
         results.total should equal(1)
-        results.facets("tag").childCount should equal(4)
+        results.facets("tag").length should equal(4)
       }
       "return three results for 'flying'" in {
         val results = imageSearch.query.facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(3)
-        results.facets("tag").childCount should equal(5)
+        results.facets("tag").length should equal(5)
       }
       "combine tagged drill-down and search arguments" in {
         val results = imageSearch.query("dragonfly").facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(1)
-        results.facets("tag").childCount should equal(4)
+        results.facets("tag").length should equal(4)
+      }
+      "combine two drill-down args" in {
+        val results = imageSearch.query.facet("tag", 100).drillDown("tag", "butter").drillDown("tag", "flying").run()
+        results.total should equal(1)
       }
     }
     "doing spatial queries" should {
@@ -243,7 +255,7 @@ case class Image(id: Int, name: String, description: String, tags: List[String] 
         new StringField("id", id.toString, Field.Store.YES),
         new TextField("name", name, Field.Store.YES),
         new TextField("description", description, Field.Store.YES),
-        new TextField("tags", tags.mkString(", "), Field.Store.YES)
+        new TextField("tags", tags.mkString(" "), Field.Store.YES)
       ) ::: tags.map(t => new FacetField("tag", t)),
       Nil
     )

@@ -1,6 +1,7 @@
 package org.powerscala.search
 
 import com.spatial4j.core.distance.DistanceUtils
+import org.apache.lucene.facet.LabelAndValue
 import org.apache.lucene.index.Term
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.search._
@@ -86,7 +87,9 @@ case class SearchQueryBuilder(instance: Search,
     add(NumericRangeQuery.newIntRange(field, precisionStep, min, max, minInclusive, maxInclusive), clause)
   }
   def facets(facetRequests: FacetRequest*) = copy(facetRequests = facetRequests.toList)
-  def facet(name: String, max: Int = 10) = copy(facetRequests = FacetRequest(DrillDown(name), max) :: facetRequests)
+  def facet(name: String, max: Int = 10, filter: Option[LabelAndValue => Boolean] = None) = {
+    copy(facetRequests = FacetRequest(DrillDown(name), max, filter) :: facetRequests)
+  }
   def drillDown(facet: String, values: String*): SearchQueryBuilder = copy(drillDown = DrillDown(facet, values: _*) :: drillDown)
   def sort(s: Sort): SearchQueryBuilder = copy(sort = s)
   def sortFromPoint(latitude: Double, longitude: Double, reverse: Boolean = false) = {

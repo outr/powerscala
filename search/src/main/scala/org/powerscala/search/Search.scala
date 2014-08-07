@@ -2,7 +2,7 @@ package org.powerscala.search
 
 import java.io.File
 import com.spatial4j.core.context.SpatialContext
-import org.apache.lucene.facet.{FacetResult, DrillDownQuery, FacetsConfig, FacetsCollector}
+import org.apache.lucene.facet._
 import org.apache.lucene.spatial.SpatialStrategy
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree
@@ -165,8 +165,18 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val query = if (q.drillDown.nonEmpty) {          // Drill-down via facets query
       if (facetsCollector == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
       val ddq = new DrillDownQuery(facetsConfig, baseQuery)
-      q.drillDown.foreach {
-        case dd => ddq.add(dd.dim, dd.path: _*)
+      q.drillDown.groupBy(dd => dd.dim).foreach {
+        case (dim, list) => {
+          val disableCoord = true
+          val bq = new BooleanQuery(disableCoord)
+          list.foreach {
+            case dd => {
+              val indexedField = facetsConfig.getDimConfig(dd.dim).indexFieldName
+              bq.add(new TermQuery(DrillDownQuery.term(indexedField, dd.dim, dd.path: _*)), BooleanClause.Occur.MUST)
+            }
+          }
+          ddq.add(dim, bq)
+        }
       }
       ddq
     } else {                                                        // No drill-down, use the base query
@@ -175,16 +185,26 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
 
 
     if (q.facetRequests.nonEmpty) {
-      FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)
+      FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)    // what should 'n' be?
     }
     searcher.search(query, q.filter, collector)
 
     val topDocs = collector.topDocs(q.offset, q.limit)
 
-    val facetResults: Map[String, FacetResult] = if (q.facetRequests.nonEmpty) {
+    val facetResults: Map[String, List[LabelAndValue]] = if (q.facetRequests.nonEmpty) {
       val facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector)
-
-      q.facetRequests.map(fr => fr.drillDown.dim -> facets.getTopChildren(fr.limit, fr.drillDown.dim, fr.drillDown.path: _*)).toMap
+      q.facetRequests.map {
+        case fr => {
+          val dim = fr.drillDown.dim
+          val limit = if (fr.filter.nonEmpty) 1000 else fr.limit
+          val result = facets.getTopChildren(limit, fr.drillDown.dim, fr.drillDown.path: _*)
+          val filtered = fr.filter match {
+            case Some(filter) => result.labelValues.toStream.filter(filter).take(fr.limit).toList
+            case None => result.labelValues.toList
+          }
+          dim -> filtered
+        }
+      }.toMap
     } else {
       Map.empty
     }

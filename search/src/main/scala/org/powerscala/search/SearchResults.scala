@@ -1,12 +1,12 @@
 package org.powerscala.search
 
-import org.apache.lucene.facet.FacetResult
+import org.apache.lucene.facet.{LabelAndValue, FacetResult}
 import org.apache.lucene.search.TopDocs
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class SearchResults(topDocs: TopDocs, facetResults: Map[String, FacetResult], b: SearchQueryBuilder) {
+case class SearchResults(topDocs: TopDocs, facetResults: Map[String, List[LabelAndValue]], b: SearchQueryBuilder) {
   def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
   def docs = topDocs.scoreDocs.indices.map(index => doc(index)).toList
   def scoreDocs = topDocs.scoreDocs
