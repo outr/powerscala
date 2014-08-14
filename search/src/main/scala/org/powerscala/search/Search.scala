@@ -24,7 +24,7 @@ import org.powerscala.concurrent.{Executor, Time}
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds) {
+class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000) {
   val version = Version.LUCENE_4_9
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
@@ -183,7 +183,6 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
       baseQuery
     }
 
-
     if (q.facetRequests.nonEmpty) {
       FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)    // what should 'n' be?
     }
@@ -196,12 +195,20 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
       q.facetRequests.map {
         case fr => {
           val dim = fr.drillDown.dim
-          val limit = if (fr.filter.nonEmpty) 1000 else fr.limit
+          val limit = facetResultsBounds
           val result = facets.getTopChildren(limit, fr.drillDown.dim, fr.drillDown.path: _*)
-          val filtered = fr.filter match {
-            case Some(filter) => result.labelValues.toStream.filter(filter).take(fr.limit).toList
-            case None => result.labelValues.toList
+          val filter = fr.filter match {
+            case Some(f) => f
+            case None => Search.EmptyLabelAndValueFilter
           }
+          val drillDownFilter = if (fr.excludeDrillDown) {
+            (lv: LabelAndValue) => !q.hasDrillDown(dim, Seq(lv.label))
+          } else {
+            Search.EmptyLabelAndValueFilter
+          }
+          val labelValues = if (result != null) result.labelValues else Array.empty[LabelAndValue]
+          val filtered = labelValues.toStream.filter(filter).filter(drillDownFilter).take(fr.limit).toList
+
           dim -> filtered
         }
       }.toMap
@@ -218,4 +225,8 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     taxonomyWriter.close()
     taxonomyReader.close()
   }
+}
+
+object Search {
+  val EmptyLabelAndValueFilter = (lv: LabelAndValue) => true
 }

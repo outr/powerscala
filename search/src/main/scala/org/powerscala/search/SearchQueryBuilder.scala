@@ -91,6 +91,7 @@ case class SearchQueryBuilder(instance: Search,
     copy(facetRequests = FacetRequest(DrillDown(name), max, filter) :: facetRequests)
   }
   def drillDown(facet: String, values: String*): SearchQueryBuilder = copy(drillDown = DrillDown(facet, values: _*) :: drillDown)
+  def hasDrillDown(facet: String, values: Seq[String]) = drillDown.find(d => d.dim == facet && d.path == values).nonEmpty
   def sort(s: Sort): SearchQueryBuilder = copy(sort = s)
   def sortFromPoint(latitude: Double, longitude: Double, reverse: Boolean = false) = {
     val point = instance.point(latitude, longitude)
