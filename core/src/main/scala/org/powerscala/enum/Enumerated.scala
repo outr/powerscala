@@ -1,5 +1,6 @@
 package org.powerscala.enum
 
+import org.powerscala.StringUtil
 import org.powerscala.reflect._
 import scala.util.Random
 
@@ -10,8 +11,8 @@ import scala.util.Random
  */
 trait Enumerated[E <: EnumEntry] extends FromString[E] {
   private val fields = getClass.fields.filter(f => f.returnType.hasType(classOf[EnumEntry])).zipWithIndex.map(t => new EnumField[E](t._1, t._2))
-  private val namesMapLowerCase = fields.map(ef => ef.name.toLowerCase -> ef).toMap
-  private val namesMap = fields.map(ef => ef.name -> ef).toMap
+  private val namesMapLowerCase = fields.map(ef => List(ef.name.toLowerCase -> ef, StringUtil.generateLabel(ef.name).toLowerCase -> ef)).flatten.toMap
+  private val namesMap = fields.map(ef => List(ef.name -> ef, StringUtil.generateLabel(ef.name) -> ef)).flatten.toMap
 
   /**
    * The name of this Enumerated.
