@@ -193,17 +193,17 @@ class SearchSpec extends WordSpec with Matchers {
       "return one result for 'butter'" in {
         val results = imageSearch.query.facet("tag", 100).drillDown("tag", "butter").run()
         results.total should equal(1)
-        results.facets("tag").length should equal(4)
+        results.facets("tag").length should equal(3)
       }
       "return three results for 'flying'" in {
         val results = imageSearch.query.facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(3)
-        results.facets("tag").length should equal(5)
+        results.facets("tag").length should equal(4)
       }
       "combine tagged drill-down and search arguments" in {
         val results = imageSearch.query("dragonfly").facet("tag", 100).drillDown("tag", "flying").run()
         results.total should equal(1)
-        results.facets("tag").length should equal(4)
+        results.facets("tag").length should equal(3)
       }
       "combine two drill-down args" in {
         val results = imageSearch.query.facet("tag", 100).drillDown("tag", "butter").drillDown("tag", "flying").run()
