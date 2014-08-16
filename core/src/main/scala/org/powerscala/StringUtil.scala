@@ -20,4 +20,9 @@ object StringUtil {
    * Generates a human readable label for this name with proper capitalization.
    */
   def generateLabel(name: String) = CaseValue.generateLabel(name)
+
+  private val TrimRegex = """(\p{Z}*)(.*?)(\p{Z}*)""".r
+  def trim(s: String) = s match {
+    case TrimRegex(left, content, right) => content
+  }
 }
