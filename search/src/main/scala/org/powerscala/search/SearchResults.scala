@@ -8,7 +8,9 @@ import org.apache.lucene.search.TopDocs
  */
 case class SearchResults(topDocs: TopDocs, facetResults: Map[String, List[LabelAndValue]], b: SearchQueryBuilder) {
   def doc(index: Int, fieldsToLoad: String*) = b.instance.apply(topDocs.scoreDocs(index).doc, fieldsToLoad: _*)
+  def score(index: Int) = topDocs.scoreDocs(index).score
   def docs = topDocs.scoreDocs.indices.map(index => doc(index)).toList
+  def scores = topDocs.scoreDocs.indices.map(index => score(index)).toList
   def scoreDocs = topDocs.scoreDocs
   def pageStart = b.offset
   def pageSize = b.limit
