@@ -43,7 +43,7 @@ trait Enumerated[E <: EnumEntry] extends FromString[E] {
       namesMapLowerCase.get(name.toLowerCase).map(ef => ef.entry)
     }
     if (exactMatch.isEmpty) {     // Do isMatch checks on entries
-      values.find(e => e.isMatch(name))
+      values.find(e => e != null && e.isMatch(name))
     } else {
       exactMatch
     }
