@@ -22,7 +22,7 @@ case class SearchResults(topDocs: TopDocs, facetResults: Map[String, List[LabelA
   def page(p: Int) = {
     val pageNumber = math.min(pages - 1, math.max(0, p))
     // Offset to the proper page, remove all facets (no need to query them again), and then set the facetResults
-    b.offset(pageNumber * b.limit).facets().run().copy(facetResults = facetResults)
+    b.offset(pageNumber * b.limit).run().copy(facetResults = facetResults)
   }
   def previousPage = page(page - 1)
   def nextPage = page(page + 1)
