@@ -31,7 +31,6 @@
  */
 package org.powerscala.concurrent
 
-import java.lang.Thread
 import java.util.concurrent.{TimeUnit, ThreadFactory, Callable, Executors}
 
 /**
@@ -39,16 +38,15 @@ import java.util.concurrent.{TimeUnit, ThreadFactory, Callable, Executors}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-object Executor {
+class Executor(coreThreads: Int = 8, daemonThreads: Boolean = true) {
   private lazy val threadFactory = new ThreadFactory {
     def newThread(r: Runnable) = {
       val t = new Thread(r)
-      t.setDaemon(true)
+      t.setDaemon(daemonThreads)
       t
     }
   }
-  private lazy val executor = Executors.newCachedThreadPool(threadFactory)
-  private lazy val scheduler = Executors.newScheduledThreadPool(8, threadFactory)
+  private lazy val executor = Executors.newScheduledThreadPool(coreThreads, threadFactory)
 
   /**
    * Invokes the function on the ExecutorService asynchronously returning a Future[T] with the return value.
@@ -81,16 +79,16 @@ object Executor {
   // be created to support it.
 
   def schedule[T](delay: Double)(f: => T) = {
-    scheduler.schedule(new C[T](() => f), Time.millis(delay), TimeUnit.MILLISECONDS)
+    executor.schedule(new C[T](() => f), Time.millis(delay), TimeUnit.MILLISECONDS)
   }
 
   def scheduleAtFixedRate[T](initialDelay: Double, period: Double)(f: => T) = {
-    scheduler.scheduleAtFixedRate(new R[T](() => f), Time.millis(initialDelay), Time.millis(period),
+    executor.scheduleAtFixedRate(new R[T](() => f), Time.millis(initialDelay), Time.millis(period),
       TimeUnit.MILLISECONDS)
   }
 
   def scheduleWithFixedDelay[T](initialDelay: Double, delay: Double)(f: => T) = {
-    scheduler
+    executor
         .scheduleWithFixedDelay(new R[T](() => f), Time.millis(initialDelay), Time.millis(delay),
       TimeUnit.MILLISECONDS)
   }
@@ -103,3 +101,5 @@ object Executor {
     def run = f()
   }
 }
+
+object Executor extends Executor(coreThreads = 8, daemonThreads = true)

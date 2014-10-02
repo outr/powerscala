@@ -31,7 +31,7 @@ object IO {
 
   def stream(input: InputStream, output: File): Long = stream(input, new FileOutputStream(output))
 
-  def copy(read: File, write: File): Unit = {
+  def copy(read: File, write: File): File = {
     val parent = write.getParentFile
     if (parent != null) {
       parent.mkdirs()
@@ -55,6 +55,7 @@ object IO {
         }
       }
     }
+    write
   }
 
   def copy(read: String, write: File) = {
@@ -65,6 +66,7 @@ object IO {
       output.flush()
       output.close()
     }
+    write
   }
 
   def copy(read: File) = {
