@@ -43,17 +43,7 @@ object IO {
       }
     } else {
       val input = new FileInputStream(read)
-      val output = new FileOutputStream(write)
-      try {
-        stream(input, output)
-      } catch {
-        case t: Throwable => {
-          output.flush()
-          output.close()
-          input.close()
-          throw t
-        }
-      }
+      stream(input, write)
     }
     write
   }
