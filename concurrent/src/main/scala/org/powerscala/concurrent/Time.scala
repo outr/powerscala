@@ -174,92 +174,14 @@ object Time extends Enumerated[Time] {
   }
 
   /**
-   * Converts time in milliseconds to a short String representation.
+   * Converts time in milliseconds to an Elapsed instance.
    */
-  def elapsed(time: Long): String = elapsed(time.toDouble / 1000.0)
+  def elapsed(time: Long): Elapsed = elapsed(time.toDouble / 1000.0)
 
   /**
-   * Converts time in seconds to a short String representation.
+   * Converts time in seconds to an Elapsed instance.
    */
-  def elapsed(time: Double): String = {
-    val format = "%,.2f"
-    var value: Double = time
-    var ending = "ms"
-    if (time > Year.value) {
-      value = time / Year.value
-      ending = " years"
-    } else if (time > Month.value) {
-      value = time / Month.value
-      ending = " months"
-    } else if (time > Week.value) {
-      value = time / Week.value
-      ending = " weeks"
-    } else if (time > Day.value) {
-      value = time / Day.value
-      ending = " days"
-    } else if (time > Hour.value) {
-      value = time / Hour.value
-      ending = " hours"
-    } else if (time > Minute.value) {
-      value = time / Minute.value
-      ending = " minutes"
-    } else if (time > Second.value) {
-      value = time / Second.value
-      ending = " seconds"
-    }
-
-    String.format(format + ending, value.asInstanceOf[AnyRef])
-  }
-
-  /**
-   * Converts time in milliseconds to a long String representation.
-   */
-  def elapsedExact(time: Long) = {
-    val b = new StringBuilder()
-
-    var elapsed: Double = time
-    var years, months, weeks, days, hours, minutes, seconds = 0
-
-    while (elapsed >= Year.value) {
-      years += 1
-      elapsed -= Year.value
-    }
-    while (elapsed >= Month.value) {
-      months += 1
-      elapsed -= Month.value
-    }
-    while (elapsed >= Week.value) {
-      weeks += 1
-      elapsed -= Week.value
-    }
-    while (elapsed >= Day.value) {
-      days += 1
-      elapsed -= Day.value
-    }
-    while (elapsed >= Hour.value) {
-      hours += 1
-      elapsed -= Hour.value
-    }
-    while (elapsed >= Minute.value) {
-      minutes += 1
-      elapsed -= Minute.value
-    }
-    while (elapsed >= Second.value) {
-      seconds += 1
-      elapsed -= Second.value
-    }
-
-    if (years > 0) b.append(years + "y, ")
-    if (months > 0) b.append(months + "m, ")
-    if (weeks > 0) b.append(weeks + "w, ")
-    if (days > 0) b.append(days + "d, ")
-    if (hours > 0) b.append(hours + "h, ")
-    if (minutes > 0) b.append(minutes + "m, ")
-    if (seconds > 0) b.append(seconds + "s, ")
-    b.append(elapsed + "ms")
-
-    b.toString()
-  }
+  def elapsed(time: Double) = Elapsed(time)
 
   /**
    * Convenience method to sleep a specific amount of time in seconds.
@@ -374,5 +296,67 @@ class Report(_start: Long) {
       }
     }
     b.toString()
+  }
+}
+
+case class Elapsed(time: Double) {
+  val (days, hours, minutes, seconds, milliseconds) = evaluate()
+
+  private def evaluate() = {
+    val days = (time / Time.Day.value).toInt
+    var t = time - (days * Time.Day.value)
+    val hours = (time / Time.Hour.value).toInt
+    t -= hours * Time.Hour.value
+    val minutes = (t / Time.Minute.value).toInt
+    t -= minutes * Time.Minute.value
+    val seconds = t.toInt
+    t -= seconds
+    val milliseconds = (t * 1000).toInt
+    (days, hours, minutes, seconds, milliseconds)
+  }
+
+  lazy val shorthand = {
+    import Time._
+    val format = "%,.2f"
+    var value: Double = time
+    var ending = "ms"
+    if (time > Year.value) {
+      value = time / Year.value
+      ending = " years"
+    } else if (time > Month.value) {
+      value = time / Month.value
+      ending = " months"
+    } else if (time > Week.value) {
+      value = time / Week.value
+      ending = " weeks"
+    } else if (time > Day.value) {
+      value = time / Day.value
+      ending = " days"
+    } else if (time > Hour.value) {
+      value = time / Hour.value
+      ending = " hours"
+    } else if (time > Minute.value) {
+      value = time / Minute.value
+      ending = " minutes"
+    } else if (time > Second.value) {
+      value = time / Second.value
+      ending = " seconds"
+    }
+
+    String.format(format + ending, value.asInstanceOf[AnyRef])
+  }
+
+  override def toString = {
+    var l = ListBuffer.empty[String]
+    if (days > 0) l += s"$days days"
+    if (hours > 0) l += s"$hours hours"
+    if (minutes > 0) l += s"$minutes minutes"
+    if (seconds > 0) l += s"$seconds seconds"
+    if (milliseconds > 0) l += s"$milliseconds milliseconds"
+    if (l.nonEmpty) {
+      l.mkString(", ")
+    } else {
+      "0 milliseconds"
+    }
   }
 }

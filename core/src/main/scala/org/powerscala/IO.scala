@@ -24,7 +24,13 @@ object IO {
       }
       written
     } else {
-      output.write(buf, 0, len)
+      try {
+        output.write(buf, 0, len)
+      } catch {
+        case t: Throwable => {
+          throw new RuntimeException(s"IO.stream failed to write to output buffer with length: $len, written: $written, buffer size: ${buf.length} (input: ${input.getClass}, output: ${output.getClass}.", t)
+        }
+      }
       stream(input, output, buf, closeOnComplete, written + len)
     }
   }
