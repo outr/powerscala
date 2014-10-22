@@ -33,6 +33,12 @@ trait Storage[K, V] {
       }
     }
   }
+  def compareAndSet[T <: V](key: K, expected: Option[T], value: => Option[T]) = if (get[T](key) == expected) {
+    set(key, value)
+    true
+  } else {
+    false
+  }
   def getAndSet[T <: V](key: K, value: T): Option[T] = {
     val previous = get[T](key)
     update(key, value)
@@ -94,6 +100,12 @@ object Storage {
       set(obj, key, t)
       t
     }
+  }
+  def compareAndSet[K, T](obj: Any, key: K, expected: Option[T], value: => T) = if (get[K, T](obj, key) == expected) {
+    set[K, T](obj, key, value)
+    true
+  } else {
+    false
   }
   def getAndSet[K, T](obj: Any, key: K, value: T) = {
     val previous = get[K, T](obj, key)
