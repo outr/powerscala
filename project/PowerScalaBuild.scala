@@ -6,7 +6,7 @@ import Dependencies._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
-    version := "1.6.6-SNAPSHOT",
+    version := "1.6.7-SNAPSHOT",
     organization := "org.powerscala",
     scalaVersion := "2.11.2",
     libraryDependencies ++= Seq(
