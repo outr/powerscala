@@ -1,36 +1,37 @@
 package org.powerscala.search
 
 import java.io.File
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
+
 import com.spatial4j.core.context.SpatialContext
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.{Document, StringField}
 import org.apache.lucene.facet._
+import org.apache.lucene.facet.taxonomy.directory.{DirectoryTaxonomyReader, DirectoryTaxonomyWriter}
+import org.apache.lucene.facet.taxonomy.{FastTaxonomyFacetCounts, TaxonomyReader}
+import org.apache.lucene.index.IndexWriterConfig.OpenMode
+import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig, Term}
+import org.apache.lucene.search._
 import org.apache.lucene.spatial.SpatialStrategy
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree
-import org.apache.lucene.store.{RAMDirectory, FSDirectory}
-import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.store.{FSDirectory, RAMDirectory}
 import org.apache.lucene.util.Version
-import org.apache.lucene.index.{Term, DirectoryReader, IndexWriter, IndexWriterConfig}
-import org.apache.lucene.index.IndexWriterConfig.OpenMode
-import org.apache.lucene.search._
-import org.apache.lucene.document.{StringField, Document, Field}
-import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.facet.taxonomy.{FastTaxonomyFacetCounts, TaxonomyReader, CategoryPath}
-import org.apache.lucene.facet.taxonomy.directory.{DirectoryTaxonomyReader, DirectoryTaxonomyWriter}
-import scala.collection.JavaConversions._
-import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Executor, Time}
+
+import scala.collection.JavaConversions._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000) {
-  val version = Version.LUCENE_4_9
+  val version = Version.LUCENE_4_10_2
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
     case None => new RAMDirectory
   }
-  val analyzer = new StandardAnalyzer(version)
+  val analyzer = new StandardAnalyzer()
 
   private val lastCommit = new AtomicLong(0L)
   private val committing = new AtomicBoolean(false)
@@ -220,7 +221,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   }
 
   def close() = {
-    writer.close(true)
+    writer.close()
     _reader.close()
     taxonomyWriter.close()
     taxonomyReader.close()

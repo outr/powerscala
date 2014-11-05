@@ -1,14 +1,13 @@
+import Dependencies._
+import sbt.Keys._
 import sbt._
-import Keys._
 import sbtunidoc.Plugin._
 
-import Dependencies._
-
 object PowerScalaBuild extends Build {
-  val baseSettings = Defaults.defaultSettings ++ Seq(
+  val baseSettings = Defaults.coreDefaultSettings ++ Seq(
     version := "1.6.7-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.11.2",
+    scalaVersion := "2.11.4",
     libraryDependencies ++= Seq(
       scalaTest
     ),
@@ -69,6 +68,7 @@ object PowerScalaBuild extends Build {
     .dependsOn(core, event)
   lazy val json = Project("json", file("json"), settings = createSettings("powerscala-json"))
     .settings(libraryDependencies ++= Seq(json4s))
+
     .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
@@ -81,12 +81,12 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "4.9.0"
+  val luceneVersion = "4.10.2"
 
-  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "latest.release"
+  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.6"
   val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
-  val asm = "org.ow2.asm" % "asm-all" % "latest.release"
-  val json4s = "org.json4s" %% "json4s-jackson" % "latest.release"
+  val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
+  val json4s = "org.json4s" %% "json4s-jackson" % "3.2.11"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
@@ -94,7 +94,7 @@ object Dependencies {
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
   val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion
-  val h2 = "com.h2database" % "h2" % "latest.release"
-  val reflections = "org.reflections" % "reflections" % "0.9.8"
-  val scalaTest = "org.scalatest" %% "scalatest" % "latest.release" % "test"
+  val h2 = "com.h2database" % "h2" % "1.4.182"
+  val reflections = "org.reflections" % "reflections" % "0.9.9"
+  val scalaTest = "org.scalatest" %% "scalatest" % "2.2.2" % "test"
 }
