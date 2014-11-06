@@ -7,7 +7,7 @@ import org.powerscala.event.processor.ProcessorGroup
  *
  * @author Matt Hicks <matt@outr.com>
  */
-class PropertyGroup[T](val properties: List[Property[T]]) extends PropertyLike[T] {
+class PropertyGroup[T](val properties: List[Property[T]]) extends ReadProperty[T] with WriteProperty[T] {
   lazy val read = ProcessorGroup(properties.map(p => p.read))
   lazy val changing = ProcessorGroup(properties.map(p => p.changing))
   lazy val change = ProcessorGroup(properties.map(p => p.change))

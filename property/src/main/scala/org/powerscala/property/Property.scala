@@ -1,27 +1,29 @@
 package org.powerscala.property
 
-import org.powerscala.property.backing.{VariableBacking, Backing}
-import org.powerscala.property.event.processor.{PropertyChangeProcessor, PropertyChangingProcessor, PropertyReadProcessor}
-import org.powerscala.property.event.{PropertyChangeEvent, PropertyRead}
+import org.powerscala.bind.Bindable
+import org.powerscala.enum.{EnumEntry, Enumerated}
 import org.powerscala.event.Listenable
 import org.powerscala.hierarchy.ChildLike
-import org.powerscala.bind.Bindable
-
+import org.powerscala.property.backing.{Backing, VariableBacking}
+import org.powerscala.property.event.processor.{PropertyChangeProcessor, PropertyChangingProcessor, PropertyReadProcessor}
+import org.powerscala.property.event.{PropertyChangeEvent, PropertyRead}
 import org.powerscala.reflect._
-import org.powerscala.enum.{Enumerated, EnumEntry}
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 class Property[T](backing: Backing[T] = new VariableBacking[T], default: => Option[T] = None)
                  (implicit val parent: Listenable = null, val manifest: Manifest[T])
-      extends PropertyLike[T]
+      extends ReadProperty[T]
+      with WriteProperty[T]
       with Listenable
       with Bindable[T]
       with ChildLike[Listenable] {
   val read = new PropertyReadProcessor()(this)
   val changing = new PropertyChangingProcessor[T]()(this, manifest)
   val change = new PropertyChangeProcessor[T]()(this, Manifest.classType[PropertyChangeEvent[T]](classOf[PropertyChangeEvent[T]]))
+
+  lazy val readOnlyView = new ReadOnlyPropertyLense(this)
 
   default match {
     case Some(value) => this := value
