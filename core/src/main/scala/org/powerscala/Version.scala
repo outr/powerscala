@@ -28,6 +28,8 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
     b.toString()
   }
 
+  lazy val general = s"$major.$minor.$maintenance"
+
   override def toString = string
 
   def compare(that: Version) = if (major != that.major) {
