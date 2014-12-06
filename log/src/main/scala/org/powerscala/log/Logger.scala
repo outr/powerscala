@@ -89,10 +89,10 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
   }
 
   protected def handleListenerResponse(value: Intercept, state: EventState[LogRecord]) = if (value == Intercept.Stop) {
-    state.stopPropagation()
+    state.stopPropagation = true
   }
 
-  protected def responseFor(state: EventState[LogRecord]) = if (state.isStopPropagation) {
+  protected def responseFor(state: EventState[LogRecord]) = if (state.stopPropagation) {
     Intercept.Stop
   } else {
     Intercept.Continue

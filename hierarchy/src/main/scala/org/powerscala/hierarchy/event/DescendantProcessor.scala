@@ -22,7 +22,7 @@ trait DescendantProcessor[E, V, R] extends EventProcessor[E, V, R] {
     if (mode == ListenMode.Standard && processDescendants) {        // Only process descendants on standard processing
       // Process down the descendant tree
       TypeFilteredIterator[Listenable](ParentLike.descendants(listenable)).foreach {
-        case childListenable => if (!state.isStopPropagation && DescendantProcessor.shouldProcess) {
+        case childListenable => if (!state.stopPropagation && DescendantProcessor.shouldProcess) {
           fireInternal(state, Ancestors, childListenable)
         }
       }
@@ -36,7 +36,7 @@ object DescendantProcessor {
   /**
    * For the current event processing don't process descendants.
    */
-  def doNotProcess() = EventState.current(doNotProcessKey) = true
+  def doNotProcess() = EventState.current.store(doNotProcessKey) = true
 
-  def shouldProcess = !EventState.current.getOrElse(doNotProcessKey, false)
+  def shouldProcess = !EventState.current.store.getOrElse(doNotProcessKey, false)
 }

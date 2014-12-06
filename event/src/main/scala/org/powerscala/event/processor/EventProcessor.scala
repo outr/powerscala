@@ -99,25 +99,17 @@ trait EventProcessor[Event, Response, Result] {
   def remove(listener: Listener[Event, Response]) = listenable.listeners -= listener
 
   def fire(event: Event, mode: ListenMode = ListenMode.Standard): Result = {
-    val state = new EventState[Event](event, listenable, EventState.current)
-    EventState.current = state
-    try {
-      fireInternal(state, mode, listenable)
-      responseFor(state)
-    } finally {
-      if (EventState.current == state) {
-        if (state.causedBy != null) {
-          EventState.current = state.causedBy
-        } else {
-          EventState.clear()
-        }
+    EventState.around(event, listenable) {
+      case state => {
+        fireInternal(state, mode, listenable)
+        responseFor(state)
       }
     }
   }
 
   protected def fireInternal(state: EventState[Event], mode: ListenMode, listenable: Listenable): Unit = {
     fireRecursive(state, mode, listenable.listeners())
-    if (!state.isStopPropagation) {
+    if (!state.stopPropagation) {
       fireAdditional(state, mode, listenable)
     }
   }
@@ -134,7 +126,7 @@ trait EventProcessor[Event, Response, Result] {
 
   @tailrec
   private def fireRecursive(state: EventState[Event], mode: ListenMode, listeners: List[Listener[_, _]]): Unit = {
-    if (listeners.nonEmpty && !state.isStopPropagation) {
+    if (listeners.nonEmpty && !state.stopPropagation) {
       val listener = listeners.head
       if (isNameValid(listener) && isListenerTypeValid(state, listener) && isModeValid(listener, mode)) {
         val l = listener.asInstanceOf[Listener[Event, Response]]

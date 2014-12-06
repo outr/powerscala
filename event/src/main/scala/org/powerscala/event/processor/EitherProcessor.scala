@@ -14,13 +14,13 @@ class EitherProcessor[E, R](val name: String)(implicit val listenable: Listenabl
   protected def handleListenerResponse(value: Either[E, R], state: EventState[E]) = value match {
     case Left(e) => state.event = e
     case Right(r) => {
-      state(processorToken) = r
-      state.stopPropagation()
+      state.store(processorToken) = r
+      state.stopPropagation = true
     }
   }
 
-  protected def responseFor(state: EventState[E]) = if (state.isStopPropagation && state.contains(processorToken)) {
-    Right(state[R](processorToken))
+  protected def responseFor(state: EventState[E]) = if (state.stopPropagation && state.store.contains(processorToken)) {
+    Right(state.store[R](processorToken))
   } else {
     Left(state.event)
   }

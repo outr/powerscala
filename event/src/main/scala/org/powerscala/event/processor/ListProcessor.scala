@@ -13,11 +13,11 @@ class ListProcessor[E, R](val name: String)(implicit val listenable: Listenable,
 
   protected def handleListenerResponse(value: Option[R], state: EventState[E]) = value match {
     case Some(v) => {
-      val list = state.getOrElse[List[R]](token, Nil)
-      state(token) = (v :: list.reverse).reverse
+      val list = state.store.getOrElse[List[R]](token, Nil)
+      state.store(token) = (v :: list.reverse).reverse
     }
     case None => // Nothing to add to the list
   }
 
-  protected def responseFor(state: EventState[E]) = state.getOrElse[List[R]](token, Nil)
+  protected def responseFor(state: EventState[E]) = state.store.getOrElse[List[R]](token, Nil)
 }

@@ -117,7 +117,7 @@ class ListenableSpec extends WordSpec with Matchers {
         listenable.basic.on {
           case s => {
             received1 = true
-            EventState.current.stopPropagation()
+            EventState.current.stopPropagation = true
           }
         }
       }

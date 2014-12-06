@@ -42,7 +42,7 @@ object AncestorProcessor {
   /**
    * For the current event processing don't process ancestors.
    */
-  def doNotProcess() = EventState.current(doNotProcessKey) = true
+  def doNotProcess() = EventState.current.store(doNotProcessKey) = true
 
-  def shouldProcess = !EventState.current.getOrElse(doNotProcessKey, false)
+  def shouldProcess = !EventState.current.store.getOrElse(doNotProcessKey, false)
 }
