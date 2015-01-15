@@ -126,7 +126,7 @@ case class SearchQueryBuilder(instance: Search,
     }
     queryString match {
       case Some(qs) => {
-        val parser = new QueryParser(instance.version, defaultField, instance.analyzer)
+        val parser = new QueryParser(defaultField, instance.analyzer)
         parser.setAllowLeadingWildcard(allowLeadingWildcard)
         query.add(parser.parse(qs), BooleanClause.Occur.MUST)
       }

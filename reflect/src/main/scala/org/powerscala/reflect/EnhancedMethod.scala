@@ -3,7 +3,6 @@ package org.powerscala.reflect
 import java.lang.reflect.{Modifier, Method}
 import java.io.File
 import org.powerscala.LocalStack
-import argonaut.Json
 import java.sql.Timestamp
 
 /**
@@ -199,20 +198,6 @@ object EnhancedMethod {
 
   def convertToOption(name: String, value: Any, resultType: EnhancedClass): Option[Any] = {
     value match {
-      case json: Json => {                      // Convert Argonaut Json into useful types
-        val converted = if (json.isArray) {
-          json.arrayOrEmpty
-        } else if (json.isBool) {
-          json.bool.getOrElse(false)
-        } else if (json.isNull) {
-          null
-        } else if (json.isNumber) {
-          json.numberOrZero
-        } else if (json.isString) {
-          json.stringOrEmpty
-        }
-        convertToOption(name, converted, resultType)
-      }
       case _ => {
         resultType.name match {
           case _ if resultType.isCastable(value) => Some(value)   // No conversion necessary

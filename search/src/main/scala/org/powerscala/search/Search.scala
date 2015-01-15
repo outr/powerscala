@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
  * @author Matt Hicks <matt@outr.com>
  */
 class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000) {
-  val version = Version.LUCENE_4_10_2
+  val version = Version.LUCENE_4_10_3
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index"))
     case None => new RAMDirectory

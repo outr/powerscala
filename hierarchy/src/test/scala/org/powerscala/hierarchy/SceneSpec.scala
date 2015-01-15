@@ -132,32 +132,6 @@ class SceneSpec extends WordSpec with Matchers {
     }
   }
 
-  "StaticContainer" when {
-    class Test extends MutableChildLike[Any]
-    class Test2 extends Test
-    class Test3 extends Test2
-    val container = new StaticContainer[Test] {
-      val one = new Test
-      val two = new Test2
-      val three = new Test3
-    }
-    "created as val with three elements" should {
-      "have three elements" in {
-        container.contents.length should be(3)
-      }
-    }
-    object container2 extends StaticContainer[Test] {
-      val one = new Test
-      val two = new Test2
-      val three = new Test3
-    }
-    "created as object with three elements" should {
-      "have three elements" in {
-        container2.contents.length should be(3)
-      }
-    }
-  }
-
   "ContainerView" when {
     val container = new ImmutableContainer(List(StringElement("One"), StringElement("Two"), StringElement("Three"))) with Element[Any]
     val container2 = new AbstractMutableContainer[MutableChildLike[_]]() with MutableContainer[MutableChildLike[_]] with Element[Any]

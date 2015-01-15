@@ -5,9 +5,9 @@ import sbtunidoc.Plugin._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.coreDefaultSettings ++ Seq(
-    version := "1.6.7",
+    version := "1.6.8-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.11.4",
+    scalaVersion := "2.11.5",
     libraryDependencies ++= Seq(
       scalaTest
     ),
@@ -49,15 +49,12 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, communication, search, event, hierarchy, log, json, property, interpreter)
+    .aggregate(reflect, core, concurrent, search, event, hierarchy, log, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
-    .settings(libraryDependencies ++= Seq(asm, argonaut, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
+    .settings(libraryDependencies ++= Seq(asm, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
     .dependsOn(reflect)
-  lazy val communication = Project("communication", file("communication"), settings = createSettings("powerscala-communication"))
-    .settings(libraryDependencies ++= Seq(json4s))
-    .dependsOn(core)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
@@ -66,10 +63,6 @@ object PowerScalaBuild extends Build {
     .dependsOn(core, event)
   lazy val log = Project("log", file("log"), settings = createSettings("powerscala-log"))
     .dependsOn(core, event)
-  lazy val json = Project("json", file("json"), settings = createSettings("powerscala-json"))
-    .settings(libraryDependencies ++= Seq(json4s))
-
-    .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions))
@@ -81,12 +74,10 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "4.10.2"
+  val luceneVersion = "4.10.3"
 
-  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.6"
-  val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
+  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
-  val json4s = "org.json4s" %% "json4s-jackson" % "3.2.11"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
@@ -94,7 +85,7 @@ object Dependencies {
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
   val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion
-  val h2 = "com.h2database" % "h2" % "1.4.182"
+  val h2 = "com.h2database" % "h2" % "1.4.184"
   val reflections = "org.reflections" % "reflections" % "0.9.9"
-  val scalaTest = "org.scalatest" %% "scalatest" % "2.2.2" % "test"
+  val scalaTest = "org.scalatest" %% "scalatest" % "2.2.3" % "test"
 }

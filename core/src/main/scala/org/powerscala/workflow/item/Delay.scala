@@ -1,8 +1,6 @@
 package org.powerscala.workflow.item
 
-import scala.xml.Elem
 import org.powerscala.workflow.WorkflowItem
-import org.powerscala.xml.XMLLoader
 
 /**
  * Delays before completing for the time specified.
@@ -25,12 +23,5 @@ case class Delay(time: Double) extends WorkflowItem {
   override def end() = {
     super.end()
     elapsed = time
-  }
-}
-
-object Delay extends XMLLoader[Delay] {
-  def apply(elem: Elem) = {
-    val time = elem.text.toFloat
-    Delay(time)
   }
 }
