@@ -51,11 +51,6 @@ object ListSupport extends JSONConverter[List[_], JArray] {
   override def fromJSON(v: JArray) = v.arr.map(JSON.readAndGet[Any])
 }
 
-object MapSupport extends JSONConverter[Map[String, _], JObject] {
-  override def toJSON(v: Map[String, _]) = JObject(v.map(t => JField(t._1, JSON.parseAndGet(t._2))).toList)
-  override def fromJSON(v: JObject) = v.obj.map(t => t._1 -> JSON.readAndGet(t._2)).toMap
-}
-
 object OptionSupport extends JSONConverter[Option[_], JObject] {
   override def toJSON(v: Option[_]) = {
     JObject("option" -> (if (v.nonEmpty) JSON.parseAndGet(v.get) else JNull))

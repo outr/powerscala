@@ -1,12 +1,12 @@
 package org.powerscala.json
 
 import org.json4s._
-import org.json4s.jackson.JsonMethods
+import org.json4s.native.JsonMethods
 import org.powerscala.Priority
 import org.powerscala.enum.EnumEntry
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.OptionProcessor
-import org.powerscala.json.convert.{OptionSupport, EnumEntryConverter, CaseClassSupport, JSONConverter}
+import org.powerscala.json.convert._
 import org.powerscala.reflect._
 
 /**
@@ -36,6 +36,7 @@ object JSON extends Listenable {
   CaseClassSupport.init()     // CaseClassSupport adds support for case classes.
   EnumEntryConverter.init()   // EnumEntryConverter supports EnumEntries.
   OptionSupport.init()        // Support Some / None Option types.
+  MapConverter.init()
 
   def add[T, J <: JValue](converter: JSONConverter[T, J],
                           typeMatcher: T => Boolean = null,
@@ -132,8 +133,8 @@ object JSON extends Listenable {
    * @return JSON String
    */
   def renderJSON(v: JValue, pretty: Boolean = false) = if (pretty) {
-    JsonMethods.pretty(v)
+    JsonMethods.pretty(JsonMethods.render(v))
   } else {
-    JsonMethods.compact(v)
+    JsonMethods.compact(JsonMethods.render(v))
   }
 }

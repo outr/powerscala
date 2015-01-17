@@ -49,7 +49,7 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, search, event, hierarchy, log, property, interpreter)
+    .aggregate(reflect, core, concurrent, search, event, hierarchy, json, log, property, interpreter)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
@@ -63,6 +63,9 @@ object PowerScalaBuild extends Build {
     .dependsOn(core, event)
   lazy val log = Project("log", file("log"), settings = createSettings("powerscala-log"))
     .dependsOn(core, event)
+  lazy val json = Project("json", file("json"), settings = createSettings("powerscala-json"))
+    .settings(libraryDependencies ++= Seq(json4sNative))
+    .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions))
@@ -85,6 +88,7 @@ object Dependencies {
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
   val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion
+  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.10"
   val h2 = "com.h2database" % "h2" % "1.4.184"
   val reflections = "org.reflections" % "reflections" % "0.9.9"
   val scalaTest = "org.scalatest" %% "scalatest" % "2.2.3" % "test"

@@ -14,7 +14,7 @@ object JSONClassMap extends Logging {
 
   val parserListener = new Listener[Any, Option[JValue]] {
     override val name = "parsers"
-    override val priority = Priority.Lowest
+    override val priority = Priority.Normal
     override val eventClass = classOf[Any]
     override val modes = List(ListenMode.Standard)
 
@@ -25,7 +25,7 @@ object JSONClassMap extends Logging {
   }
   val readerListener = new Listener[JValue, Option[Any]] {
     override val name = "readers"
-    override val priority = Priority.Lowest
+    override val priority = Priority.Normal
     override val eventClass = classOf[JValue]
     override val modes = List(ListenMode.Standard)
 
@@ -44,13 +44,16 @@ object JSONClassMap extends Logging {
   register(DecimalSupport)
   register(StringSupport)
   register(ListSupport, classOf[::[_]], Nil.getClass)
-  register(MapSupport, classOf[Map.Map1[_, _]], classOf[Map.Map2[_, _]], classOf[Map.Map3[_, _]], classOf[Map.Map4[_, _]])
 
   def register[T, J <: JValue](converter: JSONConverter[T, J], aliasClasses: Class[_]*)
                               (implicit typeManifest: Manifest[T], jsonManifest: Manifest[J]) = synchronized {
     map += typeManifest.runtimeClass -> converter.asInstanceOf[JSONConverter[Any, JValue]]
     map += jsonManifest.runtimeClass -> converter.asInstanceOf[JSONConverter[Any, JValue]]
-    aliasClasses.foreach(map += _ -> converter.asInstanceOf[JSONConverter[Any, JValue]])
+    aliasClasses.foreach(alias(converter, _))
+  }
+
+  def alias[T, J <: JValue](converter: JSONConverter[T, J], aliasClass: Class[_]) = synchronized {
+    map += aliasClass -> converter.asInstanceOf[JSONConverter[Any, JValue]]
   }
 
   def init() = {

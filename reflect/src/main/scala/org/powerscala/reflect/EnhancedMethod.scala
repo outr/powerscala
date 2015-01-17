@@ -214,6 +214,7 @@ object EnhancedMethod {
             case i: java.lang.Integer => i.intValue()
             case s: String => s.toInt
             case s: Some[_] => s.get
+            case i: BigInt => i.toInt
             case None => 0
           })
           case "Long" => Some(value match {

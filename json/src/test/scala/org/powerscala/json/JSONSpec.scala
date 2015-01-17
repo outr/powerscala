@@ -2,7 +2,7 @@ package org.powerscala.json
 
 import org.json4s._
 import org.powerscala.Language
-import org.powerscala.json.convert.{EnumEntryConverter, CaseClassSupport}
+import org.powerscala.json.convert.{JSONConverter, EnumEntryConverter, CaseClassSupport}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -142,7 +142,58 @@ class JSONSpec extends WordSpec with Matchers {
         }
       }
     }
+    "writing an EventWrapper" should {
+      "register support for events" in {
+        JSONClassMap.register(new JSONConverter[Event, JObject] {
+          override def toJSON(v: Event) = {
+            val o = CaseClassSupport.toJSON(v)
+            o.copy("eventType" -> JString(v.eventType) :: o.obj)
+          }
+
+          override def fromJSON(v: JObject) = {
+            val eventType = v.values("eventType").asInstanceOf[String]
+            val clazz = eventType match {
+              case "event1" => classOf[Event1]
+              case "event2" => classOf[Event2]
+            }
+            CaseClassSupport.converter(clazz).fromJSON(v).asInstanceOf[Event]
+          }
+        }, classOf[Event], classOf[Event1], classOf[Event2])
+      }
+      "create a wrapper around an Event1" in {
+        val e1 = Event1("Test1", 5)
+        JSON.dontWriteExtras {
+          JSON.renderJSON(JSON.parseAndGet(e1), pretty = false) should equal("""{"eventType":"event1","name":"Test1","value":5}""")
+        }
+      }
+      "create a wrapper around an Event2" in {
+        val e2 = Event2("Test2")
+        JSON.dontWriteExtras {
+          JSON.renderJSON(JSON.parseAndGet(e2), pretty = false) should equal("""{"eventType":"event2","name":"Test2"}""")
+        }
+      }
+    }
+    "reading an EventWrapper" should {
+      "parse a wrapper around an Event1" in {
+        val json = JSON.parseJSON("""{"eventType":"event1","name":"Test1","value":5}""")
+        val event = JSON.readAndGet[Event](json)
+        event.eventType should equal("event1")
+        event should equal(Event1("Test1", 5))
+      }
+    }
   }
 }
 
 case class CaseClass1(name: String)
+
+trait Event {
+  def eventType: String
+}
+
+case class Event1(name: String, value: Int) extends Event {
+  def eventType = "event1"
+}
+
+case class Event2(name: String) extends Event {
+  def eventType = "event2"
+}
