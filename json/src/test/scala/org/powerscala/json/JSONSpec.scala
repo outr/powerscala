@@ -101,6 +101,32 @@ class JSONSpec extends WordSpec with Matchers {
       "convert CaseClass1 from JSON" in {
         fromJSON("""{"type":"one","name":"Third"}""") should equal(CaseClass1("Third"))
       }
+      "register type for CaseClass2" in {
+        TypedSupport.register("two", classOf[CaseClass2])
+      }
+      "convert CaseClass2 to JSON" in {
+        toJSON(CaseClass2("Fourth", CaseClass1("Fifth"))).compact should equal("""{"type":"two","name":"Fourth","c1":{"type":"one","name":"Fifth"}}""")
+      }
+      "convert CaseClass2 from JSON" in {
+        fromJSON("""{"type":"two","name":"Fourth","c1":{"type":"one","name":"Fifth"}}""") should equal(CaseClass2("Fourth", CaseClass1("Fifth")))
+      }
+      "register types for Events" in {
+        TypedSupport.register("event", classOf[EventWrapper])
+        TypedSupport.register("bool", classOf[BooleanEvent])
+        TypedSupport.register("int", classOf[IntEvent])
+      }
+      "convert EventWrapper with BooleanEvent to JSON" in {
+        toJSON(EventWrapper("e1", BooleanEvent("True", b = true))).compact should equal("""{"type":"event","name":"e1","event":{"type":"bool","name":"True","b":true}}""")
+      }
+      "convert EventWrapper with BooleanEvent from JSON" in {
+        fromJSON("""{"type":"event","name":"e1","event":{"type":"bool","name":"True","b":true}}""") should equal(EventWrapper("e1", BooleanEvent("True", b = true)))
+      }
+      "convert EventWrapper with IntEvent to JSON" in {
+        toJSON(EventWrapper("e2", IntEvent("Fifty", 50))).compact should equal("""{"type":"event","name":"e2","event":{"type":"int","name":"Fifty","value":50}}""")
+      }
+      "convert EventWrapper with IntEvent from JSON" in {
+        fromJSON("""{"type":"event","name":"e2","event":{"type":"int","name":"Fifty","value":50}}""") should equal(EventWrapper("e2", IntEvent("Fifty", 50)))
+      }
     }
     // TODO: support removal of type and/or class for registered types or all
     // TODO: support typed retrieval (fromJSON[Type]) to inject "class" into JObject
@@ -110,3 +136,11 @@ class JSONSpec extends WordSpec with Matchers {
 case class CaseClass1(name: String)
 
 case class CaseClass2(name: String, c1: CaseClass1)
+
+case class EventWrapper(name: String, event: Event)
+
+trait Event
+
+case class BooleanEvent(name: String, b: Boolean) extends Event
+
+case class IntEvent(name: String, value: Int) extends Event
