@@ -54,6 +54,8 @@ trait EventProcessor[Event, Response, Result] {
 
   def on(f: Event => Response, priority: Priority = Priority.Normal) = listen(priority)(f)
 
+  def partial(default: Response, priority: Priority = Priority.Normal)(f: PartialFunction[Event, Response]) = listen(priority)((evt: Event) => f.applyOrElse(evt, (e: Event) => default))
+
   /**
    * Invokes the function upon each event until it returns Some[V] and then removes the listener from receiving any
    * other invocations.

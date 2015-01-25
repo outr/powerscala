@@ -2,7 +2,6 @@ package org.powerscala.json
 
 import org.json4s._
 import org.powerscala.Language
-import org.powerscala.json.convert.{JSONConverter, EnumEntryConverter, CaseClassSupport}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -12,188 +11,102 @@ class JSONSpec extends WordSpec with Matchers {
   "JSON" when {
     "reading standard types" should {
       "handle Boolean" in {
-        JSON.readAndGet[Boolean](JBool(value = true)) should equal(true)
+        fromJSON(JBool(value = true)) should equal(true)
+        fromJSON(JBool(value = false)) should equal(false)
       }
       "handle Int" in {
-        JSON.readAndGet[Int](JInt(5)) should equal(5)
+        fromJSON(JInt(5)) should equal(5)
       }
       "handle Double" in {
-        JSON.readAndGet[Double](JDouble(5.2)) should equal(5.2)
+        fromJSON(JDouble(5.2)) should equal(5.2)
       }
       "handle Decimal" in {
-        JSON.readAndGet[BigDecimal](JDecimal(5.3)) should equal(5.3)
+        fromJSON(JDecimal(5.3)) should equal(BigDecimal(5.3))
       }
       "handle String" in {
-        JSON.readAndGet[String](JString("Hello")) should equal("Hello")
+        fromJSON(JString("Hello")) should equal("Hello")
       }
       "handle List" in {
-        JSON.readAndGet[List[_]](JArray(List(JString("Hello"), JInt(3), JDouble(1.2)))) should equal(List("Hello", 3, 1.2))
+        fromJSON(JArray(List(JString("Hello"), JInt(3), JDouble(1.2)))) should equal(List("Hello", 3, 1.2))
       }
       "handle Map" in {
-        JSON.readAndGet[Map[String, _]](JObject("First" -> JInt(1), "Second" -> JDecimal(2.3), "Three" -> JString("Third"), "Four" -> JBool(value = false))) should equal(Map("First" -> 1, "Second" -> 2.3, "Three" -> "Third", "Four" -> false))
+        fromJSON(JObject("First" -> JInt(1), "Second" -> JDecimal(2.3), "Three" -> JString("Third"), "Four" -> JBool(value = false))) should equal(Map("First" -> 1, "Second" -> 2.3, "Three" -> "Third", "Four" -> false))
       }
     }
     "parsing standard types" should {
       "handle Boolean" in {
-        val result = JSON.parse(true)
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JBool])
-        val b = v.asInstanceOf[JBool]
-        b.value should equal(true)
+        toJSON(true) should equal(JBool(value = true))
+        toJSON(false) should equal(JBool(value = false))
       }
       "handle Int" in {
-        val result = JSON.parse(5)
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JInt])
-        val i = v.asInstanceOf[JInt]
-        i.num.intValue() should equal(5)
+        toJSON(5) should equal(JInt(5))
       }
       "handle Double" in {
-        val result = JSON.parse(5.2)
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JDouble])
-        val i = v.asInstanceOf[JDouble]
-        i.num should equal(5.2)
+        toJSON(5.2) should equal(JDouble(5.2))
       }
       "handle Decimal" in {
-        val result = JSON.parse(BigDecimal(5.2))
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JDecimal])
-        val i = v.asInstanceOf[JDecimal]
-        i.num should equal(5.2)
+        toJSON(BigDecimal(5.3)) should equal(JDecimal(5.3))
       }
       "handle String" in {
-        val result = JSON.parse("Hello")
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JString])
-        val s = v.asInstanceOf[JString]
-        s.s should equal("Hello")
+        toJSON("Hello") should equal(JString("Hello"))
       }
       "handle List" in {
-        val result = JSON.parse(List(1, BigDecimal(2.2), "Hello", false))
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JArray])
-        val a = v.asInstanceOf[JArray]
-        val list = a.arr
-        list.size should equal(4)
-        list(0) should equal(JInt(1))
-        list(1) should equal(JDecimal(BigDecimal(2.2)))
-        list(2) should equal(JString("Hello"))
-        list(3) should equal(JBool(value = false))
+        toJSON(List(1, 2.2, "Hello", false)) should equal(JArray(List(JInt(1), JDouble(2.2), JString("Hello"), JBool(value = false))))
       }
       "handle Map" in {
-        val result = JSON.parse(Map("First" -> 1, "Second" -> BigDecimal(2.3), "Third" -> "Goodbye", "Fourth" -> true))
-        result shouldNot equal(None)
-        val v = result.get
-        v.getClass should equal(classOf[JObject])
-        val o = v.asInstanceOf[JObject]
-        val map = o.obj.toMap
-        map("First") should equal(JInt(1))
-        map("Second") should equal(JDecimal(2.3))
-        map("Third") should equal(JString("Goodbye"))
-        map("Fourth") should equal(JBool(value = true))
+        toJSON(Map("First" -> 1, "Second" -> BigDecimal(2.3), "Third" -> "Goodbye", "Fourth" -> true)) should equal(JObject("First" -> JInt(1), "Second" -> JDecimal(2.3), "Third" -> JString("Goodbye"), "Fourth" -> JBool(value = true)))
       }
     }
     "handling custom types" should {
-      "properly read EnumEntry" in {
-        JSON.readAndGet[Language](JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.German.name))) should equal(Language.German)
+      "convert Enum to JSON" in {
+        toJSON(Language.English).compact should equal("""{"enumClass":"org.powerscala.Language","name":"English"}""")
       }
-      "properly read EnumEntry without class info" in {
-        JSON.readAs[Language](JObject("name" -> JString(Language.Bemba.name))) should equal(Some(Language.Bemba))
+      "convert Enum from JSON" in {
+        fromJSON("""{"enumClass":"org.powerscala.Language","name":"English"}""") should equal(Language.English)
       }
-      "properly read Option[Int]" in {
-        JSON.readAndGet[Option[Int]](JObject("option" -> JInt(5))) should equal(Some(5))
+      "convert Option[Int] to JSON" in {
+        toJSON(Option(5)).compact should equal("""{"option":5}""")
       }
-      "properly parse EnumEntry" in {
-        JSON.parseAndGet(Language.Albanian) should equal(JObject(EnumEntryConverter.ClassKey -> JString(classOf[Language].getName), "name" -> JString(Language.Albanian.name)))
+      "convert Option[Int] from JSON" in {
+        fromJSON("""{"option":5}""") should equal(Some(5))
       }
-      "properly parse EnumEntry without writing class info" in {
-        JSON.dontWriteExtras {
-          JSON.parseAndGet(Language.Albanian) should equal(JObject("name" -> JString(Language.Albanian.name)))
-        }
+      "convert None to JSON" in {
+        toJSON(None).compact should equal("""{"option":null}""")
       }
-      "properly parse Option[Int]" in {
-        JSON.dontWriteExtras {
-          JSON.parseAndGet(Option(5)) should equal(JObject("option" -> JInt(5)))
-        }
+      "convert None from JSON" in {
+        fromJSON("""{"option":null}""") should equal(None)
       }
     }
-    "reading case classes" should {
-      "handle simple case class" in {
-        JSON.readAndGet[CaseClass1](JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe"))) should equal(CaseClass1("John Doe"))
+    "dealing with case classes" should {
+      "convert CaseClass1 to JSON" in {
+        toJSON(CaseClass1("First")).compact should equal("""{"class":"org.powerscala.json.CaseClass1","name":"First"}""")
       }
-      "handle simple case class without class info" in {
-        JSON.readAs[CaseClass1](JObject("name" -> JString("Jane Doe"))) should equal(Some(CaseClass1("Jane Doe")))
+      "convert CaseClass1 from JSON" in {
+        fromJSON("""{"class":"org.powerscala.json.CaseClass1","name":"First"}""") should equal(CaseClass1("First"))
       }
-    }
-    "parsing case classes" should {
-      "handle simple case class" in {
-        JSON.parseAndGet(CaseClass1("John Doe")) should equal(JObject(CaseClassSupport.ClassKey -> JString(classOf[CaseClass1].getName), "name" -> JString("John Doe")))
+      "convert CaseClass2 to JSON" in {
+        toJSON(CaseClass2("Second", CaseClass1("Inner"))).compact should equal("""{"class":"org.powerscala.json.CaseClass2","name":"Second","c1":{"class":"org.powerscala.json.CaseClass1","name":"Inner"}}""")
       }
-      "handle simple case class without writing class info" in {
-        JSON.dontWriteExtras {
-          JSON.parseAndGet(CaseClass1("John Doe")) should equal(JObject("name" -> JString("John Doe")))
-        }
+      "convert CaseClass2 from JSON" in {
+        fromJSON("""{"class":"org.powerscala.json.CaseClass2","name":"Second","c1":{"class":"org.powerscala.json.CaseClass1","name":"Inner"}}""") should equal(CaseClass2("Second", CaseClass1("Inner")))
       }
     }
-    "writing an EventWrapper" should {
-      "register support for events" in {
-        JSONClassMap.register(new JSONConverter[Event, JObject] {
-          override def toJSON(v: Event) = {
-            val o = CaseClassSupport.toJSON(v)
-            o.copy("eventType" -> JString(v.eventType) :: o.obj)
-          }
-
-          override def fromJSON(v: JObject) = {
-            val eventType = v.values("eventType").asInstanceOf[String]
-            val clazz = eventType match {
-              case "event1" => classOf[Event1]
-              case "event2" => classOf[Event2]
-            }
-            CaseClassSupport.converter(clazz).fromJSON(v).asInstanceOf[Event]
-          }
-        }, classOf[Event], classOf[Event1], classOf[Event2])
+    "dealing with typed case classes" should {
+      "register type for CaseClass1" in {
+        TypedSupport.register("one", classOf[CaseClass1])
       }
-      "create a wrapper around an Event1" in {
-        val e1 = Event1("Test1", 5)
-        JSON.dontWriteExtras {
-          JSON.renderJSON(JSON.parseAndGet(e1), pretty = false) should equal("""{"eventType":"event1","name":"Test1","value":5}""")
-        }
+      "convert CaseClass1 to JSON" in {
+        toJSON(CaseClass1("Third")).compact should equal("""{"type":"one","name":"Third"}""")
       }
-      "create a wrapper around an Event2" in {
-        val e2 = Event2("Test2")
-        JSON.dontWriteExtras {
-          JSON.renderJSON(JSON.parseAndGet(e2), pretty = false) should equal("""{"eventType":"event2","name":"Test2"}""")
-        }
+      "convert CaseClass1 from JSON" in {
+        fromJSON("""{"type":"one","name":"Third"}""") should equal(CaseClass1("Third"))
       }
     }
-    "reading an EventWrapper" should {
-      "parse a wrapper around an Event1" in {
-        val json = JSON.parseJSON("""{"eventType":"event1","name":"Test1","value":5}""")
-        val event = JSON.readAndGet[Event](json)
-        event.eventType should equal("event1")
-        event should equal(Event1("Test1", 5))
-      }
-    }
+    // TODO: support removal of type and/or class for registered types or all
+    // TODO: support typed retrieval (fromJSON[Type]) to inject "class" into JObject
   }
 }
 
 case class CaseClass1(name: String)
 
-trait Event {
-  def eventType: String
-}
-
-case class Event1(name: String, value: Int) extends Event {
-  def eventType = "event1"
-}
-
-case class Event2(name: String) extends Event {
-  def eventType = "event2"
-}
+case class CaseClass2(name: String, c1: CaseClass1)
