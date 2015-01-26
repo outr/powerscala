@@ -163,8 +163,11 @@ class JSONSpec extends WordSpec with Matchers {
         fromJSON("""{"name":"Test"}""") should equal(CaseClass1("Test"))
       }
     }
-    // TODO: support removal of type and/or class for registered types or all
-    // TODO: support typed retrieval (fromJSON[Type]) to inject "class" into JObject
+    "typed JSON" should {
+      "load a CaseClass1" in {
+        typedJSON[CaseClass1]("""{"name":"Typed"}""") should equal(CaseClass1("Typed"))
+      }
+    }
   }
 }
 

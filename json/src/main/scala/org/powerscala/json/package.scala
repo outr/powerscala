@@ -1,6 +1,7 @@
 package org.powerscala
 
 import org.json4s.JValue
+import org.json4s.JsonAST.{JString, JObject}
 import org.json4s.native.JsonMethods
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.OptionProcessor
@@ -24,6 +25,11 @@ package object json extends Listenable {
   def toJSON(v: Any) = toJSONInternal(v, None)
 
   def fromJSON(v: JValue) = fromJSONInternal(v, None)
+
+  def typedJSON[Type <: AnyRef](v: JValue)(implicit manifest: Manifest[Type]) = v match {
+    case o: JObject => fromJSONInternal(o.copy("class" -> JString(manifest.runtimeClass.getName) :: o.obj), None).asInstanceOf[Type]
+    case _ => throw new RuntimeException(s"Cannot do typed conversion with anything by JObject instances ($v).")
+  }
 
   @tailrec
   private def toJSONInternal(v: Any, previous: Option[Any]): JValue = {
@@ -76,6 +82,11 @@ package object json extends Listenable {
     def fromJSON = org.powerscala.json.fromJSON(v)
     def pretty = JsonMethods.pretty(JsonMethods.render(v))
     def compact = JsonMethods.compact(JsonMethods.render(v))
+    def stringify(pretty: Boolean = false) = if (pretty) {
+      this.pretty
+    } else {
+      this.compact
+    }
   }
 
   implicit def string2JValue(s: String): JValue = JsonMethods.parse(s)
