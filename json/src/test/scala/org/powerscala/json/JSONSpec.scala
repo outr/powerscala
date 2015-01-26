@@ -128,6 +128,41 @@ class JSONSpec extends WordSpec with Matchers {
         fromJSON("""{"type":"event","name":"e2","event":{"type":"int","name":"Fifty","value":50}}""") should equal(EventWrapper("e2", IntEvent("Fifty", 50)))
       }
     }
+    "manipulating Maps" should {
+      "change types during conversion from JSON" in {
+        MapSupport.j2o.once {
+          case m => {
+            val test = m("test").asInstanceOf[Int]
+            m + ("test" -> BigInt(test))
+          }
+        }
+        fromJSON("""{"test": 500}""") should equal(Map("test" -> BigInt(500)))
+      }
+      "change types during conversion to JSON" in {
+        MapSupport.o2j.once {
+          case m => {
+            val test = m("test").asInstanceOf[BigInt]
+            m + ("test" -> test.toInt)
+          }
+        }
+        toJSON(Map("test" -> BigInt(500))).compact should equal("""{"test":500}""")
+      }
+      "swap keys during conversion from JSON" in {
+        MapSupport.j2o.once {
+          case m => {
+            val test = m("test").asInstanceOf[String].toInt
+            m - "test" + ("n" -> test)
+          }
+        }
+        fromJSON("""{"test": "123"}""") should equal(Map("n" -> 123))
+      }
+      "injecting a class during conversion from JSON" in {
+        MapSupport.j2o.once {
+          case m => m + ("class" -> "org.powerscala.json.CaseClass1")
+        }
+        fromJSON("""{"name":"Test"}""") should equal(CaseClass1("Test"))
+      }
+    }
     // TODO: support removal of type and/or class for registered types or all
     // TODO: support typed retrieval (fromJSON[Type]) to inject "class" into JObject
   }

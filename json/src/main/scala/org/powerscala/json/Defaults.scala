@@ -89,11 +89,7 @@ object Defaults {
       case l => JArray(l.map(toJSON))
     }.objectAlias(classOf[::[_]], Nil.getClass)
 
-    byType[JObject, Map[_, _]] {    // Map
-      case j => j.obj.map(t => t._1 -> fromJSON(t._2)).toMap
-    } {
-      case m => JObject(m.toList.map(t => t._1.toString -> toJSON(t._2)))
-    }.objectAlias(classOf[Map.Map1[_, _]], classOf[Map.Map2[_, _]], classOf[Map.Map3[_, _]], classOf[Map.Map4[_, _]])
+    MapSupport
   }
 
   class TypeConversionInstance(fromJSON: Any => Any, toJSON: Any => Any) {
