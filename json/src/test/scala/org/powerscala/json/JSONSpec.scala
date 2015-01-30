@@ -167,6 +167,11 @@ class JSONSpec extends WordSpec with Matchers {
       "load a CaseClass1" in {
         typedJSON[CaseClass1]("""{"name":"Typed"}""") should equal(CaseClass1("Typed"))
       }
+      "load a CaseClass3 with erasured types" in {
+        CaseClassSupport.registerPath(classOf[CaseClass3], "list", classOf[CaseClass1])
+        val expected = CaseClass3("Lost", List(CaseClass1("One"), CaseClass1("Two"), CaseClass1("Three")))
+        typedJSON[CaseClass3]("""{"name":"Lost","list":[{"name":"One"},{"name":"Two"},{"name":"Three"}]}""") should equal(expected)
+      }
     }
   }
 }
@@ -174,6 +179,8 @@ class JSONSpec extends WordSpec with Matchers {
 case class CaseClass1(name: String)
 
 case class CaseClass2(name: String, c1: CaseClass1)
+
+case class CaseClass3(name: String, list: List[CaseClass1])
 
 case class EventWrapper(name: String, event: Event)
 
