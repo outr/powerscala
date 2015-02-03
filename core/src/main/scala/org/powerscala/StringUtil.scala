@@ -9,7 +9,7 @@ object StringUtil {
   /**
    * Converts space and dash separated to camel-case
    */
-  def toCamelCase(name: String) = "[- ]([a-zA-Z0-9])".r.replaceAllIn(name, m => m.group(1).toUpperCase)
+  def toCamelCase(name: String) = "[- _]([a-zA-Z0-9])".r.replaceAllIn(name, m => m.group(1).toUpperCase)
 
   /**
    * Converts camelCase to dash-separated.

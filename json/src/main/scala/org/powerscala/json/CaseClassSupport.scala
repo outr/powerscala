@@ -9,7 +9,6 @@ import org.powerscala.reflect._
  * @author Matt Hicks <matt@outr.com>
  */
 object CaseClassSupport {
-  private val pathStack = new LocalStack[String]
   private var pathMapping = Map.empty[String, Class[_]]
 
   def registerPath(clazz: Class[_], key: String, subClass: Class[_]) = synchronized {
