@@ -6,6 +6,7 @@ import org.json4s.native.JsonMethods
 import org.powerscala.event.Listenable
 import org.powerscala.event.processor.OptionProcessor
 import org.powerscala.json.Defaults.TypeConversionInstance
+import org.powerscala.reflect._
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
@@ -26,9 +27,12 @@ package object json extends Listenable {
 
   def fromJSON(v: JValue) = fromJSONInternal(v, None)
 
-  def typedJSON[Type <: AnyRef](v: JValue)(implicit manifest: Manifest[Type]) = v match {
+  def typedJSON[Type](v: JValue)(implicit manifest: Manifest[Type]) = v match {
     case o: JObject => fromJSONInternal(o.copy("class" -> JString(manifest.runtimeClass.getName) :: o.obj), None).asInstanceOf[Type]
-    case _ => throw new RuntimeException(s"Cannot do typed conversion with anything by JObject instances ($v).")
+    case _ => {
+      val value = fromJSON(v).asInstanceOf[Type]
+      EnhancedMethod.convertTo(null, value, manifest.runtimeClass).asInstanceOf[Type]
+    }
   }
 
   @tailrec
@@ -89,7 +93,7 @@ package object json extends Listenable {
     }
   }
 
-  implicit def string2JValue(s: String): JValue = JsonMethods.parse(s)
+  implicit def string2JValue(s: String): JValue = JSONParser(s)
 
   def byType[JSONType <: JValue, ObjectType](fromJSON: JSONType => ObjectType)
                                             (toJSON: ObjectType => JSONType)

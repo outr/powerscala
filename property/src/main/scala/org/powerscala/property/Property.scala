@@ -67,6 +67,8 @@ class Property[T](backing: Backing[T] = new VariableBacking[T], default: => Opti
     backing.setValue(value)
     change.fire(PropertyChangeEvent(this, oldValue, value))
   }
+
+  override def toString() = s"${getClass.getSimpleName}(${apply()})"
 }
 
 object Property {

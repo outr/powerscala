@@ -9,6 +9,11 @@ import org.scalatest.{Matchers, WordSpec}
  */
 class JSONSpec extends WordSpec with Matchers {
   "JSON" when {
+    "corner cases" should {
+      "handle Int String to JInt" in {
+        string2JValue("123") should equal(JInt(123))
+      }
+    }
     "reading standard types" should {
       "handle Boolean" in {
         fromJSON(JBool(value = true)) should equal(true)
