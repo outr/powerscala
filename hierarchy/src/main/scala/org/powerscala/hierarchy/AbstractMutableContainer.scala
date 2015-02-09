@@ -44,9 +44,9 @@ class AbstractMutableContainer[E] extends Container[E] {
   }
 
   protected def removeChild(child: E) = synchronized {
-    childRemoved.fire(ChildRemovedEvent(this, child)) // Fire before so index and hierarchy remains during the event
-
     buffer -= child
+
+    childRemoved.fire(ChildRemovedEvent(this, child))
 
     child match {
       case mcl: MutableChildLike[_] => MutableChildLike.assignParent(mcl, null)
