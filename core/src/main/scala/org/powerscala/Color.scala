@@ -17,15 +17,17 @@ abstract class Color extends EnumEntry {
     def blue = toHex(Color.this.blue)
     def alpha = toHex(Color.this.alpha)
 
-    def rgb = "#%s%s%s".format(red, green, blue)
+    def rgb = "#%02x%02x%02x".format(normalize(Color.this.red), normalize(Color.this.green), normalize(Color.this.blue))
 
     private def toHex(v: Double) = {
-      java.lang.Long.toString((v * 255.0).toLong, 16) match {
-        case s if s.length == 1 => "0%s".format(s)
-        case s => s
-      }
+      "%02x".format(normalize(v))
+    }
+
+    private def normalize(v: Double) = {
+      (v * 255.0).toInt
     }
   }
+
   class IntColor {
     def red = toInt(Color.this.red)
     def green = toInt(Color.this.green)
