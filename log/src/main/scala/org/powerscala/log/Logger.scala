@@ -228,7 +228,7 @@ object Logger extends Listenable {
       b.append(": ")
       b.append(t.getLocalizedMessage)
     }
-    b.append(System.lineSeparator())
+    b.append(System.getProperty("line.separator"))
     writeStackTrace(b, t.getStackTrace)
     if (t.getCause != null) {
       b.append(throwable2String(t.getCause, primaryCause = false))
@@ -255,7 +255,7 @@ object Logger extends Listenable {
         }
       }
       b.append(')')
-      b.append(System.lineSeparator())
+      b.append(System.getProperty("line.separator"))
       writeStackTrace(b, elements.tail)
     }
   }

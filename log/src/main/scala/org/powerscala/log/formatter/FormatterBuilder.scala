@@ -79,7 +79,7 @@ object FormatterBuilder {
     val message = record.message()
     Logger.stringify.fire(message).getOrElse(throw new NullPointerException(s"Unable to convert: $message to String. Add support to Logger.stringify."))
   }
-  val NewLine = (record: LogRecord) => System.lineSeparator()
+  val NewLine = (record: LogRecord) => System.getProperty("line.separator")
 
   private val regex = """\$\{(.*?)\}""".r
 
