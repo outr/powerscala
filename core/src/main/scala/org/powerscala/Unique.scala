@@ -1,8 +1,8 @@
 package org.powerscala
 
 import java.util.UUID
-import java.util.concurrent.ThreadLocalRandom
 import scala.annotation.tailrec
+import scala.concurrent.forkjoin.ThreadLocalRandom
 
 /**
  * @author Matt Hicks <matt@outr.com>
