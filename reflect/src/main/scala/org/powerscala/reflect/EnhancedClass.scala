@@ -191,7 +191,7 @@ class EnhancedClass protected[reflect](val javaClass: Class[_]) {
     if (isCompanion) {
       Some(this)
     } else {
-      Some(Class.forName(javaClass.getName + "$", true, Thread.currentThread().getContextClassLoader))
+      Some(Class.forName(javaClass.getName + "$", true, javaClass.getClassLoader))
     }
   } catch {
     case exc: ClassNotFoundException => None
