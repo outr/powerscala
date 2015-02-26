@@ -342,9 +342,10 @@ case class Elapsed(time: Double) {
     } else {
       "ms"
     }
-    val s = if (value >= 2 && ending != "ms") "s" else ""
+    val round = math.round(value)
+    val s = if (round != 1 && ending != "ms") "s" else ""
 
-    s"${math.round(value)} $ending$s"
+    s"$round $ending$s"
   }
 
   override def toString = {
