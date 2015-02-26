@@ -317,7 +317,6 @@ case class Elapsed(time: Double) {
 
   lazy val shorthand = {
     import Time._
-    val format = "%,.2f"
     var value: Double = time
     var ending = "ms"
     if (time > Year.value) {
@@ -343,7 +342,7 @@ case class Elapsed(time: Double) {
       ending = " seconds"
     }
 
-    String.format(format + ending, value.asInstanceOf[AnyRef])
+    s"${math.round(value)} $ending"
   }
 
   override def toString = {
