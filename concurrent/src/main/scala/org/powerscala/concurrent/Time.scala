@@ -318,31 +318,33 @@ case class Elapsed(time: Double) {
   lazy val shorthand = {
     import Time._
     var value: Double = time
-    var ending = "ms"
-    if (time > Year.value) {
+    val ending = if (time > Year.value) {
       value = time / Year.value
-      ending = " years"
+      "year"
     } else if (time > Month.value) {
       value = time / Month.value
-      ending = " months"
+      "month"
     } else if (time > Week.value) {
       value = time / Week.value
-      ending = " weeks"
+      "week"
     } else if (time > Day.value) {
       value = time / Day.value
-      ending = " days"
+      "day"
     } else if (time > Hour.value) {
       value = time / Hour.value
-      ending = " hours"
+      "hour"
     } else if (time > Minute.value) {
       value = time / Minute.value
-      ending = " minutes"
+      "minute"
     } else if (time > Second.value) {
       value = time / Second.value
-      ending = " seconds"
+      "second"
+    } else {
+      "ms"
     }
+    val s = if (value >= 2 && ending != "ms") "s" else ""
 
-    s"${math.round(value)} $ending"
+    s"${math.round(value)} $ending$s"
   }
 
   override def toString = {
