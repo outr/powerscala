@@ -74,6 +74,8 @@ package object json extends Listenable {
           case r: JValue => throw new RuntimeException(s"Resulting type is still a JSON type: $r (${r.getClass.getName}).")
           case r => r
         }
+      } else if (String.valueOf(v) == "JNothing") {
+        null
       } else {
         throw new RuntimeException(s"Unsupported conversion from JSON: $v (${v.getClass}).")
       }

@@ -28,4 +28,9 @@ class MapModifiableProcessor(name: String)(implicit listenable: Listenable) exte
     case m if m.get(key) == Some(value) => m - key
     case m => m
   }
+
+  /**
+   * Excludes the 'class' output during JSON output.
+   */
+  def excludeClass[C](implicit manifest: Manifest[C]) = removeWhen("class", JString(manifest.runtimeClass.getName))
 }
