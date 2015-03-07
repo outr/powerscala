@@ -137,7 +137,7 @@ class JSONSpec extends WordSpec with Matchers {
       "change types during conversion from JSON" in {
         MapSupport.j2o.once {
           case m => {
-            val test = m("test").asInstanceOf[Int]
+            val test = m("test").asInstanceOf[Long]
             m + ("test" -> BigInt(test))
           }
         }

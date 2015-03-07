@@ -59,11 +59,12 @@ object Defaults {
       case b => JBool(b)
     }.objectAlias(classOf[java.lang.Boolean])
 
-    byType[JInt, Int] {             // Int
-      case j => j.num.toInt
+    byType[JInt, AnyVal] {             // Int / Long
+      case j => j.num.toLong
     } {
-      case i => JInt(i)
-    }.objectAlias(classOf[java.lang.Integer])
+      case i: Int => JInt(i)
+      case i: Long => JInt(i)
+    }.objectAlias(classOf[java.lang.Integer], classOf[java.lang.Long], classOf[Int], classOf[Long])
 
     byType[JDouble, Double] {       // Double
       case j => j.num
