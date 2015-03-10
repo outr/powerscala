@@ -6,6 +6,7 @@ import org.powerscala.event.Listenable
 import org.powerscala.event.processor.{ModifiableProcessor, OptionProcessor}
 
 import scala.collection.immutable.HashMap.HashTrieMap
+import scala.collection.immutable.ListMap
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -18,7 +19,7 @@ object MapSupport extends Listenable {
     case j => j2o.fire(j.obj.map(t => j2oKey(t._1) -> fromJSON(t._2)).toMap)
   } {
     case m => JObject(o2j.fire(m.asInstanceOf[Map[String, Any]]).toList.map(t => t._1.toString -> toJSON(t._2)))
-  }.objectAlias(classOf[Map.Map1[_, _]], classOf[Map.Map2[_, _]], classOf[Map.Map3[_, _]], classOf[Map.Map4[_, _]], classOf[HashTrieMap[_, _]])
+  }.objectAlias(classOf[Map.Map1[_, _]], classOf[Map.Map2[_, _]], classOf[Map.Map3[_, _]], classOf[Map.Map4[_, _]], classOf[HashTrieMap[_, _]], classOf[ListMap[_, _]], getClass.getClassLoader.loadClass("scala.collection.immutable.ListMap$Node"))
 
   private def j2oKey(key: String) = StringUtil.toCamelCase(key)
 }
