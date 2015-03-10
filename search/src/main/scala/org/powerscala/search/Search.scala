@@ -16,6 +16,7 @@ import org.apache.lucene.spatial.SpatialStrategy
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree
 import org.apache.lucene.store.{FSDirectory, RAMDirectory}
+import org.apache.lucene.uninverting.UninvertingReader
 import org.apache.lucene.util.Version
 import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Executor, Time}
@@ -25,10 +26,10 @@ import scala.collection.JavaConversions._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000) {
-  val version = Version.LUCENE_4_10_3
+class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000, sortedFields: List[SortedField] = Nil) {
+  val version = Version.LATEST
   private val indexDir = directory match {
-    case Some(d) => FSDirectory.open(new File(d, "index"))
+    case Some(d) => FSDirectory.open(new File(d, "index").toPath)
     case None => new RAMDirectory
   }
   val analyzer = new StandardAnalyzer()
@@ -36,7 +37,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   private val lastCommit = new AtomicLong(0L)
   private val committing = new AtomicBoolean(false)
 
-  private val config = new IndexWriterConfig(version, analyzer)
+  private val config = new IndexWriterConfig(analyzer)
   config.setOpenMode(if (append) OpenMode.CREATE_OR_APPEND else OpenMode.CREATE)
   config.setRAMBufferSizeMB(ramBufferInMegs)
   protected val writer = new IndexWriter(indexDir, config)
@@ -44,7 +45,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
 
   // Facet functionality
   private val taxonomyDir = directory match {
-    case Some(d) => FSDirectory.open(new File(d, "taxonomy"))
+    case Some(d) => FSDirectory.open(new File(d, "taxonomy").toPath)
     case None => new RAMDirectory
   }
   protected val taxonomyWriter = new DirectoryTaxonomyWriter(taxonomyDir)
@@ -70,7 +71,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   def point(latitude: Double, longitude: Double) = spatialContext.makePoint(longitude, latitude)
 
   // Reader / Search
-  @volatile private var _reader = DirectoryReader.open(indexDir)
+  @volatile private var _reader = UninvertingReader.wrap(DirectoryReader.open(indexDir), Map(sortedFields.map(_.tuple): _*))
   @volatile private var _searcher = new IndexSearcher(_reader)
 
   def configureSpatialStrategy(maxLevels: Int = 11, fieldName: String = "geoSpatial") = {
@@ -154,8 +155,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val fillFields = true
     val trackDocScores = true
     val trackMaxScore = true
-    val docsScoredInOrder = false
-    val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore, docsScoredInOrder)
+    val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore)
 
     val facetsCollector = if (q.facetRequests.nonEmpty) {
       new FacetsCollector
@@ -226,6 +226,10 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     taxonomyWriter.close()
     taxonomyReader.close()
   }
+}
+
+case class SortedField(name: String, sortType: UninvertingReader.Type = UninvertingReader.Type.SORTED) {
+  def tuple = name -> sortType
 }
 
 object Search {

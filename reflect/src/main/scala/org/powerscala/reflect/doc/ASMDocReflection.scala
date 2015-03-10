@@ -98,7 +98,7 @@ class ASMDocReflection(clazz: Class[_]) extends DocumentationReflection {
 object ASMDocReflection extends DocMapper {
   def apply(c: Class[_]) = new ASMDocReflection(c)
 
-  def classNode(clazz: Class[_]) = {
+  def classNode(clazz: Class[_]) = try {
     val classLoader = Thread.currentThread().getContextClassLoader
     val declaringType = Type.getType(clazz)
     val url = declaringType.getInternalName + ".class"
@@ -118,5 +118,7 @@ object ASMDocReflection extends DocMapper {
     } catch {
       case exc: NullPointerException => throw new NullPointerException("Unable to look up class %s by url %s".format(declaringType.getClassName, url))
     }
+  } catch {
+    case t: Throwable => throw new RuntimeException(s"Unable to do ASM reflection on ${clazz.getName}.", t)
   }
 }

@@ -68,7 +68,7 @@ object PowerScalaBuild extends Build {
     .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
     .dependsOn(core, event)
-    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions))
+    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions, luceneBackward))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy, log)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
@@ -77,7 +77,7 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "4.10.3"
+  val luceneVersion = "5.0.0"
 
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
@@ -87,7 +87,8 @@ object Dependencies {
   val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
   val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
   val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
-  val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion
+  val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion exclude("org.ow2.asm", "asm") exclude("org.ow2.asm", "asm-commons")
+  val luceneBackward = "org.apache.lucene" % "lucene-backward-codecs" % luceneVersion
   val json4sNative = "org.json4s" %% "json4s-native" % "3.2.11"
   val h2 = "com.h2database" % "h2" % "1.4.184"
   val reflections = "org.reflections" % "reflections" % "0.9.9"

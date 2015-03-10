@@ -5,24 +5,22 @@ import java.util
 import com.spatial4j.core.distance.DistanceUtils
 import com.spatial4j.core.shape.Point
 import org.apache.lucene.facet.{LabelAndValue, FacetField}
-import org.apache.lucene.index.{AtomicReaderContext, Term}
+import org.apache.lucene.index.Term
 import org.apache.lucene.search._
-import org.apache.lucene.util.{DocIdBitSet, Bits}
+import org.apache.lucene.util.Bits
 import org.scalatest.{Matchers, WordSpec}
 import org.apache.lucene.document.{IntField, TextField, StringField, Field}
 
 import scala.language.implicitConversions
-import org.apache.lucene.facet.taxonomy.CategoryPath
-
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 class SearchSpec extends WordSpec with Matchers {
-  implicit def image2DocumentUpdate(i: Image) = i.toDocumentUpdate
-  implicit def person2DocumentUpdate(p: Person) = p.toDocumentUpdate
+  implicit def image2DocumentUpdate(i: Image): DocumentUpdate = i.toDocumentUpdate
+  implicit def person2DocumentUpdate(p: Person): DocumentUpdate = p.toDocumentUpdate
 
-  val imageSearch = new Search("description")
+  val imageSearch = new Search("description", sortedFields = List(SortedField("name")))
   imageSearch.facetsConfig.setMultiValued("tag", true)
   val personSearch = new Search("id")
   personSearch.configureSpatialStrategy()
