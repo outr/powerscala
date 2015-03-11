@@ -67,7 +67,7 @@ object PowerScalaBuild extends Build {
     .settings(libraryDependencies ++= Seq(json4sNative))
     .dependsOn(event, log)
   lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
-    .dependsOn(core, event)
+    .dependsOn(core, event, log)
     .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions, luceneBackward))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy, log)

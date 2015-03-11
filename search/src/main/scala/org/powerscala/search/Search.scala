@@ -20,13 +20,16 @@ import org.apache.lucene.uninverting.UninvertingReader
 import org.apache.lucene.util.Version
 import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Executor, Time}
+import org.powerscala.log.Logging
 
 import scala.collection.JavaConversions._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000, sortedFields: List[SortedField] = Nil) {
+class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000, sortedFields: List[SortedField] = Nil) extends Logging {
+  Search.add(this)
+
   val version = Version.LATEST
   private val indexDir = directory match {
     case Some(d) => FSDirectory.open(new File(d, "index").toPath)
@@ -221,10 +224,15 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   }
 
   def close() = {
+    info("Closing Search instance...")
+    taxonomyReader.close()
+    taxonomyWriter.close()
     writer.close()
     _reader.close()
-    taxonomyWriter.close()
-    taxonomyReader.close()
+    indexDir.close()
+
+    Search.remove(this)
+    info("Search instance closed.")
   }
 }
 
@@ -234,4 +242,16 @@ case class SortedField(name: String, sortType: UninvertingReader.Type = Uninvert
 
 object Search {
   val EmptyLabelAndValueFilter = (lv: LabelAndValue) => true
+
+  private var items = Set.empty[Search]
+
+  private def add(search: Search) = synchronized {
+    items += search
+  }
+
+  private def remove(search: Search) = synchronized {
+    items -= search
+  }
+
+  def closeAll() = items.foreach(_.close())
 }

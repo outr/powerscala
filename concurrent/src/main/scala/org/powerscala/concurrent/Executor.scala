@@ -100,6 +100,11 @@ class Executor(coreThreads: Int = 8, daemonThreads: Boolean = true) {
   class R[T](f: () => T) extends Runnable {
     def run = f()
   }
+
+  def dispose() = {
+    executor.shutdown()
+    executor.awaitTermination(10, TimeUnit.SECONDS)
+  }
 }
 
 object Executor extends Executor(coreThreads = 8, daemonThreads = true)
