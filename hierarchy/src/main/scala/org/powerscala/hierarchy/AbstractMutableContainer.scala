@@ -7,7 +7,7 @@ import annotation.tailrec
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class AbstractMutableContainer[E] extends Container[E] {
+trait AbstractMutableContainer[E] extends Container[E] {
   protected val buffer = new ListBuffer[E]
 
   def contents: Seq[E] = buffer
