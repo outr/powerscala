@@ -23,8 +23,8 @@ trait Element[P] extends MutableChildLike[P] with Listenable {
     root[Ancestor] match {
       case Some(p) => f(p)      // Root of type already exists
       case None => {            // Wait for it to be hierarchically attached
-        @volatile var listener: Listener[ChildAddedEvent, Unit] = null
-        listener = listen[ChildAddedEvent, Unit, Unit]("childAdded", Priority.Normal, Ancestors) {
+        @volatile var listener: Listener[ChildAddedEvent[_], Unit] = null
+        listener = listen[ChildAddedEvent[_], Unit, Unit]("childAdded", Priority.Normal, Ancestors) {
           case evt => root[Ancestor] match {
             case Some(p) => {
               listeners -= listener

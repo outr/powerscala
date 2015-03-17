@@ -40,14 +40,16 @@ import org.powerscala.hierarchy.event.{ChildRemovedProcessor, ChildAddedProcesso
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-trait Container[E] extends ParentLike[E] with Listenable {
+trait Container[Child] extends ParentLike[Child] with Listenable {
+  implicit def childManifest: Manifest[Child]
+
   /**
    * The children associated to this Container.
    */
-  def contents: Seq[E]
+  def contents: Seq[Child]
 
   protected def hierarchicalChildren = contents
 
-  val childAdded = new ChildAddedProcessor
-  val childRemoved = new ChildRemovedProcessor
+  val childAdded = new ChildAddedProcessor[Child]
+  val childRemoved = new ChildRemovedProcessor[Child]
 }

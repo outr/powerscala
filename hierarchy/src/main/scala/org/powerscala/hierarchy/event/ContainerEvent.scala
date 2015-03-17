@@ -41,12 +41,12 @@ import language.existentials
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-abstract class ContainerEvent {
+abstract class ContainerEvent[Child] {
   def parent: Container[_]
 
-  def child: Any
+  def child: Child
 }
 
-case class ChildAddedEvent(parent: Container[_], child: Any) extends ContainerEvent
+case class ChildAddedEvent[Child](parent: Container[_], child: Child) extends ContainerEvent[Child]
 
-case class ChildRemovedEvent(parent: Container[_], child: Any) extends ContainerEvent
+case class ChildRemovedEvent[Child](parent: Container[_], child: Child) extends ContainerEvent[Child]

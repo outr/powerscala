@@ -47,7 +47,7 @@ class SceneSpec extends WordSpec with Matchers {
 
   case class StringElement(name: String) extends MutableChildLike[Any]
 
-  implicit def s2se(s: String) = StringElement(s)
+  implicit def s2se(s: String): StringElement = StringElement(s)
 
   "ImmutableContainer" when {
     "created" should {
@@ -59,9 +59,12 @@ class SceneSpec extends WordSpec with Matchers {
   }
 
   "MutableContainer" when {
-    val container = new AbstractMutableContainer[StringElement]() with MutableContainer[StringElement]
-    var added: ChildAddedEvent = null
-    var removed: ChildRemovedEvent = null
+    val stringElementManifest = implicitly[Manifest[StringElement]]
+    val container = new MutableContainer[StringElement] {
+      override implicit def childManifest: Manifest[StringElement] = stringElementManifest
+    }
+    var added: ChildAddedEvent[StringElement] = null
+    var removed: ChildRemovedEvent[StringElement] = null
     container.childAdded.on {
       case evt => added = evt
     }
@@ -133,11 +136,21 @@ class SceneSpec extends WordSpec with Matchers {
   }
 
   "ContainerView" when {
+    val mutableChildLikeManifest = implicitly[Manifest[MutableChildLike[_]]]
+    val stringElementManifest = implicitly[Manifest[StringElement]]
     val container = new ImmutableContainer(List(StringElement("One"), StringElement("Two"), StringElement("Three"))) with Element[Any]
-    val container2 = new AbstractMutableContainer[MutableChildLike[_]]() with MutableContainer[MutableChildLike[_]] with Element[Any]
-    val container3 = new AbstractMutableContainer[StringElement]() with MutableContainer[StringElement] with Element[Any]
-    val container4 = new AbstractMutableContainer[StringElement]() with MutableContainer[StringElement] with Element[Any]
-    val container5 = new AbstractMutableContainer[StringElement]() with MutableContainer[StringElement] with Element[Any]
+    val container2 = new MutableContainer[MutableChildLike[_]] with Element[Any] {
+      override implicit def childManifest: Manifest[MutableChildLike[_]] = mutableChildLikeManifest
+    }
+    val container3 = new MutableContainer[StringElement] with Element[Any] {
+      override implicit def childManifest: Manifest[StringElement] = stringElementManifest
+    }
+    val container4 = new MutableContainer[StringElement] with Element[Any] {
+      override implicit def childManifest: Manifest[StringElement] = stringElementManifest
+    }
+    val container5 = new MutableContainer[StringElement] with Element[Any] {
+      override implicit def childManifest: Manifest[StringElement] = stringElementManifest
+    }
 
     val containerView = new ContainerView[StringElement](container)
     val containerView2 = new ContainerView[StringElement](container2)

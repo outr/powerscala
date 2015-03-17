@@ -32,8 +32,8 @@ class ContainerView[T](val container: Container[_],
   private var queue = List.empty[T]
   private var filtered = List.empty[T]
 
-  val childAdded = new ChildAddedProcessor
-  val childRemoved = new ChildRemovedProcessor
+  val childAdded = new ChildAddedProcessor[T]
+  val childRemoved = new ChildRemovedProcessor[T]
 
   refresh()
 
@@ -48,7 +48,7 @@ class ContainerView[T](val container: Container[_],
     }
     container.childRemoved.listen(priority, ListenMode.Standard, Descendants) {
       case removed => synchronized {
-        invalidateChild(removed.child.asInstanceOf[AnyRef])
+        invalidateChild(removed.child)
         refreshFilter()
         refreshSort()
       }
@@ -121,10 +121,10 @@ class ContainerView[T](val container: Container[_],
    * Recursively iterates over chlidren removing them from the queue.
    */
   @tailrec
-  private def invalidateRecursive(children: Seq[_]): Unit = {
+  private def invalidateRecursive(children: Seq[T]): Unit = {
     if (children.nonEmpty) {
       val child = children.head
-      invalidateChild(child.asInstanceOf[AnyRef])
+      invalidateChild(child)
       invalidateRecursive(children.tail)
     }
   }
@@ -152,17 +152,17 @@ class ContainerView[T](val container: Container[_],
   /**
    * Removes the supplied child from the queue.
    */
-  private def invalidateChild(child: AnyRef) = {
+  private def invalidateChild(child: Any) = {
     val f = (c: T) => c == child
     if (queue.contains(child)) {
       queue = queue.filterNot(f)
-      childRemoved.fire(ChildRemovedEvent(container, child))
+      childRemoved.fire(ChildRemovedEvent(container, child.asInstanceOf[T]))
     } else {
       filtered = filtered.filterNot(f)
     }
 
     child match {   // If the child is a container, we need to remove its children as well
-      case container: Container[_] => invalidateRecursive(container.contents)
+      case container: Container[_] => invalidateRecursive(container.contents.asInstanceOf[Seq[T]])
       case _ =>
     }
   }

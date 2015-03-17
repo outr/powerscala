@@ -5,4 +5,4 @@ import org.powerscala.event.Listenable
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class ChildAddedProcessor(implicit listenable: Listenable) extends StandardHierarchyEventProcessor[ChildAddedEvent]("childAdded")
+class ChildAddedProcessor[Child](implicit listenable: Listenable, manifest: Manifest[Child]) extends StandardHierarchyEventProcessor[ChildAddedEvent[Child]]("childAdded")
