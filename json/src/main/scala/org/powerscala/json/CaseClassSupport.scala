@@ -30,6 +30,7 @@ object CaseClassSupport {
                     case m: Map[_, _] => j2o.fire(m.asInstanceOf[Map[String, Any]] + ("class" -> pathMapping(path).getName)).get
                   }
                   case m: Map[_, _] => j2o.fire(m.asInstanceOf[Map[String, Any]] + ("class" -> pathMapping(path).getName)).get
+                  case null => None
                   case _ => throw new RuntimeException(s"Unsupported pathMapping type: $value.")
                 }
               } else {
