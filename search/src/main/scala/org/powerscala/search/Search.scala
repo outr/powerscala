@@ -158,69 +158,75 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     val fillFields = true
     val trackDocScores = true
     val trackMaxScore = true
-    val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore)
+    if (numHits > 0) {
+      val collector = TopFieldCollector.create(sort, numHits, fillFields, trackDocScores, trackMaxScore)
 
-    val facetsCollector = if (q.facetRequests.nonEmpty) {
-      new FacetsCollector
-    } else {
-      null
-    }
-
-    val query = if (q.drillDown.nonEmpty) {          // Drill-down via facets query
-      if (facetsCollector == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
-      val ddq = new DrillDownQuery(facetsConfig, baseQuery)
-      q.drillDown.groupBy(dd => dd.dim).foreach {
-        case (dim, list) => {
-          val disableCoord = true
-          val bq = new BooleanQuery(disableCoord)
-          list.foreach {
-            case dd => {
-              val indexedField = facetsConfig.getDimConfig(dd.dim).indexFieldName
-              bq.add(new TermQuery(DrillDownQuery.term(indexedField, dd.dim, dd.path: _*)), BooleanClause.Occur.MUST)
-            }
-          }
-          ddq.add(dim, bq)
-        }
+      val facetsCollector = if (q.facetRequests.nonEmpty) {
+        new FacetsCollector
+      } else {
+        null
       }
-      ddq
-    } else {                                                        // No drill-down, use the base query
-      baseQuery
-    }
 
-    if (q.facetRequests.nonEmpty) {
-      FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector)    // what should 'n' be?
-    }
-    searcher.search(query, q.filter, collector)
-
-    val topDocs = collector.topDocs(q.offset, q.limit)
-
-    val facetResults: Map[String, List[LabelAndValue]] = if (q.facetRequests.nonEmpty) {
-      val facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector)
-      q.facetRequests.map {
-        case fr => {
-          val dim = fr.drillDown.dim
-          val limit = facetResultsBounds
-          val result = facets.getTopChildren(limit, fr.drillDown.dim, fr.drillDown.path: _*)
-          val filter = fr.filter match {
-            case Some(f) => f
-            case None => Search.EmptyLabelAndValueFilter
+      val query = if (q.drillDown.nonEmpty) {
+        // Drill-down via facets query
+        if (facetsCollector == null) throw new NullPointerException("Facets must be provided in order to drill-down.")
+        val ddq = new DrillDownQuery(facetsConfig, baseQuery)
+        q.drillDown.groupBy(dd => dd.dim).foreach {
+          case (dim, list) => {
+            val disableCoord = true
+            val bq = new BooleanQuery(disableCoord)
+            list.foreach {
+              case dd => {
+                val indexedField = facetsConfig.getDimConfig(dd.dim).indexFieldName
+                bq.add(new TermQuery(DrillDownQuery.term(indexedField, dd.dim, dd.path: _*)), BooleanClause.Occur.MUST)
+              }
+            }
+            ddq.add(dim, bq)
           }
-          val drillDownFilter = if (fr.excludeDrillDown) {
-            (lv: LabelAndValue) => !q.hasDrillDown(dim, Seq(lv.label))
-          } else {
-            Search.EmptyLabelAndValueFilter
-          }
-          val labelValues = if (result != null) result.labelValues else Array.empty[LabelAndValue]
-          val filtered = labelValues.toStream.filter(filter).filter(drillDownFilter).take(fr.limit).toList
-
-          dim -> filtered
         }
-      }.toMap
-    } else {
-      Map.empty
-    }
+        ddq
+      } else {
+        // No drill-down, use the base query
+        baseQuery
+      }
 
-    SearchResults(topDocs, facetResults, q)
+      if (q.facetRequests.nonEmpty) {
+        FacetsCollector.search(searcher, query, q.offset + q.limit, facetsCollector) // what should 'n' be?
+      }
+      searcher.search(query, q.filter, collector)
+
+      val topDocs = collector.topDocs(q.offset, q.limit)
+
+      val facetResults: Map[String, List[LabelAndValue]] = if (q.facetRequests.nonEmpty) {
+        val facets = new FastTaxonomyFacetCounts(taxonomyReader, facetsConfig, facetsCollector)
+        q.facetRequests.map {
+          case fr => {
+            val dim = fr.drillDown.dim
+            val limit = facetResultsBounds
+            val result = facets.getTopChildren(limit, fr.drillDown.dim, fr.drillDown.path: _*)
+            val filter = fr.filter match {
+              case Some(f) => f
+              case None => Search.EmptyLabelAndValueFilter
+            }
+            val drillDownFilter = if (fr.excludeDrillDown) {
+              (lv: LabelAndValue) => !q.hasDrillDown(dim, Seq(lv.label))
+            } else {
+              Search.EmptyLabelAndValueFilter
+            }
+            val labelValues = if (result != null) result.labelValues else Array.empty[LabelAndValue]
+            val filtered = labelValues.toStream.filter(filter).filter(drillDownFilter).take(fr.limit).toList
+
+            dim -> filtered
+          }
+        }.toMap
+      } else {
+        Map.empty
+      }
+
+      SearchResults(topDocs, facetResults, q)
+    } else {
+      SearchResults(null, null, q)
+    }
   }
 
   def close() = {
