@@ -278,8 +278,8 @@ object Color extends Enumerated[Color] {
     immutable(red, green, blue, alpha)
   }
 
-  def immutable(red: Int, green: Int, blue: Int, alpha: Int): Color = {
-    immutable(red / 255.0, green / 255.0, blue / 255.0, alpha / 255.0)
+  def immutable(red: Int, green: Int, blue: Int, alpha: Double): Color = {
+    immutable(red / 255.0, green / 255.0, blue / 255.0, alpha)
   }
 
   def immutable(hex: String): Color = {
