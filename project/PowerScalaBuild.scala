@@ -5,9 +5,9 @@ import sbtunidoc.Plugin._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.coreDefaultSettings ++ Seq(
-    version := "1.6.8-SNAPSHOT",
+    version := "1.6.8",
     organization := "org.powerscala",
-    scalaVersion := "2.11.5",
+    scalaVersion := "2.11.6",
     libraryDependencies ++= Seq(
       scalaTest
     ),
