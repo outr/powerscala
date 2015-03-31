@@ -5,7 +5,7 @@ import sbtunidoc.Plugin._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.coreDefaultSettings ++ Seq(
-    version := "1.6.8",
+    version := "1.6.9-SNAPSHOT",
     organization := "org.powerscala",
     scalaVersion := "2.11.6",
     libraryDependencies ++= Seq(
@@ -79,7 +79,7 @@ object PowerScalaBuild extends Build {
 object Dependencies {
   val luceneVersion = "5.0.0"
 
-  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
+  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.9"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
@@ -90,7 +90,7 @@ object Dependencies {
   val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion exclude("org.ow2.asm", "asm") exclude("org.ow2.asm", "asm-commons")
   val luceneBackward = "org.apache.lucene" % "lucene-backward-codecs" % luceneVersion
   val json4sNative = "org.json4s" %% "json4s-native" % "3.2.11"
-  val h2 = "com.h2database" % "h2" % "1.4.184"
+  val h2 = "com.h2database" % "h2" % "1.4.186"
   val reflections = "org.reflections" % "reflections" % "0.9.9"
-  val scalaTest = "org.scalatest" %% "scalatest" % "2.2.3" % "test"
+  val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 }
