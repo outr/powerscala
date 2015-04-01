@@ -1,7 +1,7 @@
 powerscala
 ==========
 
-[ ![Codeship Status for darkfrog26/powerscala](https://codeship.io/projects/20efc650-daaa-0131-f1b0-6eea8cd2b1ce/status)](https://codeship.io/projects/24347)
+[![Build Status](http://build.outr.com/buildStatus/icon?job=powerscala)](http://livingroom:8080/job/powerscala/)
 
 Powerful framework providing many useful utilities and features on top of the Scala language.
 
