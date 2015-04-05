@@ -54,6 +54,17 @@ object IO {
     write
   }
 
+  def copy(read: URL, write: File): File = {
+    val parent = write.getParentFile
+    if (parent != null) {
+      parent.mkdirs()
+    }
+
+    val input = read.openStream()
+    stream(input, write)
+    write
+  }
+
   def copy(read: String, write: File) = {
     val output = new FileOutputStream(write)
     try {

@@ -12,7 +12,7 @@ case class Delay(time: Double) extends WorkflowItem {
 
   override def begin() = {
     super.begin()
-    elapsed = 0.0f
+    elapsed = 0.0
   }
 
   def act(delta: Double) = {

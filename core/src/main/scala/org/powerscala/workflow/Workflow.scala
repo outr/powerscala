@@ -12,7 +12,10 @@ class Workflow(val items: List[WorkflowItem]) extends WorkflowItem with Updatabl
   protected var currentItems = items
   protected var current: WorkflowItem = _
 
+  private var begun = false
   private var first = true
+
+  def hasBegun = begun
 
   override final def update(delta: Double) = {
     super.update(delta)
@@ -20,7 +23,7 @@ class Workflow(val items: List[WorkflowItem]) extends WorkflowItem with Updatabl
       begin()
       first = false
     }
-    finished = act(delta.toFloat)
+    finished = act(delta)
     if (finished) {
       end()
       first = true
@@ -31,10 +34,11 @@ class Workflow(val items: List[WorkflowItem]) extends WorkflowItem with Updatabl
     super.begin()
     currentItems = items
     current = null
+    begun = true
   }
 
   def act(delta: Double) = {
-    if (current == null && !currentItems.isEmpty) {
+    if (current == null && currentItems.nonEmpty) {
       current = currentItems.head
       current.begin()
       currentItems = currentItems.tail

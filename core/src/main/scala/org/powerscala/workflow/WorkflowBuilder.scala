@@ -1,6 +1,6 @@
 package org.powerscala.workflow
 
-import item.Delay
+import org.powerscala.workflow.item.{Transition, InvokeFunction, Delay}
 
 
 /**
@@ -13,9 +13,13 @@ case class WorkflowBuilder(currentItems: List[WorkflowItem] = Nil,
 
   def delay(time: Double) = pause(time)
 
+  def transition(time: Double)(handler: Double => Unit) = next(Transition(time)(handler))
+
   def loop(count: Int) = copy(loopCount = count)
 
-  def next(item: WorkflowItem) = nextStep().add(item)
+  def next(item: WorkflowItem): WorkflowBuilder = nextStep().add(item)
+
+  def next(f: => Unit): WorkflowBuilder = next(InvokeFunction(() => f))
 
   def add(item: WorkflowItem) = copy(currentItems = item :: currentItems)
 
