@@ -25,4 +25,15 @@ object StringUtil {
   def trim(s: String) = s match {
     case TrimRegex(left, content, right) => content
   }
+
+  def humanReadableByteCount(bytes: Long, si: Boolean = true): String = {
+    val unit = if (si) 1000 else 1024
+    if (bytes < unit) {
+      s"$bytes B"
+    } else {
+      val exp = (math.log(bytes) / math.log(unit)).toInt
+      val pre = (if (si) "kMGTPE" else "KMGTPE").charAt(exp - 1) + (if (si) "" else "i")
+      "%.1f %sB".format(bytes / Math.pow(unit, exp), pre)
+    }
+  }
 }
