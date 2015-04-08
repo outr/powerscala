@@ -89,6 +89,7 @@ object Country extends Enumerated[Country] {
   val MT = new Country("Malta")
   val MQ = new Country("Martinique")
   val MU = new Country("Mauritius")
+  val MX = new Country("Mexico")
   val MS = new Country("Montserrat")
   val MZ = new Country("Mozambique")
   val NP = new Country("Nepal")
