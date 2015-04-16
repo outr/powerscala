@@ -34,7 +34,6 @@ package org.powerscala.concurrent
 
 
 import scala.math._
-import org.powerscala.enum.{Enumerated, EnumEntry}
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import collection.mutable.ListBuffer
@@ -47,7 +46,7 @@ import org.powerscala.Precision
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed abstract class Time(val value: Double, val pattern: String) extends EnumEntry {
+case class Time(value: Double, pattern: String) {
   private lazy val dateFormat = new SimpleDateFormat(pattern)
 
   def format(calendar: Calendar) = dateFormat.format(calendar.getTime)
@@ -71,21 +70,19 @@ sealed abstract class Time(val value: Double, val pattern: String) extends EnumE
   }
 }
 
-object Time extends Enumerated[Time] {
+object Time {
   import language.implicitConversions
 
-  case object Second extends Time(1.0, "MM/dd/yyyy hh:mm:ss a")
-  case object Minute extends Time(60.0 * Second.value, "MM/dd/yyyy hh:mm a")
-  case object Hour extends Time(60.0 * Minute.value, "MM/dd/yyyy hh a")
-  case object Day extends Time(24.0 * Hour.value, "MM/dd/yyyy")
-  case object Week extends Time(7.0 * Day.value, "yyyy w")
-  case object Month extends Time(30.0 * Day.value, "MM yyyy")
-  case object Year extends Time(12.0 * Month.value, "yyyy")
-
-  val values = findValues.toVector
+  val Second = new Time(1.0, "MM/dd/yyyy hh:mm:ss a")
+  val Minute = new Time(60.0 * Second.value, "MM/dd/yyyy hh:mm a")
+  val Hour = new Time(60.0 * Minute.value, "MM/dd/yyyy hh a")
+  val Day = new Time(24.0 * Hour.value, "MM/dd/yyyy")
+  val Week = new Time(7.0 * Day.value, "yyyy w")
+  val Month = new Time(30.0 * Day.value, "MM yyyy")
+  val Year = new Time(12.0 * Month.value, "yyyy")
 
   implicit def double2TimeAmount(time: Double): TimeAmount = TimeAmount(time)
-  implicit def timeAmount2Double(timeAmount: TimeAmount): TimeAmount = timeAmount.time
+  implicit def timeAmount2Double(timeAmount: TimeAmount): Double = timeAmount.time
 
   private val reports = new ThreadLocal[Report]
 
