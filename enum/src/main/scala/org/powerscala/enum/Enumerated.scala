@@ -15,4 +15,6 @@ trait Enumerated[E <: EnumEntry] extends Enum[E] {
   } else {
     withNameInsensitiveOption(name)
   }
+
+  def unapply(s: String) = get(s)
 }
