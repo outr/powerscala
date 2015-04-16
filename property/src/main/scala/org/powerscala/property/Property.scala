@@ -78,19 +78,21 @@ object Property {
   def fireChanged[T](property: Property[T]) = property.propertyChange(property.value)
 }
 
-class EventHandling extends EnumEntry
+sealed trait EventHandling extends EnumEntry
 
 object EventHandling extends Enumerated[EventHandling] {
   /**
    * Fires an event only if the new value is different from the old value.
    */
-  val Normal = new EventHandling
+  case object Normal extends EventHandling
   /**
    * Never fires an event.
    */
-  val SuppressEvent = new EventHandling
+  case object SuppressEvent extends EventHandling
   /**
    * Fires an event no matter what the new value is.
    */
-  val FireEvent = new EventHandling
+  case object FireEvent extends EventHandling
+
+  val values = findValues.toVector
 }

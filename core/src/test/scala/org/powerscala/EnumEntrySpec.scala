@@ -62,10 +62,14 @@ class EnumEntrySpec extends WordSpec with Matchers {
   }
 }
 
-sealed class TestEnum extends EnumEntry
+sealed trait TestEnum extends EnumEntry {
+  lazy val ordinal = TestEnum.values.indexOf(this)
+}
 
 object TestEnum extends Enumerated[TestEnum] {
-  val One = new TestEnum
-  val Two = new TestEnum
-  val Three = new TestEnum
+  case object One extends TestEnum
+  case object Two extends TestEnum
+  case object Three extends TestEnum
+
+  val values = findValues.toVector
 }

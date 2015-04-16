@@ -5,10 +5,12 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class Repeat private() extends EnumEntry
+sealed trait Repeat extends EnumEntry
 
 object Repeat extends Enumerated[Repeat] {
-  val All = new Repeat()
-  val First = new Repeat()
-  val Last = new Repeat()
+  case object All extends Repeat
+  case object First extends Repeat
+  case object Last extends Repeat
+
+  val values = findValues.toVector
 }

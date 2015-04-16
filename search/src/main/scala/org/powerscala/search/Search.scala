@@ -18,7 +18,6 @@ import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree
 import org.apache.lucene.store.{FSDirectory, RAMDirectory}
 import org.apache.lucene.uninverting.UninvertingReader
 import org.apache.lucene.util.Version
-import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Executor, Time}
 import org.powerscala.log.Logging
 
@@ -27,7 +26,7 @@ import scala.collection.JavaConversions._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.seconds, facetResultsBounds: Int = 1000, sortedFields: List[SortedField] = Nil) extends Logging {
+class Search(defaultField: String, val directory: Option[File] = None, append: Boolean = true, ramBufferInMegs: Double = 256.0, commitDelay: Double = 30.0, facetResultsBounds: Int = 1000, sortedFields: List[SortedField] = Nil) extends Logging {
   Search.add(this)
 
   val version = Version.LATEST

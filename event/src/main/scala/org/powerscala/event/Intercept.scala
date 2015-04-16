@@ -7,9 +7,11 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
   *
   * @author Matt Hicks <matt@outr.com>
   */
-class Intercept protected() extends EnumEntry
+sealed trait Intercept extends EnumEntry
 
 object Intercept extends Enumerated[Intercept] {
-  val Continue = new Intercept
-  val Stop = new Intercept
+  case object Continue extends Intercept
+  case object Stop extends Intercept
+
+  val values = findValues.toVector
 }

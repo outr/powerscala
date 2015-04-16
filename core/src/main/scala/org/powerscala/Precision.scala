@@ -12,6 +12,8 @@ sealed class Precision(val conversion: Double, f: () => Long) extends EnumEntry 
 }
 
 object Precision extends Enumerated[Precision] {
-  val Milliseconds = new Precision(1000.0, () => System.currentTimeMillis)
-  val Nanoseconds = new Precision(1000000000.0, () => System.nanoTime)
+  case object Milliseconds extends Precision(1000.0, () => System.currentTimeMillis)
+  case object Nanoseconds extends Precision(1000000000.0, () => System.nanoTime)
+
+  val values = findValues.toVector
 }

@@ -12,13 +12,15 @@ sealed trait ReferenceType extends EnumEntry {
 }
 
 object ReferenceType extends Enumerated[ReferenceType] {
-  val Hard = new ReferenceType {
+  case object Hard extends ReferenceType {
     def apply[T <: AnyRef](value: T) = HardReference(value)
   }
-  val Soft = new ReferenceType {
+  case object Soft extends ReferenceType {
     def apply[T <: AnyRef](value: T) = SoftReference(value)
   }
-  val Weak = new ReferenceType {
+  case object Weak extends ReferenceType {
     def apply[T <: AnyRef](value: T) = WeakReference(value)
   }
+
+  val values = findValues.toVector
 }

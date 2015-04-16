@@ -49,12 +49,14 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(reflect, core, concurrent, search, event, hierarchy, json, log, property, interpreter)
+    .aggregate(enum, reflect, core, concurrent, search, event, hierarchy, json, log, property, interpreter)
+  lazy val enum = Project("enum", file("enum"), settings = createSettings("powerscala-enum"))
+    .settings(libraryDependencies += enumeratum)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
     .settings(libraryDependencies ++= Seq(akkaActors))
-    .dependsOn(reflect)
+    .dependsOn(enum, reflect)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
   lazy val event = Project("event", file("event"), settings = createSettings("powerscala-event"))
@@ -79,6 +81,7 @@ object PowerScalaBuild extends Build {
 object Dependencies {
   val luceneVersion = "5.0.0"
 
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.1.0"
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.9"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion

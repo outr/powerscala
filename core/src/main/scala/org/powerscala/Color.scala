@@ -5,7 +5,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-abstract class Color extends EnumEntry {
+abstract class Color {
   def red: Double
   def green: Double
   def blue: Double
@@ -83,158 +83,160 @@ abstract class Color extends EnumEntry {
   override def toString = "Color(red=%s, green=%s, blue=%s, alpha=%s)".format(red, green, blue, alpha)
 
   def toCSS = if (alpha < 1.0) {
-    s"rgba(${int.rgb}, ${alpha})"
+    s"rgba(${int.rgb}, $alpha)"
   } else {
     hex.rgb
   }
 }
 
-object Color extends Enumerated[Color] {
-  val AliceBlue = immutable(0xfff0f8ff)
-  val AntiqueWhite = immutable(0xfffaebd7)
-  val Aquamarine = immutable(0xff7fffd4)
-  val Azure = immutable(0xfff0ffff)
-  val Beige = immutable(0xfff5f5dc)
-  val Bisque = immutable(0xffffe4c4)
-  val Black = immutable(0xff000000)
-  val BlanchedAlmond = immutable(0xffffebcd)
-  val Blue = immutable(0xff0000ff)
-  val BlueViolet = immutable(0xff8a2be2)
-  val Brown = immutable(0xffa52a2a)
-  val Burlywood = immutable(0xffdeb887)
-  val CadetBlue = immutable(0xff5f9ea0)
-  val Chartreuse = immutable(0xff7fff00)
-  val Chocolate = immutable(0xffd2691e)
-  val Coral = immutable(0xffff7f50)
-  val CornflowerBlue = immutable(0xff6495ed)
-  val Cornsilk = immutable(0xfffff8dc)
-  val Cyan = immutable(0xff00cdcd)
-  val DarkBlue = immutable(0xff00008b)
-  val DarkGoldenrod = immutable(0xffb8860b)
-  val DarkGray = immutable(0xff3f3f3f)
-  val DarkGreen = immutable(0xff006400)
-  val DarkKhaki = immutable(0xffbdb76b)
-  val DarkOliveGreen = immutable(0xff556b2f)
-  val DarkOrange = immutable(0xffff8c00)
-  val DarkOrchid = immutable(0xff9932cc)
-  val DarkRed = immutable(0xff8b0000)
-  val DarkSalmon = immutable(0xffe9967a)
-  val DarkSeaGreen = immutable(0xff8fbc8f)
-  val DarkSlateBlue = immutable(0xff483d8b)
-  val DarkSlateGray = immutable(0xff2f4f4f)
-  val DarkTurquoise = immutable(0xff00ced1)
-  val DarkViolet = immutable(0xff9400d3)
-  val DeepPink = immutable(0xffff1493)
-  val DeepSkyBlue = immutable(0xff00bfff)
-  val DimGray = immutable(0xff696969)
-  val DodgerBlue = immutable(0xff1e90ff)
-  val Firebrick = immutable(0xffb22222)
-  val FloralWhite = immutable(0xfffffaf0)
-  val ForestGreen = immutable(0xff228b22)
-  val Gainsboro = immutable(0xffdcdcdc)
-  val GhostWhite = immutable(0xfff8f8ff)
-  val Gold = immutable(0xffffd700)
-  val Goldenrod = immutable(0xffdaa520)
-  val Gray = immutable(0xffbebebe)
-  val Green = immutable(0xff008000)
-  val GreenYellow = immutable(0xffadff2f)
-  val HaloBlue = immutable(0xff93a9b4)
-  val HighlightBlue = immutable(0xffb2e1ff)
-  val Honeydew = immutable(0xfff0fff0)
-  val HotPink = immutable(0xffff69b4)
-  val IndianRed = immutable(0xffcd5c5c)
-  val Ivory = immutable(0xfffffff0)
-  val Khaki = immutable(0xfff0e68c)
-  val Lavender = immutable(0xffe6e6fa)
-  val LavenderBlush = immutable(0xfffff0f5)
-  val LawnGreen = immutable(0xff7cfc00)
-  val LemonChiffon = immutable(0xfffffacd)
-  val LightBlue = immutable(0xffadd8e6)
-  val LightCoral = immutable(0xfff08080)
-  val LightCyan = immutable(0xffe0ffff)
-  val LightGoldenrod = immutable(0xffeedd82)
-  val LightGoldenrodYellow = immutable(0xfffafad2)
-  val LightGray = immutable(0xffd3d3d3)
-  val LightPink = immutable(0xffffb6c1)
-  val LightSalmon = immutable(0xffffa07a)
-  val LightSeaGreen = immutable(0xff20b2aa)
-  val LightSkyBlue = immutable(0xff87cefa)
-  val LightSlateBlue = immutable(0xff8470ff)
-  val LightSlateGray = immutable(0xff778899)
-  val LightSteelBlue = immutable(0xffb0c4de)
-  val LightYellow = immutable(0xffffffe0)
-  val LimeGreen = immutable(0xff32cd32)
-  val Linen = immutable(0xfffaf0e6)
-  val Magenta = immutable(0xffff00ff)
-  val Maroon = immutable(0xffb03060)
-  val MediumAquamarine = immutable(0xff66cdaa)
-  val MediumBlue = immutable(0xff0000cd)
-  val MediumOrchid = immutable(0xffba55d3)
-  val MediumPurple = immutable(0xff9370db)
-  val MediumSeaGreen = immutable(0xff3cb371)
-  val MediumSlateBlue = immutable(0xff7b68ee)
-  val MediumSpringGreen = immutable(0xff00fa9a)
-  val MediumTurquoise = immutable(0xff48d1cc)
-  val MediumVioletRed = immutable(0xffc71585)
-  val MidnightBlue = immutable(0xff191970)
-  val MintCream = immutable(0xfff5fffa)
-  val MistyRose = immutable(0xffffe4e1)
-  val Moccasin = immutable(0xffffe4b5)
-  val NavajoWhite = immutable(0xffffdead)
-  val NavyBlue = immutable(0xff000080)
-  val OldLace = immutable(0xfffdf5e6)
-  val OliveDrab = immutable(0xff6b8e23)
-  val Orange = immutable(0xffffa500)
-  val OrangeRed = immutable(0xffff4500)
-  val Orchid = immutable(0xffda70d6)
-  val PaleGoldenrod = immutable(0xffeee8aa)
-  val PaleGreen = immutable(0xff98fb98)
-  val PaleTurquoise = immutable(0xffafeeee)
-  val PaleVioletRed = immutable(0xffdb7093)
-  val PapayaWhip = immutable(0xffffefd5)
-  val PeachPuff = immutable(0xffffdab9)
-  val Peru = immutable(0xffcd853f)
-  val Pink = immutable(0xffffc0cb)
-  val Plum = immutable(0xffdda0dd)
-  val PowderBlue = immutable(0xffb0e0e6)
-  val Purple = immutable(0xff800080)
-  val Red = immutable(0xffff0000)
-  val RosyBrown = immutable(0xffbc8f8f)
-  val RoyalBlue = immutable(0xff4169e1)
-  val SaddleBrown = immutable(0xff8b4513)
-  val Salmon = immutable(0xfffa8072)
-  val SandyBrown = immutable(0xfff4a460)
-  val SeaGreen = immutable(0xff2e8b57)
-  val Seashell = immutable(0xfffff5ee)
-  val SelectBlue = immutable(0xff4394ff)
-  val Sienna = immutable(0xffa0522d)
-  val SkyBlue = immutable(0xff87ceeb)
-  val SlateBlue = immutable(0xff6a5acd)
-  val SlateGray = immutable(0xff708090)
-  val Snow = immutable(0xfffffafa)
-  val SpringGreen = immutable(0xff00ff7f)
-  val SteelBlue = immutable(0xff4682b4)
-  val Tan = immutable(0xffd2b48c)
-  val Thistle = immutable(0xffd8bfd8)
-  val Tomato = immutable(0xffff6347)
-  val Turquoise = immutable(0xff40e0d0)
-  val UmmGold = immutable(0xffffcc33)
-  val UmmMaroon = immutable(0xff660000)
-  val Violet = immutable(0xffee82ee)
-  val VioletRed = immutable(0xffd02090)
-  val Wheat = immutable(0xfff5deb3)
-  val White = immutable(0xffffffff)
-  val WhiteSmoke = immutable(0xfff5f5f5)
-  val Yellow = immutable(0xffffff00)
-  val YellowGreen = immutable(0xff9acd32)
+object Color extends Enumerated[EnumColor] {
+  case object AliceBlue extends EnumColor(0xfff0f8ff)
+  case object AntiqueWhite extends EnumColor(0xfffaebd7)
+  case object Aquamarine extends EnumColor(0xff7fffd4)
+  case object Azure extends EnumColor(0xfff0ffff)
+  case object Beige extends EnumColor(0xfff5f5dc)
+  case object Bisque extends EnumColor(0xffffe4c4)
+  case object Black extends EnumColor(0xff000000)
+  case object BlanchedAlmond extends EnumColor(0xffffebcd)
+  case object Blue extends EnumColor(0xff0000ff)
+  case object BlueViolet extends EnumColor(0xff8a2be2)
+  case object Brown extends EnumColor(0xffa52a2a)
+  case object Burlywood extends EnumColor(0xffdeb887)
+  case object CadetBlue extends EnumColor(0xff5f9ea0)
+  case object Chartreuse extends EnumColor(0xff7fff00)
+  case object Chocolate extends EnumColor(0xffd2691e)
+  case object Coral extends EnumColor(0xffff7f50)
+  case object CornflowerBlue extends EnumColor(0xff6495ed)
+  case object Cornsilk extends EnumColor(0xfffff8dc)
+  case object Cyan extends EnumColor(0xff00cdcd)
+  case object DarkBlue extends EnumColor(0xff00008b)
+  case object DarkGoldenrod extends EnumColor(0xffb8860b)
+  case object DarkGray extends EnumColor(0xff3f3f3f)
+  case object DarkGreen extends EnumColor(0xff006400)
+  case object DarkKhaki extends EnumColor(0xffbdb76b)
+  case object DarkOliveGreen extends EnumColor(0xff556b2f)
+  case object DarkOrange extends EnumColor(0xffff8c00)
+  case object DarkOrchid extends EnumColor(0xff9932cc)
+  case object DarkRed extends EnumColor(0xff8b0000)
+  case object DarkSalmon extends EnumColor(0xffe9967a)
+  case object DarkSeaGreen extends EnumColor(0xff8fbc8f)
+  case object DarkSlateBlue extends EnumColor(0xff483d8b)
+  case object DarkSlateGray extends EnumColor(0xff2f4f4f)
+  case object DarkTurquoise extends EnumColor(0xff00ced1)
+  case object DarkViolet extends EnumColor(0xff9400d3)
+  case object DeepPink extends EnumColor(0xffff1493)
+  case object DeepSkyBlue extends EnumColor(0xff00bfff)
+  case object DimGray extends EnumColor(0xff696969)
+  case object DodgerBlue extends EnumColor(0xff1e90ff)
+  case object Firebrick extends EnumColor(0xffb22222)
+  case object FloralWhite extends EnumColor(0xfffffaf0)
+  case object ForestGreen extends EnumColor(0xff228b22)
+  case object Gainsboro extends EnumColor(0xffdcdcdc)
+  case object GhostWhite extends EnumColor(0xfff8f8ff)
+  case object Gold extends EnumColor(0xffffd700)
+  case object Goldenrod extends EnumColor(0xffdaa520)
+  case object Gray extends EnumColor(0xffbebebe)
+  case object Green extends EnumColor(0xff008000)
+  case object GreenYellow extends EnumColor(0xffadff2f)
+  case object HaloBlue extends EnumColor(0xff93a9b4)
+  case object HighlightBlue extends EnumColor(0xffb2e1ff)
+  case object Honeydew extends EnumColor(0xfff0fff0)
+  case object HotPink extends EnumColor(0xffff69b4)
+  case object IndianRed extends EnumColor(0xffcd5c5c)
+  case object Ivory extends EnumColor(0xfffffff0)
+  case object Khaki extends EnumColor(0xfff0e68c)
+  case object Lavender extends EnumColor(0xffe6e6fa)
+  case object LavenderBlush extends EnumColor(0xfffff0f5)
+  case object LawnGreen extends EnumColor(0xff7cfc00)
+  case object LemonChiffon extends EnumColor(0xfffffacd)
+  case object LightBlue extends EnumColor(0xffadd8e6)
+  case object LightCoral extends EnumColor(0xfff08080)
+  case object LightCyan extends EnumColor(0xffe0ffff)
+  case object LightGoldenrod extends EnumColor(0xffeedd82)
+  case object LightGoldenrodYellow extends EnumColor(0xfffafad2)
+  case object LightGray extends EnumColor(0xffd3d3d3)
+  case object LightPink extends EnumColor(0xffffb6c1)
+  case object LightSalmon extends EnumColor(0xffffa07a)
+  case object LightSeaGreen extends EnumColor(0xff20b2aa)
+  case object LightSkyBlue extends EnumColor(0xff87cefa)
+  case object LightSlateBlue extends EnumColor(0xff8470ff)
+  case object LightSlateGray extends EnumColor(0xff778899)
+  case object LightSteelBlue extends EnumColor(0xffb0c4de)
+  case object LightYellow extends EnumColor(0xffffffe0)
+  case object LimeGreen extends EnumColor(0xff32cd32)
+  case object Linen extends EnumColor(0xfffaf0e6)
+  case object Magenta extends EnumColor(0xffff00ff)
+  case object Maroon extends EnumColor(0xffb03060)
+  case object MediumAquamarine extends EnumColor(0xff66cdaa)
+  case object MediumBlue extends EnumColor(0xff0000cd)
+  case object MediumOrchid extends EnumColor(0xffba55d3)
+  case object MediumPurple extends EnumColor(0xff9370db)
+  case object MediumSeaGreen extends EnumColor(0xff3cb371)
+  case object MediumSlateBlue extends EnumColor(0xff7b68ee)
+  case object MediumSpringGreen extends EnumColor(0xff00fa9a)
+  case object MediumTurquoise extends EnumColor(0xff48d1cc)
+  case object MediumVioletRed extends EnumColor(0xffc71585)
+  case object MidnightBlue extends EnumColor(0xff191970)
+  case object MintCream extends EnumColor(0xfff5fffa)
+  case object MistyRose extends EnumColor(0xffffe4e1)
+  case object Moccasin extends EnumColor(0xffffe4b5)
+  case object NavajoWhite extends EnumColor(0xffffdead)
+  case object NavyBlue extends EnumColor(0xff000080)
+  case object OldLace extends EnumColor(0xfffdf5e6)
+  case object OliveDrab extends EnumColor(0xff6b8e23)
+  case object Orange extends EnumColor(0xffffa500)
+  case object OrangeRed extends EnumColor(0xffff4500)
+  case object Orchid extends EnumColor(0xffda70d6)
+  case object PaleGoldenrod extends EnumColor(0xffeee8aa)
+  case object PaleGreen extends EnumColor(0xff98fb98)
+  case object PaleTurquoise extends EnumColor(0xffafeeee)
+  case object PaleVioletRed extends EnumColor(0xffdb7093)
+  case object PapayaWhip extends EnumColor(0xffffefd5)
+  case object PeachPuff extends EnumColor(0xffffdab9)
+  case object Peru extends EnumColor(0xffcd853f)
+  case object Pink extends EnumColor(0xffffc0cb)
+  case object Plum extends EnumColor(0xffdda0dd)
+  case object PowderBlue extends EnumColor(0xffb0e0e6)
+  case object Purple extends EnumColor(0xff800080)
+  case object Red extends EnumColor(0xffff0000)
+  case object RosyBrown extends EnumColor(0xffbc8f8f)
+  case object RoyalBlue extends EnumColor(0xff4169e1)
+  case object SaddleBrown extends EnumColor(0xff8b4513)
+  case object Salmon extends EnumColor(0xfffa8072)
+  case object SandyBrown extends EnumColor(0xfff4a460)
+  case object SeaGreen extends EnumColor(0xff2e8b57)
+  case object Seashell extends EnumColor(0xfffff5ee)
+  case object SelectBlue extends EnumColor(0xff4394ff)
+  case object Sienna extends EnumColor(0xffa0522d)
+  case object SkyBlue extends EnumColor(0xff87ceeb)
+  case object SlateBlue extends EnumColor(0xff6a5acd)
+  case object SlateGray extends EnumColor(0xff708090)
+  case object Snow extends EnumColor(0xfffffafa)
+  case object SpringGreen extends EnumColor(0xff00ff7f)
+  case object SteelBlue extends EnumColor(0xff4682b4)
+  case object Tan extends EnumColor(0xffd2b48c)
+  case object Thistle extends EnumColor(0xffd8bfd8)
+  case object Tomato extends EnumColor(0xffff6347)
+  case object Turquoise extends EnumColor(0xff40e0d0)
+  case object UmmGold extends EnumColor(0xffffcc33)
+  case object UmmMaroon extends EnumColor(0xff660000)
+  case object Violet extends EnumColor(0xffee82ee)
+  case object VioletRed extends EnumColor(0xffd02090)
+  case object Wheat extends EnumColor(0xfff5deb3)
+  case object White extends EnumColor(0xffffffff)
+  case object WhiteSmoke extends EnumColor(0xfff5f5f5)
+  case object Yellow extends EnumColor(0xffffff00)
+  case object YellowGreen extends EnumColor(0xff9acd32)
 
-  val Clear = immutable(0x00ffffff)
+  case object Clear extends EnumColor(0x00ffffff)
 
   private val RGBIntRegex = """rgb\((\d*), (\d*), (\d*)\)""".r
   private val RGBAIntRegex = """rgba\((\d*), (\d*), (\d*), (\d.*)\)""".r
   private val HSVIntRegex = """hsv\((\d*), (\d*)%?, (\d*)%?\)""".r
 
-  override def get(name: String, caseSensitive: Boolean = false) = super.get(name, caseSensitive) match {
+  val values = findValues.toVector
+
+  def byName(name: String) = get(name, caseSensitive = false) match {
     case None => name match {
       case null => null
       case RGBIntRegex(red, green, blue) => Some(immutable(red.toInt, green.toInt, blue.toInt, 255))                                       // RGB
@@ -288,11 +290,11 @@ object Color extends Enumerated[Color] {
   }
 
   def immutable(red: Double = 0.0, green: Double = 0.0, blue: Double = 0.0, alpha: Double = 1.0): Color = {
-    ImmutableColor(red, green, blue, alpha)
+    new ImmutableColor(red, green, blue, alpha)
   }
 
   def mutable(red: Double = 0.0, green: Double = 0.0, blue: Double = 0.0, alpha: Double = 1.0): MutableColor = {
-    MutableColor(red, green, blue, alpha)
+    new MutableColor(red, green, blue, alpha)
   }
 
   def mutable(value: Long): MutableColor = {
@@ -309,7 +311,7 @@ object Color extends Enumerated[Color] {
 
   def mutable(hex: String): MutableColor = {
     val (red, green, blue, alpha) = convertHex(hex)
-    MutableColor(red, green, blue, alpha)
+    new MutableColor(red, green, blue, alpha)
   }
 
   private def convertHex(hex: String): (Double, Double, Double, Double) = {
@@ -351,20 +353,32 @@ object Color extends Enumerated[Color] {
   }
 }
 
-case class ImmutableColor(red: Double, green: Double, blue: Double, alpha: Double) extends Color {
-  def apply(red: Double = red, green: Double = green, blue: Double = blue, alpha: Double = alpha) = {
-    copy(red, green, blue, alpha)
+class ImmutableColor(val red: Double, val green: Double, val blue: Double, val alpha: Double) extends Color {
+  def this(value: Long) = {
+    this((value >> 16 & 0xff) / 255.0, (value >> 8 & 0xff) / 255.0, (value >> 0 & 0xff) / 255.0, (value >> 24 & 0xff) / 255.0)
   }
 
-  def mutable = MutableColor(red, green, blue, alpha)
+  def apply(red: Double = red, green: Double = green, blue: Double = blue, alpha: Double = alpha) = {
+    new ImmutableColor(red, green, blue, alpha)
+  }
+
+  def mutable = new MutableColor(red, green, blue, alpha)
   def immutable = this
 }
 
-case class MutableColor(var red: Double, var green: Double, var blue: Double, var alpha: Double) extends Color {
+sealed class EnumColor(red: Double, green: Double, blue: Double, alpha: Double) extends ImmutableColor(red, green, blue, alpha) with EnumEntry {
+  def this(value: Long) = {
+    this((value >> 16 & 0xff) / 255.0, (value >> 8 & 0xff) / 255.0, (value >> 0 & 0xff) / 255.0, (value >> 24 & 0xff) / 255.0)
+  }
+
+  override def toString = name
+}
+
+class MutableColor(var red: Double, var green: Double, var blue: Double, var alpha: Double) extends Color {
   def apply(red: Double = red, green: Double = green, blue: Double = blue, alpha: Double = alpha) = {
-    copy(red, green, blue, alpha)
+    new MutableColor(red, green, blue, alpha)
   }
 
   def mutable = this
-  def immutable = ImmutableColor(red, green, blue, alpha)
+  def immutable = new ImmutableColor(red, green, blue, alpha)
 }

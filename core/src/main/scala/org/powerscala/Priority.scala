@@ -1,13 +1,11 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
-
 /**
  * Priority represents a linear prioritization.
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-class Priority private(val value: Double) extends EnumEntry {
+class Priority(val value: Double) {
   private val stepSize = 0.5
 
   def lowerBy(steps: Int) = Priority(value - (steps * stepSize))
@@ -19,12 +17,14 @@ class Priority private(val value: Double) extends EnumEntry {
   }
 }
 
-object Priority extends Enumerated[Priority] {
-  val Lowest = new Priority(0.0)
-  val Low = new Priority(0.5)
-  val Normal = new Priority(1.0)
-  val High = new Priority(100.0)
-  val Critical = new Priority(Double.MaxValue)
+object Priority {
+  case object Lowest extends Priority(0.0)
+  case object Low extends Priority(0.5)
+  case object Normal extends Priority(1.0)
+  case object High extends Priority(100.0)
+  case object Critical extends Priority(Double.MaxValue)
+
+  val values = Vector(Lowest, Low, Normal, High, Critical)
 
   def apply(value: Double) = {
     values.find(p => p.value == value) match {

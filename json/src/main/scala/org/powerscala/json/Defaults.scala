@@ -30,7 +30,7 @@ object Defaults {
 
     // Enum Support
     o2j.partial(None) {
-      case e: EnumEntry => Some(Map("enumClass" -> e.getClass.getName, "name" -> e.name))
+      case e: EnumEntry => Some(Map("enumClass" -> e.getClass.getName.replaceAll("[$](.+)[$]", ""), "name" -> e.name))
     }
     j2o.partial(None) {
       case map: Map[_, _] => {

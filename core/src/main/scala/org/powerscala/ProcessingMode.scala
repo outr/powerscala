@@ -10,7 +10,9 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 sealed class ProcessingMode extends EnumEntry
 
 object ProcessingMode extends Enumerated[ProcessingMode] {
-  val Synchronous = new ProcessingMode
-  val Asynchronous = new ProcessingMode
-  val Concurrent = new ProcessingMode
+  case object Synchronous extends ProcessingMode
+  case object Asynchronous extends ProcessingMode
+  case object Concurrent extends ProcessingMode
+
+  val values = findValues.toVector
 }

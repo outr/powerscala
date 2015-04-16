@@ -10,8 +10,10 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 sealed class Compass extends EnumEntry
 
 object Compass extends Enumerated[Compass] {
-  val North = new Compass
-  val South = new Compass
-  val East = new Compass
-  val West = new Compass
+  case object North extends Compass
+  case object South extends Compass
+  case object East extends Compass
+  case object West extends Compass
+
+  val values = findValues.toVector
 }
