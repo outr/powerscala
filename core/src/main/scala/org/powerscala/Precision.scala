@@ -7,7 +7,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Precision(val conversion: Double, f: () => Long) extends EnumEntry {
+sealed abstract class Precision(val conversion: Double, f: () => Long) extends EnumEntry {
   def time = f()
 }
 

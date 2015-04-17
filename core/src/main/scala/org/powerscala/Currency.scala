@@ -5,7 +5,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Currency(val description: String) extends EnumEntry {
+sealed abstract class Currency(val description: String) extends EnumEntry {
   override def toString = "%s (%s)".format(description, name)
 }
 

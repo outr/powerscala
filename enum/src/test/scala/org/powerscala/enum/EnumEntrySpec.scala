@@ -1,13 +1,7 @@
-package org.powerscala
+package org.powerscala.enum
 
 import org.scalatest.{Matchers, WordSpec}
-import org.powerscala.enum.{Enumerated, EnumEntry}
 
-/**
- *
- *
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 class EnumEntrySpec extends WordSpec with Matchers {
   "TestEnum" should {
     "have three entries" in {
@@ -49,15 +43,11 @@ class EnumEntrySpec extends WordSpec with Matchers {
     "not find equality between 'Three' and 'One'" in {
       TestEnum.Three should not be TestEnum.One
     }
-  }
-  "Currency" should {
-    "iterate over very fast" in {
-      Currency.values.toList      // Pre-access
-      val time = System.nanoTime()
-      val values = Currency.values.toList
-      values.length should equal(Currency.values.length)
-      val elapsed = System.nanoTime() - time
-      elapsed should be < 20000000L
+    "find parentClass as TestEnum" in {
+      TestEnum.One.parentClass should be(TestEnum.getClass)
+    }
+    "find parentName as TestEnum" in {
+      TestEnum.One.parentName should be("TestEnum")
     }
   }
 }

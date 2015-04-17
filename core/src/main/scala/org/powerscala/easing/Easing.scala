@@ -6,7 +6,7 @@ trait Easing extends EnumEntry {
   def apply(elapsed: Double, start: Double, target: Double, duration: Double): Double
 }
 
-sealed class EasingEnum(val f: Function4[Double, Double, Double, Double, Double]) extends Easing {
+sealed abstract class EasingEnum(val f: Function4[Double, Double, Double, Double, Double]) extends Easing {
   def apply(elapsed: Double, start: Double, target: Double, duration: Double) = {
     f(elapsed, start, target - start, duration)
   }

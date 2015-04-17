@@ -5,7 +5,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
 /**
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Country(val fullName: String) extends EnumEntry {
+sealed abstract class Country(val fullName: String) extends EnumEntry {
   override def toString = fullName
 }
 

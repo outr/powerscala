@@ -7,7 +7,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class Compass extends EnumEntry
+sealed abstract class Compass extends EnumEntry
 
 object Compass extends Enumerated[Compass] {
   case object North extends Compass

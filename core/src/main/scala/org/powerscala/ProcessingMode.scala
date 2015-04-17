@@ -7,7 +7,7 @@ import org.powerscala.enum.{Enumerated, EnumEntry}
  *
  * @author Matt Hicks <mhicks@powerscala.org>
  */
-sealed class ProcessingMode extends EnumEntry
+sealed abstract class ProcessingMode extends EnumEntry
 
 object ProcessingMode extends Enumerated[ProcessingMode] {
   case object Synchronous extends ProcessingMode

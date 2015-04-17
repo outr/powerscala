@@ -366,7 +366,7 @@ class ImmutableColor(val red: Double, val green: Double, val blue: Double, val a
   def immutable = this
 }
 
-sealed class EnumColor(red: Double, green: Double, blue: Double, alpha: Double) extends ImmutableColor(red, green, blue, alpha) with EnumEntry {
+sealed abstract class EnumColor(red: Double, green: Double, blue: Double, alpha: Double) extends ImmutableColor(red, green, blue, alpha) with EnumEntry {
   def this(value: Long) = {
     this((value >> 16 & 0xff) / 255.0, (value >> 8 & 0xff) / 255.0, (value >> 0 & 0xff) / 255.0, (value >> 24 & 0xff) / 255.0)
   }

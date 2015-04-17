@@ -129,6 +129,7 @@ class Logger private(val loggerName: String) extends EventProcessor[LogRecord, I
         case Some(parentLogger) => parentLogger.log(boosted)
         case None => // Stopped logging
       }
+      case Intercept.Stop => // Ignore
     }
   }
 
