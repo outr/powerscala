@@ -8,7 +8,7 @@ import org.powerscala.property.event.processor.PropertyChangeProcessor
 import org.powerscala.Priority
 import org.powerscala.property.event.PropertyChangeEvent
 import scala.collection.mutable.ListBuffer
-import org.powerscala.transaction
+import org.powerscala.transactional._
 import org.powerscala.concurrent.Executor
 
 /**
@@ -125,7 +125,7 @@ class PropertySpec extends WordSpec with Matchers {
       }
       "set two values to p1 and rollback" in {
         p1Changes.clear()
-        transaction {
+        an [RuntimeException] should be thrownBy transaction {
           p1Changes should be(Nil)
           p1() should be(2)
           Executor.invokeFuture(p1()).get() should be(2)
@@ -137,17 +137,15 @@ class PropertySpec extends WordSpec with Matchers {
           p1Changes should be(Nil)
           p1() should be(4)
           Executor.invokeFuture(p1()).get() should be(2)
-          transaction.rollback()
-          p1Changes should be(Nil)
-          p1() should be(2)
-          Executor.invokeFuture(p1()).get() should be(2)
+          throw new RuntimeException
         }
+        p1Changes should be(Nil)
         p1() should be(2)
         Executor.invokeFuture(p1()).get() should be(2)
         p1Changes.length should be(0)
       }
       "set values to p1 and p2 and commit" in {
-        transaction {
+        an [RuntimeException] should be thrownBy transaction {
           p1Changes should be(Nil)
           p2Changes should be(Nil)
           p1() should be(2)
@@ -161,21 +159,20 @@ class PropertySpec extends WordSpec with Matchers {
           p2() should be("One")
           Executor.invokeFuture(p1()).get() should be(2)
           Executor.invokeFuture(p2()).get() should be(null)
-          transaction.commit()
           p1Changes.length should be(1)
           p2Changes.length should be(1)
           p1() should be(5)
           p2() should be("One")
           Executor.invokeFuture(p1()).get() should be(5)
           Executor.invokeFuture(p2()).get() should be("One")
-          transaction.rollback()
+          throw new RuntimeException
         }
-        p1Changes.length should be(1)
-        p2Changes.length should be(1)
-        p1() should be(5)
-        p2() should be("One")
-        Executor.invokeFuture(p1()).get() should be(5)
-        Executor.invokeFuture(p2()).get() should be("One")
+        p1Changes.length should be(0)
+        p2Changes.length should be(0)
+        p1() should be(2)
+        p2() should be(null)
+        Executor.invokeFuture(p1()).get() should be(2)
+        Executor.invokeFuture(p2()).get() should be(null)
       }
     }
   }

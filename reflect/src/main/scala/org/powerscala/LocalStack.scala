@@ -16,6 +16,14 @@ class LocalStack[T] {
   def nonEmpty = threadLocal.get().nonEmpty
   def stack = threadLocal.get()
 
+  def head = threadLocal.get().head
+
+  def headOption = threadLocal.get().headOption
+
+  def last = threadLocal.get().last
+
+  def lastOption = threadLocal.get().lastOption
+
   /**
    * Returns the top of the stack. Will throw an exception if the stack is empty.
    */
