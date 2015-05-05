@@ -82,6 +82,8 @@ object transaction {
 
   def state(localized: Boolean) = if (localized) currentState else rootState
 
+  def depth = states.length
+
   def actionById[T <: TransactionAction](id: String) = currentState.map(ts => ts.actionById[T](id)).flatten.orElse(rootState.map(ts => ts.actionById[T](id)).flatten)
 }
 

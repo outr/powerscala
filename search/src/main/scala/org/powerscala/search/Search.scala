@@ -146,6 +146,10 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
     }
   }
 
+  def rollback() = {
+    writer.rollback()
+  }
+
   val query = SearchQueryBuilder(this, defaultField)
 
   def query(q: String): SearchQueryBuilder = query.copy(queryString = Some(q))

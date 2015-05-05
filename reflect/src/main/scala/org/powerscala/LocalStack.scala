@@ -24,6 +24,8 @@ class LocalStack[T] {
 
   def lastOption = threadLocal.get().lastOption
 
+  def length = threadLocal.get().length
+
   /**
    * Returns the top of the stack. Will throw an exception if the stack is empty.
    */
