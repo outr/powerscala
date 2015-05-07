@@ -42,8 +42,14 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
   private val config = new IndexWriterConfig(analyzer)
   config.setOpenMode(if (append) OpenMode.CREATE_OR_APPEND else OpenMode.CREATE)
   config.setRAMBufferSizeMB(ramBufferInMegs)
-  protected val writer = new IndexWriter(indexDir, config)
-  writer.commit()     // Make sure the index is created
+  protected var writer: IndexWriter = _
+
+  createWriter()
+
+  protected def createWriter() = {
+    writer = new IndexWriter(indexDir, config)
+    writer.commit()   // Make sure the index is created
+  }
 
   // Facet functionality
   private val taxonomyDir = directory match {
@@ -148,6 +154,7 @@ class Search(defaultField: String, val directory: Option[File] = None, append: B
 
   def rollback() = {
     writer.rollback()
+    createWriter()
   }
 
   val query = SearchQueryBuilder(this, defaultField)
