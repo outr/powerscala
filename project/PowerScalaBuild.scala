@@ -55,7 +55,7 @@ object PowerScalaBuild extends Build {
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
     .settings(libraryDependencies ++= Seq(asm, reflections, "org.scala-lang" % "scala-reflect" % scalaVersion.value))
   lazy val core = Project("core", file("core"), settings = createSettings("powerscala-core"))
-    .settings(libraryDependencies ++= Seq(akkaActors))
+    .settings(libraryDependencies ++= Seq(akkaActors, jLine))
     .dependsOn(enum, reflect)
   lazy val concurrent = Project("concurrent", file("concurrent"), settings = createSettings("powerscala-concurrent"))
     .dependsOn(core)
@@ -84,6 +84,7 @@ object Dependencies {
   val enumeratum = "com.beachape" %% "enumeratum" % "1.1.0"
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.9"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
+  val jLine = "jline" % "jline" % "2.12.1"
   val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
   val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
   val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
