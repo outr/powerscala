@@ -10,6 +10,9 @@ import scala.util.Random
  * @author Matt Hicks <mhicks@powerscala.org>
  */
 object PasswordFactory {
+  val CharactersNumbersAndUnderscore = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"
+  val ReadableCharacters = "ABCDEFGHIJKLMNPQRSTUVWXYZ23456789"
+
   var saltType = "SHA1PRNG"
 
   def authenticate(attemptedPassword: String, encryptedPassword: Array[Byte], salt: Array[Byte]) = {
@@ -35,9 +38,10 @@ object PasswordFactory {
     salt
   }
 
-  def generatePassword(chars: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789",
-                       digits: Int = 8) = {
+  def generatePassword(chars: String = CharactersNumbersAndUnderscore,
+                       digits: Int = 8,
+                       dashesEvery: Int = Int.MaxValue) = {
     val r = new Random()
-    (0 until digits).map(index => chars.charAt(r.nextInt(chars.length))).mkString
+    (0 until digits).map(index => chars.charAt(r.nextInt(chars.length))).mkString.grouped(dashesEvery).mkString("-")
   }
 }
