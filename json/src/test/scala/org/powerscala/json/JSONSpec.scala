@@ -178,6 +178,17 @@ class JSONSpec extends WordSpec with Matchers {
         typedJSON[CaseClass3]("""{"name":"Lost","list":[{"name":"One"},{"name":"Two"},{"name":"Three"}]}""") should equal(expected)
       }
     }
+    "special case JSON" should {
+      "convert a case class with a populated map properly" in {
+        TypedSupport.register("class4", classOf[CaseClass4])
+        val expected = """{"type":"class4","name":"test1","map":{"One":1,"Two":2}}"""
+        toJSON(CaseClass4("test1", Map("One" -> 1, "Two" -> 2))).compact should equal(expected)
+      }
+      "convert a case class with an empty map properly" in {
+        val expected = """"""
+        toJSON(CaseClass4("test2", Map.empty))
+      }
+    }
   }
 }
 
@@ -186,6 +197,8 @@ case class CaseClass1(name: String)
 case class CaseClass2(name: String, c1: CaseClass1)
 
 case class CaseClass3(name: String, list: List[CaseClass1])
+
+case class CaseClass4(name: String, map: Map[String, Int])
 
 case class EventWrapper(name: String, event: Event)
 
