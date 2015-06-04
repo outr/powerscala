@@ -185,8 +185,8 @@ class JSONSpec extends WordSpec with Matchers {
         toJSON(CaseClass4("test1", Map("One" -> 1, "Two" -> 2))).compact should equal(expected)
       }
       "convert a case class with an empty map properly" in {
-        val expected = """"""
-        toJSON(CaseClass4("test2", Map.empty))
+        val expected = """{"type":"class4","name":"test2","map":{}}"""
+        toJSON(CaseClass4("test2", Map.empty)).compact should equal(expected)
       }
     }
   }
