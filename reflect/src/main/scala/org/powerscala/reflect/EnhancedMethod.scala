@@ -21,7 +21,7 @@ class EnhancedMethod protected[reflect](val parent: EnhancedClass, val declaring
   /**
    * The arguments this method takes to invoke.
    */
-  lazy val args: List[MethodArgument] = if (javaMethod.getParameterTypes.length == 0) {
+  lazy val args: List[MethodArgument] = if (javaMethod.getParameterTypes.isEmpty) {
     Nil
   } else {
     _docs.args.zipWithIndex.map {
@@ -270,6 +270,9 @@ object EnhancedMethod {
                 case (k, v) if intOption(k).nonEmpty => intOption(k).get -> v
               }.sortBy(t => t._1).map(t => t._2))
             }
+          }
+          case "java.sql.Timestamp" => value match {
+            case l: Long => Some(new Timestamp(l))
           }
           case _ if value.isInstanceOf[Option[_]] => Some(value.asInstanceOf[Option[_]].orNull)
           case _ if converter.nonEmpty => Some(converter()(name, value, resultType))
