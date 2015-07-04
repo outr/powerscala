@@ -262,6 +262,7 @@ object EnhancedMethod {
           }
           case "String" => value match {
             case b: Boolean => Some(b.toString)
+            case None => Some(null)
           }
           case "scala.Option" => Some(Option(value))
           case "scala.collection.immutable.List" => value match {
