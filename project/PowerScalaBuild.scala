@@ -5,9 +5,9 @@ import sbtunidoc.Plugin._
 
 object PowerScalaBuild extends Build {
   val baseSettings = Defaults.coreDefaultSettings ++ Seq(
-    version := "1.6.10",
+    version := "1.6.11-SNAPSHOT",
     organization := "org.powerscala",
-    scalaVersion := "2.11.6",
+    scalaVersion := "2.11.7",
     libraryDependencies ++= Seq(
       scalaTest
     ),
@@ -49,7 +49,7 @@ object PowerScalaBuild extends Build {
 
   lazy val root = Project("root", file("."), settings = unidocSettings ++ createSettings("powerscala-root"))
     .settings(publishArtifact in Compile := false, publishArtifact in Test := false)
-    .aggregate(enum, reflect, core, concurrent, search, event, hierarchy, json, log, property, interpreter)
+    .aggregate(enum, reflect, core, concurrent, event, hierarchy, json, log, property, interpreter)
   lazy val enum = Project("enum", file("enum"), settings = createSettings("powerscala-enum"))
     .settings(libraryDependencies += enumeratum)
   lazy val reflect = Project("reflect", file("reflect"), settings = createSettings("powerscala-reflect"))
@@ -68,9 +68,6 @@ object PowerScalaBuild extends Build {
   lazy val json = Project("json", file("json"), settings = createSettings("powerscala-json"))
     .settings(libraryDependencies ++= Seq(json4sNative))
     .dependsOn(event, log)
-  lazy val search = Project("search", file("search"), settings = createSettings("powerscala-search"))
-    .dependsOn(core, event, log)
-    .settings(libraryDependencies ++= Seq(luceneCore, luceneAnalyzersCommon, luceneQueries, luceneQueryParser, luceneFacet, luceneSpatial, luceneExpressions, luceneBackward))
   lazy val property = Project("property", file("property"), settings = createSettings("powerscala-property"))
     .dependsOn(core, event, hierarchy, log)
   lazy val interpreter = Project("interpreter", file("interpreter"), settings = createSettings("powerscala-interpreter"))
@@ -79,22 +76,11 @@ object PowerScalaBuild extends Build {
 }
 
 object Dependencies {
-  val luceneVersion = "5.0.0"
-
   val enumeratum = "com.beachape" %% "enumeratum" % "1.1.0"
   val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.9"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
   val jLine = "jline" % "jline" % "2.12.1"
-  val luceneCore = "org.apache.lucene" % "lucene-core" % luceneVersion
-  val luceneAnalyzersCommon = "org.apache.lucene" % "lucene-analyzers-common" % luceneVersion
-  val luceneQueries = "org.apache.lucene" % "lucene-queries" % luceneVersion
-  val luceneQueryParser = "org.apache.lucene" % "lucene-queryparser" % luceneVersion
-  val luceneFacet = "org.apache.lucene" % "lucene-facet" % luceneVersion
-  val luceneSpatial = "org.apache.lucene" % "lucene-spatial" % luceneVersion
-  val luceneExpressions = "org.apache.lucene" % "lucene-expressions" % luceneVersion exclude("org.ow2.asm", "asm") exclude("org.ow2.asm", "asm-commons")
-  val luceneBackward = "org.apache.lucene" % "lucene-backward-codecs" % luceneVersion
   val json4sNative = "org.json4s" %% "json4s-native" % "3.2.11"
-  val h2 = "com.h2database" % "h2" % "1.4.186"
   val reflections = "org.reflections" % "reflections" % "0.9.9"
   val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 }
