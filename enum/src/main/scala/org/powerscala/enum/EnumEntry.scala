@@ -6,10 +6,10 @@ package org.powerscala.enum
 trait EnumEntry extends Product with Serializable {
   // getSimpleName doesn't work with nested classes, see
   // https://issues.scala-lang.org/browse/SI-5425
-  private lazy val fullName = getClass.getName.init
-  private lazy val dollar = fullName.lastIndexOf('$') + 1
-  private lazy val dot = fullName.lastIndexOf('.') + 1
-  private lazy val fullParentName = fullName.take(dollar)
+  private def fullName = getClass.getName.init
+  private def dollar = fullName.lastIndexOf('$') + 1
+  private def dot = fullName.lastIndexOf('.') + 1
+  private def fullParentName = fullName.take(dollar)
 
   lazy val name  = fullName.drop(dollar)
   lazy val label = EnumEntry.generateLabel(name)
