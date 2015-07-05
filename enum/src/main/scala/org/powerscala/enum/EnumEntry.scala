@@ -4,12 +4,18 @@ package org.powerscala.enum
  * @author Matt Hicks <matt@outr.com>
  */
 trait EnumEntry extends Product with Serializable {
-  lazy val name = getClass.getSimpleName.substring(0, getClass.getSimpleName.length - 1)
+  // getSimpleName doesn't work with nested classes, see
+  // https://issues.scala-lang.org/browse/SI-5425
+  private lazy val fullName = getClass.getName.init
+  private lazy val dollar = fullName.lastIndexOf('$') + 1
+  private lazy val dot = fullName.lastIndexOf('.') + 1
+  private lazy val fullParentName = fullName.take(dollar)
 
+  lazy val name  = fullName.drop(dollar)
   lazy val label = EnumEntry.generateLabel(name)
 
-  lazy val parentClass = Class.forName(getClass.getName.substring(0, getClass.getName.indexOf('$') + 1))
-  lazy val parentName = getClass.getName.substring(getClass.getName.lastIndexOf('.') + 1, getClass.getName.indexOf('$'))
+  lazy val parentName  = fullParentName.drop(dot).init.map(c => if (c == '$') '.' else c)
+  lazy val parentClass = Class.forName(fullParentName)
 
   /**
    * Adds additional lookup validation to match on Enumerated.get

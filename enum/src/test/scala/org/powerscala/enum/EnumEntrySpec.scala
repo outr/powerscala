@@ -54,6 +54,12 @@ class EnumEntrySpec extends WordSpec with Matchers {
     "have name" in {
       Test.Type.A.name should be ("A")
     }
+    "find parentClass as Test.Type" in {
+      Test.Type.A.parentClass should be(Test.Type.getClass)
+    }
+    "find parentName as Test" in {
+      Test.Type.A.parentName should be("Test.Type")
+    }
   }
 }
 
