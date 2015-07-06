@@ -50,6 +50,17 @@ class EnumEntrySpec extends WordSpec with Matchers {
       TestEnum.One.parentName should be("TestEnum")
     }
   }
+  "Test.Type" should {
+    "have name" in {
+      Test.Type.A.name should be ("A")
+    }
+    "find parentClass as Test.Type" in {
+      Test.Type.A.parentClass should be(Test.Type.getClass)
+    }
+    "find parentName as Test" in {
+      Test.Type.A.parentName should be("Test.Type")
+    }
+  }
 }
 
 sealed trait TestEnum extends EnumEntry {
@@ -62,4 +73,16 @@ object TestEnum extends Enumerated[TestEnum] {
   case object Three extends TestEnum
 
   val values = findValues.toVector
+}
+
+object Test {
+  sealed trait Type extends EnumEntry
+
+  object Type extends Enumerated[Type] {
+    case object A extends Type
+    case object B extends Type
+    case object C extends Type
+
+    val values = findValues.toVector
+  }
 }
