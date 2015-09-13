@@ -77,7 +77,7 @@ object PowerScalaBuild extends Build {
 
 object Dependencies {
   val enumeratum = "com.beachape" %% "enumeratum" % "1.1.0"
-  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.9"
+  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.13"
   val asm = "org.ow2.asm" % "asm-all" % "5.0.3"
   val jLine = "jline" % "jline" % "2.12.1"
   val json4sNative = "org.json4s" %% "json4s-native" % "3.2.11"
