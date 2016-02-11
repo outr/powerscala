@@ -2,9 +2,6 @@ package org.powerscala.concurrent
 
 import java.util.concurrent.atomic.{AtomicBoolean => JavaAtomic}
 
-/**
- * @author Matt Hicks <matt@outr.com>
- */
 class AtomicBoolean extends JavaAtomic {
   def apply() = get()
 

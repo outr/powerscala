@@ -1,17 +1,15 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
 /**
  * Precision is an enum defining numeric precisions and conversions.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 sealed abstract class Precision(val conversion: Double, f: () => Long) extends EnumEntry {
   def time = f()
 }
 
-object Precision extends Enumerated[Precision] {
+object Precision extends Enum[Precision] {
   case object Milliseconds extends Precision(1000.0, () => System.currentTimeMillis)
   case object Nanoseconds extends Precision(1000000000.0, () => System.nanoTime)
 

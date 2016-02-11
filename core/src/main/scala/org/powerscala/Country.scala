@@ -1,15 +1,12 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
-/**
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 sealed abstract class Country(val fullName: String) extends EnumEntry {
   override def toString = fullName
 }
 
-object Country extends Enumerated[Country] {
+object Country extends Enum[Country] {
   case object US extends Country("United States of America")
   case object CA extends Country("Canada")
   case object GB extends Country("United Kingdom")

@@ -37,8 +37,6 @@ import annotation.tailrec
 
 /**
  * AtomicInt extends the functionality of AtomicInteger to provide additional convenience functionality.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 class AtomicInt(initial: Int) extends AtomicInteger(initial) {
   def apply() = get()

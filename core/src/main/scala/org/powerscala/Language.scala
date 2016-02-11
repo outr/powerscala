@@ -1,10 +1,7 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
-/**
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 sealed abstract class Language(val bibliographic: String,
                       val terminology: String,
                       val iso639_1: Option[String],
@@ -14,7 +11,7 @@ sealed abstract class Language(val bibliographic: String,
   Language.init(this)
 }
 
-object Language extends Enumerated[Language] {
+object Language extends Enum[Language] {
   private var lookup = Map.empty[String, Language]
 
   case object Abkhazian extends Language("abk", "abk", Some("ab"), List("Abkhazian"), List("abkhaze"), List("Abchasisch"))
@@ -516,7 +513,7 @@ object Language extends Enumerated[Language] {
     }
   }
 
-  override def get(name: String, caseSensitive: Boolean) = lookup.get(name.toLowerCase)
+  def get(name: String, caseSensitive: Boolean) = lookup.get(name.toLowerCase)
 
   val values = findValues.toVector
 }

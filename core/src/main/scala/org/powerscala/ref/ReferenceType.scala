@@ -1,17 +1,12 @@
 package org.powerscala.ref
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
-/**
- *
- *
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 sealed trait ReferenceType extends EnumEntry {
   def apply[T <: AnyRef](value: T): Reference[T]
 }
 
-object ReferenceType extends Enumerated[ReferenceType] {
+object ReferenceType extends Enum[ReferenceType] {
   case object Hard extends ReferenceType {
     def apply[T <: AnyRef](value: T) = HardReference(value)
   }

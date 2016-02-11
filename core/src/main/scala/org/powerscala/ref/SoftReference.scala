@@ -4,8 +4,6 @@ import ref.{SoftReference => JSR}
 
 /**
  * SoftReference wraps Scala's SoftReference with additional features.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 class SoftReference[T <: AnyRef] private(private val ref: JSR[T]) extends Reference[T] {
   def apply() = ref.apply()

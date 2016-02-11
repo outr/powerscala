@@ -2,8 +2,6 @@ package org.powerscala.ref
 
 /**
  * HardReference represents a reference that will never be cleared except with an explicit call to clear().
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 class HardReference[T <: AnyRef] private(private var value: T) extends Reference[T] {
   def apply() = value

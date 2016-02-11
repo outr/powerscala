@@ -4,8 +4,6 @@ import scala.ref.{WeakReference => JWR}
 
 /**
  * WeakReference wraps Scala's WeakReference with additional features.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 class WeakReference[T <: AnyRef] private(private val ref: JWR[T]) extends Reference[T] {
   def apply() = ref.apply()

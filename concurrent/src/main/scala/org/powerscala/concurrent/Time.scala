@@ -43,8 +43,6 @@ import org.powerscala.Precision
  * Time represents convenience values and utilities
  * for lengths of time. All values are represented
  * as Doubles of time in seconds.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 case class Time(value: Double, pattern: String) {
   private lazy val dateFormat = new SimpleDateFormat(pattern)
@@ -131,45 +129,6 @@ object Time {
     val time = System.nanoTime()
     val result: R = f
     result -> fromNanos(System.nanoTime - time)
-  }
-
-  class Counters(logger: String => Unit) {
-    var map = Map.empty[String, Int]
-
-    def increment(name: String) = {
-      val value = map.getOrElse(name, 0)
-      map += name -> (value + 1)
-    }
-
-    def log() = if (map.nonEmpty) {
-      val s = map.map {
-        case (n, v) => s"$n = $v"
-      }.mkString(", ")
-      logger(s)
-    }
-  }
-  private val counters = new ThreadLocal[Counters]
-  def withCounters[R](logEvery: Double = 1.0, logger: String => Unit)(f: => R): R = {
-    val c = new Counters(logger)
-    counters.set(c)
-    try {
-      val scheduled = Executor.scheduleWithFixedDelay(logEvery, logEvery) {
-        c.log()
-      }
-      try {
-        f
-      } finally {
-        scheduled.cancel(false)
-      }
-    } finally {
-      c.log()
-      counters.remove()
-    }
-  }
-  def hasCounter = counters.get() != null
-  def increment(name: String) = {
-    val c = counters.get()
-    c.increment(name)
   }
 
   /**

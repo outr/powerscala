@@ -1,10 +1,5 @@
 package org.powerscala
 
-import org.powerscala.reflect.CaseValue
-
-/**
- * @author Matt Hicks <matt@outr.com>
- */
 object StringUtil {
   /**
    * Converts space and dash separated to camel-case
@@ -17,9 +12,23 @@ object StringUtil {
   def fromCamelCase(name: String) = "([A-Z])".r.replaceAllIn(name, m => "-" + m.group(0).toLowerCase)
 
   /**
-   * Generates a human readable label for this name with proper capitalization.
-   */
-  def generateLabel(name: String) = CaseValue.generateLabel(name)
+    * Generates a human readable label for this name.
+    */
+  def generateLabel(name: String) = {
+    val b = new StringBuilder
+    var p = ' '
+    name.foreach {
+      case '$' => // Ignore $
+      case c => {
+        if (b.length > 1 && (p.isUpper || p.isDigit) && (!c.isUpper && !c.isDigit)) {
+          b.insert(b.length - 1, ' ')
+        }
+        b.append(c)
+        p = c
+      }
+    }
+    b.toString().capitalize
+  }
 
   private val TrimRegex = """(\p{Z}*)(.*?)(\p{Z}*)""".r
   def trim(s: String) = s match {

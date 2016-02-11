@@ -2,11 +2,8 @@ package org.powerscala.ref
 
 import ref.{ReferenceQueue, PhantomReference => JPR}
 
-
 /**
  * PhantomReference wraps Scala's PhantomReference with additional features.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 class PhantomReference[T <: AnyRef] private(ref: JPR[T]) extends Reference[T] {
   def apply() = ref.apply()

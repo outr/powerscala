@@ -1,15 +1,12 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
-/**
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 sealed abstract class Currency(val description: String) extends EnumEntry {
-  override def toString = "%s (%s)".format(description, name)
+  override def toString = s"$description ($entryName)"
 }
 
-object Currency extends Enumerated[Currency] {
+object Currency extends Enum[Currency] {
   case object USD extends Currency("United States dollar")
   case object CAD extends Currency("Canadian dollar")
   case object EUR extends Currency("Euro")

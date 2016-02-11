@@ -3,11 +3,7 @@ package org.powerscala
 import java.io._
 import annotation.tailrec
 import java.net.URL
-import io.Source
 
-/**
- * @author Matt Hicks <mhicks@outr.com>
- */
 object IO {
   @tailrec
   final def stream(input: InputStream,
@@ -84,22 +80,15 @@ object IO {
     new String(bytes)
   }
 
-  def copy(read: URL) = {
-    val source = Source.fromURL(read)
-    try {
-      source.mkString
-    } finally {
-      source.close()
-    }
+  def copy(read: URL): String = {
+    copy(read.openStream())
   }
 
-  def copy(input: InputStream) = {
-    val source = Source.fromInputStream(input)
-    try {
-      source.mkString
-    } finally {
-      source.close()
-    }
+  def copy(input: InputStream): String = {
+    val output = new ByteArrayOutputStream()
+    stream(input, output, closeOnComplete = true)
+    val bytes = output.toByteArray
+    new String(bytes)
   }
 
   def delete(file: File) = {

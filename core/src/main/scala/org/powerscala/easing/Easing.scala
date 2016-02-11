@@ -1,6 +1,6 @@
 package org.powerscala.easing
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
 trait Easing extends EnumEntry {
   def apply(elapsed: Double, start: Double, target: Double, duration: Double): Double
@@ -12,7 +12,7 @@ sealed abstract class EasingEnum(val f: Function4[Double, Double, Double, Double
   }
 }
 
-object Easing extends Enumerated[EasingEnum] {
+object Easing extends Enum[EasingEnum] {
   case object BackIn extends EasingEnum(Back.easeIn)
   case object BackOut extends EasingEnum(Back.easeOut)
   case object BackInOut extends EasingEnum(Back.easeInOut)

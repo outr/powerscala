@@ -4,9 +4,6 @@ import java.util.UUID
 import scala.annotation.tailrec
 import scala.concurrent.forkjoin.ThreadLocalRandom
 
-/**
- * @author Matt Hicks <matt@outr.com>
- */
 object Unique {
   private def r = ThreadLocalRandom.current()
 

@@ -1,15 +1,13 @@
 package org.powerscala
 
-import org.powerscala.enum.{Enumerated, EnumEntry}
+import enumeratum._
 
 /**
  * Compass represents the points on a compass as an enum.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 sealed abstract class Compass extends EnumEntry
 
-object Compass extends Enumerated[Compass] {
+object Compass extends Enum[Compass] {
   case object North extends Compass
   case object South extends Compass
   case object East extends Compass

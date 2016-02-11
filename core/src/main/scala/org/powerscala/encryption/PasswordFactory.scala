@@ -6,9 +6,6 @@ import javax.crypto.spec.PBEKeySpec
 import java.util
 import scala.util.Random
 
-/**
- * @author Matt Hicks <mhicks@powerscala.org>
- */
 object PasswordFactory {
   val CharactersNumbersAndUnderscore = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"
   val ReadableCharacters = "ABCDEFGHIJKLMNPQRSTUVWXYZ23456789"

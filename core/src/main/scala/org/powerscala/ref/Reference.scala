@@ -2,8 +2,6 @@ package org.powerscala.ref
 
 /**
  * Reference wraps Scala's Reference objects to provide additional functionality.
- *
- * @author Matt Hicks <mhicks@powerscala.org>
  */
 trait Reference[T <: AnyRef] extends Function0[T] {
   def apply(): T
@@ -18,7 +16,7 @@ trait Reference[T <: AnyRef] extends Function0[T] {
 
   def isEnqueued: Boolean
 
-  def isCleared = get == None
+  def isCleared = get.isEmpty
 
   /**
    * Referential equality occurs on both the Reference and the wrapped object.
