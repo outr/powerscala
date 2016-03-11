@@ -6,9 +6,10 @@ import sbtunidoc.Plugin._
 object PowerScalaBuild extends Build {
   lazy val root = Project("root", file("."), settings = unidocSettings)
     .settings(name := "PowerScala", publishArtifact in Compile := false, publishArtifact in Test := false, publish := {})
-    .aggregate(core, concurrent)
+    .aggregate(core, concurrent, console)
   lazy val core = project("core").withDependencies(enumeratum)
   lazy val concurrent = project("concurrent").dependsOn(core)
+  lazy val console = project("console").withDependencies(jLine).dependsOn(core)
 
   private def project(projectName: String) = Project(id = projectName, base = file(projectName)).settings(
     name := s"${Details.name}-$projectName",
@@ -16,7 +17,6 @@ object PowerScalaBuild extends Build {
     organization := Details.organization,
     scalaVersion := Details.scalaVersion,
     sbtVersion := Details.sbtVersion,
-    fork := true,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     resolvers ++= Seq(
       Resolver.sonatypeRepo("snapshots"),
@@ -74,13 +74,12 @@ object Details {
   val developerName = "Matt Hicks"
   val developerURL = "http://matthicks.com"
 
-  val sbtVersion = "0.13.9"
+  val sbtVersion = "0.13.11"
   val scalaVersion = "2.11.7"
 }
 
 object Dependencies {
   val enumeratum = "com.beachape" %% "enumeratum" % "1.3.6"
-//  val akkaActors = "com.typesafe.akka" %% "akka-actor" % "2.3.13"
-//  val json4sNative = "org.json4s" %% "json4s-native" % "3.2.11"
+  val jLine = "jline" % "jline" % "2.13"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test"
 }
