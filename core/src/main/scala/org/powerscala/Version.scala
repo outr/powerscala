@@ -28,6 +28,8 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
 
   lazy val general = s"$major.$minor.$maintenance"
 
+  def snapshot: Boolean = extra == "SNAPSHOT"
+
   override def toString = string
 
   def compare(that: Version) = if (major != that.major) {
@@ -54,6 +56,13 @@ object Version {
     case Matcher(major, minor, maintenance, build, other) => {
       Version(n(major), n(minor), n(maintenance), n(build), other)
     }
+  }
+
+  def unapply(version: String): Option[Version] = version match {
+    case Matcher(major, minor, maintenance, build, other) => {
+      Some(Version(n(major), n(minor), n(maintenance), n(build), other))
+    }
+    case _ => None
   }
 
   private def n(s: String) = s match {
