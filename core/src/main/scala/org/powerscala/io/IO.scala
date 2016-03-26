@@ -30,7 +30,7 @@ object IO {
       } catch {
         case t: Throwable => {
           monitor.failure(t)
-          throw new IOException(s"IO failed to write to writer with length: $len with reader: $reader, writer: $writer.")
+          throw new IOException(s"IO failed to write to writer with length: $len with reader: $reader, writer: $writer.", t)
         }
       }
       stream(reader, writer, monitor, buffer, closeOnComplete)

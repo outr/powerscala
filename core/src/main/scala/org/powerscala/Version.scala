@@ -3,7 +3,7 @@ package org.powerscala
 /**
  * Version represents a version numbering.
  */
-case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: Int = 0, extra: Option[String] = None) extends Ordered[Version] {
+case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: Int = 0, extra: Option[String] = None, original: Option[String] = None) extends Ordered[Version] {
   private lazy val string = {
     val b = new StringBuilder
     b.append(general)
@@ -22,7 +22,7 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
 
   def snapshot: Boolean = extra.contains("SNAPSHOT")
 
-  override def toString = string
+  override def toString = original.getOrElse(string)
 
   def compare(that: Version) = if (major != that.major) {
     major.compare(that.major)
@@ -45,14 +45,14 @@ object Version {
   val Matcher = """(\d+)[.]?(\d*)[.]?(\d*)[.]?(\d*)[-]?(.*)""".r
 
   def apply(version: String): Version = version match {
-    case Matcher(major, minor, maintenance, build, extra) => {
-      Version(n(major), n(minor), n(maintenance), n(build), if (extra != null && extra.nonEmpty) Some(extra) else None)
-    }
+    case Version(v) => v
+    case _ => throw new RuntimeException(s"Unable to parse version from: $version.")
   }
 
   def unapply(version: String): Option[Version] = version match {
+    case null | "" => None
     case Matcher(major, minor, maintenance, build, extra) => {
-      Some(Version(n(major), n(minor), n(maintenance), n(build), if (extra != null && extra.nonEmpty) Some(extra) else None))
+      Some(Version(n(major), n(minor), n(maintenance), n(build), if (extra != null && extra.nonEmpty) Some(extra) else None, Some(version)))
     }
     case _ => None
   }
