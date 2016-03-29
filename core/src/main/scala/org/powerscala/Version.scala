@@ -42,6 +42,7 @@ case class Version(major: Int = 1, minor: Int = 0, maintenance: Int = 0, build: 
 }
 
 object Version {
+  val Zero = Version(0)
   val Matcher = """(\d+)[.]?(\d*)[.]?(\d*)[.]?(\d*)[-]?(.*)""".r
 
   def apply(version: String): Version = version match {
