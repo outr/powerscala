@@ -47,7 +47,7 @@ object Version {
 
   def apply(version: String): Version = version match {
     case Version(v) => v
-    case _ => throw new RuntimeException(s"Unable to parse version from: $version.")
+    case _ => Version(major = 0, original = Option(version))
   }
 
   def unapply(version: String): Option[Version] = version match {
