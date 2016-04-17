@@ -64,7 +64,7 @@ object PowerScalaBuild extends Build {
 object Details {
   val organization = "org.powerscala"
   val name = "powerscala"
-  val version = "2.0.0"
+  val version = "2.0.1-SNAPSHOT"
   val url = "http://outr.com"
   val licenseType = "Apache 2.0"
   val licenseURL = "http://opensource.org/licenses/Apache-2.0"
