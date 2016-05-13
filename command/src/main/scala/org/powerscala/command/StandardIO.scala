@@ -1,6 +1,6 @@
 package org.powerscala.command
 
-import java.io.{BufferedReader, BufferedWriter, InputStreamReader, OutputStreamWriter}
+import java.io.{BufferedReader, InputStreamReader}
 
 class StandardIO extends CommandImplementation {
   private var keepAlive = true
@@ -16,15 +16,13 @@ class StandardIO extends CommandImplementation {
       }
     }
   })
-  private lazy val writer = new BufferedWriter(new OutputStreamWriter(System.out))
-
   override def start(manager: CommandManager): Unit = {
     this.manager = manager
     thread.setDaemon(true)
     thread.start()
   }
 
-  override def send(line: String): Unit = writer.write(s"$line\n")
+  override def send(line: String): Unit = println(line)
 
   override def dispose(): Unit = {
     keepAlive = false
