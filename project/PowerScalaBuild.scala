@@ -34,6 +34,7 @@ object PowerScalaBuild extends Build {
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
         }
     },
+    libraryDependencies += scalaTest,
     publishArtifact in Test := false,
     pomExtra := <url>${Details.url}</url>
       <licenses>
