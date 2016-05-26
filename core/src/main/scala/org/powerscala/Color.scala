@@ -184,4 +184,19 @@ object Color {
       fromLong(java.lang.Long.parseLong(hex, 16))
     }
   }
+
+  def toHex(color: Color,
+            prefixHash: Boolean = true,
+            red: Boolean = true,
+            green: Boolean = true,
+            blue: Boolean = true,
+            alpha: Boolean = false): String = {
+    val b = new StringBuilder
+    if (prefixHash) b.append("#")
+    if (red) b.append("%02x".format((color.red * 255.0).toInt))
+    if (green) b.append("%02x".format((color.green * 255.0).toInt))
+    if (blue) b.append("%02x".format((color.blue * 255.0).toInt))
+    if (alpha) b.append("%02x".format((color.alpha * 255.0).toInt))
+    b.toString()
+  }
 }
