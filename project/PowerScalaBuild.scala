@@ -2,19 +2,33 @@ import Dependencies._
 import sbt.Keys._
 import sbt._
 import sbtunidoc.Plugin._
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
 object PowerScalaBuild extends Build {
-  lazy val root = Project("root", file("."), settings = unidocSettings)
-    .settings(name := "PowerScala", publishArtifact in Compile := false, publishArtifact in Test := false, publish := {})
-    .aggregate(core, command, concurrent, console, io)
-  lazy val core = project("core").withDependencies(enumeratum)
-  lazy val command = project("command")
-  lazy val concurrent = project("concurrent").withDependencies(enumeratum)
-  lazy val console = project("console").withDependencies(jLine)
-  lazy val io = project("io")
+  lazy val root = project.in(file("."))
+    .settings(sharedSettings())
+    .settings(unidocSettings: _*)
+    .settings(publishArtifact := false)
+    .aggregate(core.js, core.jvm, command, concurrent, console, io)
+  lazy val core = crossProject.crossType(CrossType.Pure).in(file("core"))
+    .settings(withCompatUnmanagedSources(jsJvmCrossProject = true, include_210Dir = false, includeTestSrcs = true): _*)
+    .settings(sharedSettings(Some("core")): _*)
+    .settings(libraryDependencies += enumeratum)
+  lazy val coreJs = core.js
+  lazy val coreJvm = core.jvm
+  lazy val command = project.in(file("command"))
+    .settings(sharedSettings(Some("command")): _*)
+  lazy val concurrent = project.in(file("concurrent"))
+    .settings(sharedSettings(Some("concurrent")): _*)
+    .settings(libraryDependencies += enumeratum)
+  lazy val console = project.in(file("console"))
+    .settings(sharedSettings(Some("console")): _*)
+    .settings(libraryDependencies += jLine)
+  lazy val io = project.in(file("io"))
+    .settings(sharedSettings(Some("io")): _*)
 
-  private def project(projectName: String) = Project(id = projectName, base = file(projectName)).settings(
-    name := s"${Details.name}-$projectName",
+  private def sharedSettings(projectName: Option[String] = None) = Seq(
+    name := s"${Details.name}${projectName.map(pn => s"-$pn").getOrElse("")}",
     version := Details.version,
     organization := Details.organization,
     scalaVersion := Details.scalaVersion,
@@ -59,8 +73,32 @@ object PowerScalaBuild extends Build {
       </developers>
   )
 
-  implicit class EnhancedProject(project: Project) {
-    def withDependencies(modules: ModuleID*): Project = project.settings(libraryDependencies ++= modules)
+  /**
+    * Helper function to add unmanaged source compat directories for different scala versions
+    */
+  private def withCompatUnmanagedSources(jsJvmCrossProject: Boolean, include_210Dir: Boolean, includeTestSrcs: Boolean): Seq[Setting[_]] = {
+    def compatDirs(projectbase: File, scalaVersion: String, isMain: Boolean) = {
+      val base = if (jsJvmCrossProject ) projectbase / ".." else projectbase
+      CrossVersion.partialVersion(scalaVersion) match {
+        case Some((2, scalaMajor)) if scalaMajor >= 11 => Seq(base / "compat" / "src" / (if (isMain) "main" else "test") / "scala-2.11").map(_.getCanonicalFile)
+        case Some((2, scalaMajor)) if scalaMajor == 10 && include_210Dir => Seq(base / "compat" / "src" / (if (isMain) "main" else "test") / "scala-2.10").map(_.getCanonicalFile)
+        case _ => Nil
+      }
+    }
+    val unmanagedMainDirsSetting = Seq(
+      unmanagedSourceDirectories in Compile ++= {
+        compatDirs(projectbase = baseDirectory.value, scalaVersion = scalaVersion.value, isMain = true)
+      }
+    )
+    if (includeTestSrcs) {
+      unmanagedMainDirsSetting ++ {
+        unmanagedSourceDirectories in Test ++= {
+          compatDirs(projectbase = baseDirectory.value, scalaVersion = scalaVersion.value, isMain = false)
+        }
+      }
+    } else {
+      unmanagedMainDirsSetting
+    }
   }
 }
 
