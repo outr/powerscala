@@ -32,12 +32,10 @@
 
 package org.powerscala.concurrent
 
-
 import scala.math._
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import collection.mutable.ListBuffer
-import org.powerscala.Precision
 
 /**
  * Time represents convenience values and utilities

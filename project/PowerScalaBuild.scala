@@ -6,11 +6,12 @@ import sbtunidoc.Plugin._
 object PowerScalaBuild extends Build {
   lazy val root = Project("root", file("."), settings = unidocSettings)
     .settings(name := "PowerScala", publishArtifact in Compile := false, publishArtifact in Test := false, publish := {})
-    .aggregate(core, command, concurrent, console)
+    .aggregate(core, command, concurrent, console, io)
   lazy val core = project("core").withDependencies(enumeratum)
-  lazy val command = project("command").dependsOn(core)
-  lazy val concurrent = project("concurrent").dependsOn(core)
-  lazy val console = project("console").withDependencies(jLine).dependsOn(core)
+  lazy val command = project("command")
+  lazy val concurrent = project("concurrent").withDependencies(enumeratum)
+  lazy val console = project("console").withDependencies(jLine)
+  lazy val io = project("io")
 
   private def project(projectName: String) = Project(id = projectName, base = file(projectName)).settings(
     name := s"${Details.name}-$projectName",

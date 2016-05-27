@@ -1,4 +1,4 @@
-package org.powerscala
+package org.powerscala.concurrent
 
 import enumeratum._
 
