@@ -39,16 +39,7 @@ object PowerScalaBuild extends Build {
       Resolver.sonatypeRepo("releases"),
       Resolver.typesafeRepo("releases")
     ),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full),
-    publishTo <<= version {
-      (v: String) =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT")) {
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        } else {
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-        }
-    },
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies += scalaTest,
     publishArtifact in Test := false,
     pomExtra := <url>${Details.url}</url>
@@ -105,7 +96,7 @@ object PowerScalaBuild extends Build {
 object Details {
   val organization = "org.powerscala"
   val name = "powerscala"
-  val version = "2.0.2-SNAPSHOT"
+  val version = "2.0.2"
   val url = "http://outr.com"
   val licenseType = "Apache 2.0"
   val licenseURL = "http://opensource.org/licenses/Apache-2.0"
@@ -116,11 +107,11 @@ object Details {
   val developerURL = "http://matthicks.com"
 
   val sbtVersion = "0.13.11"
-  val scalaVersion = "2.11.7"
+  val scalaVersion = "2.11.8"
 }
 
 object Dependencies {
-  val enumeratum = "com.beachape" %% "enumeratum" % "1.3.6"
-  val jLine = "jline" % "jline" % "2.13"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.4.5"
+  val jLine = "jline" % "jline" % "2.14.2"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test"
 }
