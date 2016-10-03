@@ -18,6 +18,21 @@ package object io {
     override def close(): Unit = input.close()
   }
 
+  implicit def javaReader2Reader(reader: java.io.Reader): Reader = new Reader {
+    override def length: Option[Long] = None
+
+    override def read(buffer: Array[Byte]): Int = {
+      val b = new Array[Char](buffer.length)
+      val len = reader.read(b)
+      b.zipWithIndex.foreach {
+        case (c, index) => buffer(index) = c.toByte
+      }
+      len
+    }
+
+    override def close(): Unit = reader.close()
+  }
+
   implicit def file2Reader(file: File): InputStreamReader = new InputStreamReader(new FileInputStream(file)) {
     override def length: Option[Long] = Some(file.length())
   }
