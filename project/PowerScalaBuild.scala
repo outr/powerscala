@@ -32,6 +32,7 @@ object PowerScalaBuild extends Build {
     version := Details.version,
     organization := Details.organization,
     scalaVersion := Details.scalaVersion,
+    crossScalaVersions := Details.scalaVersions,
     sbtVersion := Details.sbtVersion,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     resolvers ++= Seq(
@@ -96,7 +97,7 @@ object PowerScalaBuild extends Build {
 object Details {
   val organization = "org.powerscala"
   val name = "powerscala"
-  val version = "2.0.3-SNAPSHOT"
+  val version = "2.0.3"
   val url = "http://outr.com"
   val licenseType = "Apache 2.0"
   val licenseURL = "http://opensource.org/licenses/Apache-2.0"
@@ -106,12 +107,13 @@ object Details {
   val developerName = "Matt Hicks"
   val developerURL = "http://matthicks.com"
 
-  val sbtVersion = "0.13.11"
-  val scalaVersion = "2.11.8"
+  val sbtVersion = "0.13.13"
+  val scalaVersion = "2.12.1"
+  val scalaVersions = List("2.12.1", "2.11.8")
 }
 
 object Dependencies {
-  val enumeratum = "com.beachape" %% "enumeratum" % "1.4.5"
-  val jLine = "jline" % "jline" % "2.14.2"
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.6"
+  val jLine = "org.jline" % "jline" % "3.1.2"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 }

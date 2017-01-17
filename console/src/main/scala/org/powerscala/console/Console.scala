@@ -1,12 +1,19 @@
 package org.powerscala.console
 
-import jline.TerminalFactory
+import org.jline.terminal.TerminalBuilder
 import org.powerscala.console.ctrl._
 
 import scala.collection.mutable.ListBuffer
 
 class Console(writer: String => Unit) {
-  def width: Int = TerminalFactory.get.getWidth
+  def width: Int = {
+    val terminal = TerminalBuilder.terminal()
+    try {
+      terminal.getWidth
+    } finally {
+      terminal.close()
+    }
+  }
 
   def write(text: Text*): Unit = {
     val blocks = ListBuffer.empty[List[Text]]
