@@ -37,7 +37,27 @@ object IO {
     }
   }
 
-  def delete(file: File) = {
+  /**
+    * Uses IO.stream, but supports recursive directory copying.
+    *
+    * @param source file or directory
+    * @param destination file or directory
+    */
+  def copy(source: File, destination: File): Unit = if (source.isDirectory) {
+    destination.mkdirs()
+    assert(destination.isDirectory, s"Destination ${destination.getAbsolutePath} is a file, not a directory!")
+    source.listFiles().foreach { file =>
+      copy(file, new File(destination, file.getName))
+    }
+  } else if (source.isFile) {
+    if (destination.isDirectory) {
+      stream(source, new File(destination, source.getName))
+    } else {
+      stream(source, destination)
+    }
+  }
+
+  def delete(file: File): Boolean = {
     if (file.isDirectory) {
       deleteFiles(file.listFiles().toList)
     }

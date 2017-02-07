@@ -97,7 +97,7 @@ object PowerScalaBuild extends Build {
 object Details {
   val organization = "org.powerscala"
   val name = "powerscala"
-  val version = "2.0.3"
+  val version = "2.0.4"
   val url = "http://outr.com"
   val licenseType = "Apache 2.0"
   val licenseURL = "http://opensource.org/licenses/Apache-2.0"
@@ -113,7 +113,7 @@ object Details {
 }
 
 object Dependencies {
-  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.6"
+  val enumeratum = "com.beachape" %% "enumeratum" % "1.5.7"
   val jLine = "org.jline" % "jline" % "3.1.2"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 }
